@@ -30,8 +30,8 @@ doit figurer dans les sources du segment. Vérifie ce que la valeur mesure :
 énonce et que le visuel illustre doit être lisible à l'écran au moment où
 la voix le dit. Pour chaque valeur de `donnees` que la voix énonce, écris
 une révélation qui nomme cette valeur (`series_k_point_j` pour une courbe,
-`bar_g` pour une barre), calée sur le mot qui l'énonce (section 2). Sinon
-le visuel n'illustre rien.
+`bar_g` pour une barre, `band_g` pour une bande), calée sur le mot qui
+l'énonce (section 2). Sinon le visuel n'illustre rien.
 
 **R5 — Première donnée tôt.** La première révélation de donnée tombe dans
 la première phrase du segment, avant 4,5 s, idéalement vers 3 s. Le cadre
@@ -45,7 +45,7 @@ au tracé.
 **R6 — Pas de temps mort.** Entre deux révélations consécutives, l'écran
 ne doit pas rester figé plus de 4 s. Tout dépend de l'élément qui vient :
 
-- s'il **se trace** (courbe, barre qui monte), il commence à bouger jusqu'à
+- s'il **se trace** (courbe, barre qui monte, bande qui s'étend), il commence à bouger jusqu'à
   6 s avant son mot et comble l'attente : jusqu'à ~10 s entre deux valeurs
   énoncées restent vivantes. Une courbe comble moins : seulement la part de
   sa longueur qui précède le point énoncé ;
@@ -62,6 +62,14 @@ d'axes, légendes, source (section 3).
 le cadre, la grille ou les axes : ils se construisent seuls avant la
 première donnée.
 
+**R9 — Pas de catégorie muette.** Sur une famille à catégories distinctes
+— `Bars`, `Areas` en bandes —, chaque ligne de `donnees` est une catégorie
+que la voix mentionne, et elle a sa révélation. Une catégorie que la voix ne
+mentionne pas ne figure pas dans `donnees` : elle s'afficherait pendant que
+la voix parle d'autre chose. Les courbes, elles, gardent leurs points
+intermédiaires : ils sont sur le chemin du tracé. Le build signale toute
+barre ou bande sans révélation.
+
 ---
 
 ## 2. Comment le temps est compté
@@ -70,8 +78,8 @@ première donnée.
 
 > **Le mouvement anticipe, l'information attend.**
 
-Un élément qui se trace — une courbe qui progresse, une barre qui monte —
-peut commencer à se construire pendant que la voix parle encore de
+Un élément qui se trace — une courbe qui progresse, une barre qui monte,
+une bande qui s'étend — peut commencer à se construire pendant que la voix parle encore de
 l'élément précédent. Sa valeur, elle, n'apparaît qu'à l'arrivée, sur son
 mot déclencheur. Une courbe qui progresse vers une valeur ne la révèle pas
 tant qu'elle n'y est pas ; une barre qui monte non plus. Ce qui ne doit
@@ -123,7 +131,7 @@ Trois types d'éléments :
 
 | Type | Durée max | Ce que signifie son `t_rel_s` |
 |---|---|---|
-| **tracé** (courbe, barre qui monte) | 6 s | l'instant où le tracé *atteint* son point, ou la barre *atteint* sa hauteur. Le mouvement commence avant (jusqu'à 6 s avant) ; la valeur apparaît à l'arrivée. |
+| **tracé** (courbe, barre qui monte, bande qui s'étend) | 6 s | l'instant où le tracé *atteint* son point, ou la barre *atteint* sa hauteur. Le mouvement commence avant (jusqu'à 6 s avant) ; la valeur apparaît à l'arrivée. |
 | **étiquette** | 0,3 s | l'instant où la valeur apparaît, sur un point déjà atteint. |
 | **surgissement** (repère, accolade, annotation, ligne de référence) | 1,5 s | l'instant où l'élément commence à apparaître. Rien ne bouge avant son mot. |
 
@@ -204,8 +212,9 @@ l'écran (`34,8 %` ou `34.8%`) dépend de la langue du rendu, pas du script.
   minimal). Deux valeurs de séries différentes ne peuvent pas tomber sur le
   même mot : donne-leur chacune le sien.
 - Un point dont la voix ne dit pas la valeur peut rester dans `donnees` sans
-  révélation : quand sa série n'a plus de rendez-vous, le tracé continue à
-  vitesse constante et sa valeur apparaît à l'arrivée.
+  révélation : il est sur le chemin du tracé (R9). Quand sa série n'a plus de
+  rendez-vous, le tracé continue à vitesse constante et sa valeur apparaît à
+  l'arrivée.
 
 **Exemple réel** — le plan S09 de l'EP001b, validé à l'écran, réécrit dans
 ce format. Il est vrai mais **pas exemplaire** : la première valeur tombe à
@@ -304,7 +313,7 @@ ligne = barres simples. Les valeurs négatives descendent sous zéro.
 
 | Élément | Type | Remarque |
 |---|---|---|
-| `bar_g` | tracé (≤ 6 s) + étiquette | La barre de la catégorie g (1re ligne de `donnees` = `bar_1`), en mode `simple`. À écrire pour chaque valeur énoncée (R4), sur le mot qui l'énonce : la barre atteint sa hauteur à cet instant, et sa valeur apparaît. |
+| `bar_g` | tracé (≤ 6 s) + étiquette | La barre de la catégorie g (1re ligne de `donnees` = `bar_1`), en mode `simple`. À écrire pour **chaque** barre, sur le mot qui énonce sa valeur (R4, R9) : la barre atteint sa hauteur à cet instant, et sa valeur apparaît. |
 | `bar_g_s` | tracé (≤ 6 s) + étiquette | La barre de la série s dans la catégorie g, en modes `groupees` et `empilees`. |
 | `highlight` | surgissement (1,5 s) | Exige `mise_en_avant`. |
 | `reference` | surgissement (1,5 s) | Exige `repere`. |
@@ -319,7 +328,8 @@ mot qui énonce sa valeur.
 
 Une seule barre monte à la fois. Entre deux valeurs énoncées, laisse au
 moins 0,7 s. Mise en avant, repère et annotation, eux, surgissent en 1,5 s
-sur leur mot.
+sur leur mot. Une catégorie que la voix ne mentionne pas n'a pas sa place
+dans `donnees` (R9).
 
 **Exemple réel** — le plan S17 de l'EP001b, validé à l'écran, réécrit dans ce
 format. Il est vrai mais **pas exemplaire** : la première valeur n'est
@@ -405,7 +415,7 @@ dispersion se resserre, ou qu'un pire cas s'améliore avec le temps.
 
 | Paramètre | Obligatoire | Valeurs admises | Effet |
 |---|---|---|---|
-| `mode` | **oui** | `"bandes"` | Le mode `"aires"` n'est pas encore disponible. |
+| `mode` | **oui** | `"bandes"` | Le mode `"aires"` n'est pas encore disponible : le moteur le refuse. |
 | `borne` | **oui** si une seule valeur par ligne | `"plancher"`, `"plafond"` | `plancher` : la valeur est un minimum — « un cas sur cent tombe sous… », « 99 cas sur 100 dépassent… ». La bande part de ce plancher, s'ouvre vers le haut et s'efface en dégradé : le moteur ne dessine jamais une borne que la source ne donne pas. `plafond` : l'inverse, ouverte vers le bas. |
 | `axes.unite_y` | **oui** | comme `LineChart` | Format des valeurs (axe vertical et étiquettes). |
 | `axes.unite_x` | non | comme `Bars` | Format des catégories. |
@@ -415,18 +425,17 @@ dispersion se resserre, ou qu'un pire cas s'améliore avec le temps.
 
 | Élément | Type | Remarque |
 |---|---|---|
-| `band_g` | tracé (≤ 6 s) + étiquette | La bande de la catégorie g (1re ligne de `donnees` = `band_1`). Sur le mot qui énonce sa borne, la bande atteint sa borne et la valeur apparaît — en rouge si elle est négative, en vert si elle est positive. Elle s'est étendue avant, depuis son côté ouvert (ou depuis son milieu pour une bande à deux bornes). |
+| `band_g` | tracé (≤ 6 s) + étiquette | La bande de la catégorie g (1re ligne de `donnees` = `band_1`). À écrire pour **chaque** bande (R9). Sur le mot qui énonce sa borne, la bande atteint sa borne et la valeur apparaît — en rouge si elle est négative, en vert si elle est positive. Elle s'est étendue avant, depuis son côté ouvert (ou depuis son milieu pour une bande à deux bornes). |
 | ~~`frame`~~ | décor | Ne pas écrire (R8). La ligne du zéro fait partie du cadre. |
 
-Nomme chaque bande dont la voix énonce la valeur (R4). Une bande que la voix
-ne mentionne pas peut rester dans `donnees` : elle prend place entre ses
-voisines nommées, à intervalles réguliers, et sa valeur apparaît à
-l'arrivée — mais alors pendant que la voix parle d'autre chose. Préfère
-énoncer chaque valeur.
+Chaque bande de `donnees` a sa révélation, sur le mot qui énonce sa borne
+(R4). Une catégorie que la voix ne mentionne pas ne figure pas dans
+`donnees` (R9) : l'exemple réel ci-dessous montre ce qui se passe sinon.
 
 **Exemple réel** — le plan S20 de l'EP001b, réécrit dans ce format. Il est
 vrai mais **pas exemplaire** : la première valeur n'est lisible qu'à
-11,92 s (R5), et deux valeurs (10 et 20 ans) s'affichent sans être énoncées.
+11,92 s (R5), et deux catégories (10 et 20 ans) figurent dans `donnees` sans
+que la voix les mentionne (R9).
 
 ```json
 {
@@ -493,7 +502,8 @@ figé entre la première et la dernière valeur.
 Tant qu'une famille ne figure pas dans la section *Disponibles*, un segment
 qui la demande sera refusé.
 
-- **Aires** (`Areas`, mode `aires`) — aires superposées depuis zéro (versements et capital, par exemple). Prévu, pas encore utilisable.
+- **Aires** (`Areas`, mode `aires`) — aires superposées depuis zéro
+  (versements et capital, par exemple). En attente : le moteur le refuse.
 
 ### Héritage EP001 — ne pas utiliser
 
@@ -515,11 +525,13 @@ s'appelle `Bars`, pas `BarChart`.
    seule valeur, `axes.unite_y` partout.
 3. Chaque valeur que la voix énonce a sa révélation (`series_k_point_j`,
    `bar_g`, `band_g`…) sur le mot qui l'énonce.
-4. Chaque `declencheur` recopie `vo_fr` mot pour mot et n'y apparaît qu'une
+4. Barres et bandes : chaque catégorie de `donnees` est mentionnée par la
+   voix et a sa révélation ; aucune catégorie muette.
+5. Chaque `declencheur` recopie `vo_fr` mot pour mot et n'y apparaît qu'une
    fois.
-5. Aucun nombre à l'écran n'est calculé : chaque valeur écrite est dans
+6. Aucun nombre à l'écran n'est calculé : chaque valeur écrite est dans
    `donnees` ou dans un paramètre, et dans les sources.
-6. La première révélation de donnée tombe avant ~4,5 s.
-7. Aucun intervalle entre deux révélations ne laisse l'écran figé plus de
+7. La première révélation de donnée tombe avant ~4,5 s.
+8. Aucun intervalle entre deux révélations ne laisse l'écran figé plus de
    4 s.
-8. Aucune révélation pour le cadre, et aucun mot dans la scène.
+9. Aucune révélation pour le cadre, et aucun mot dans la scène.
