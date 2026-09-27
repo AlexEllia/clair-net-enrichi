@@ -176,7 +176,7 @@
    "validee_le": "25/09/2026",
    "motif": "regle le cadre cede",
    "regle_cadre": "v2",
-   "vue_a_l_ecran": false,
+   "vue_a_l_ecran": true,
    "images": 769,
    "clefs": [
     [
