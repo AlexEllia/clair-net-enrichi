@@ -1,6 +1,11 @@
 # Secret : la cle ElevenLabs ne va jamais dans le depot.
 config/secrets.env
 
+# Fichier de controle de Cowork : sa presence bloque la generation audio.
+# Jamais versionne - un retour en arriere pourrait le faire disparaitre et
+# debloquer une generation.
+episodes/*/STOP
+
 # Medias lourds : voix sources et rendus. Ils restent dans le dossier ; le
 # depot garde ce qui permet de les refaire et de verifier le moteur (scripts,
 # durees, alignements, code, references de non-regression).
