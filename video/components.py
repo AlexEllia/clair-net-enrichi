@@ -793,7 +793,8 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
     Aucun mot a l'ecran - titres d'axes et legendes arrivent par la couche
     overlay - mais les chiffres, oui : graduations des deux axes, valeur de
     chaque point source, valeur d'une annotation. Leur typographie suit la
-    langue du rendu (nombres.py).
+    langue du rendu (nombres.py). Une valeur identique a celle du point
+    precedent de la meme serie ne se reecrit pas, sauf si le script la nomme.
 
     Parametres du brief :
       interpolation  "exponentielle" | "lineaire" | "escalier"   OBLIGATOIRE
@@ -863,6 +864,7 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
     curves = []
     areas = {}
     placed = []          # etiquettes deja posees, que les suivantes evitent
+    repeats = set()      # points qui repetent la valeur du precedent de leur serie
     for i, s in enumerate(series):
         ys = _interp(s, xs, mode, growth)
         ln = VMobject(stroke_color=cols[i], stroke_width=5.6 if i == 0 else 4.4)
@@ -871,14 +873,24 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
         # elle n'en porte pas. Point et valeur forment une partie a part,
         # `series_k_point_j`, independante du trace.
         marks = []
+        prev_y = None
         for x, y in s:
             if origin and (x, y) == origin:
                 continue
+            mk = f"{prefix}_{i + 1}_point_{len(marks) + 1}"
             dot = Dot(fr.pt(x, y), radius=0.08, color=cols[i])
             lab = txt(nombres.fmt(y, yfmt), SZ_LABEL, cols[i], weight=SEMIBOLD)
             _place_label(lab, dot, placed, fr.px(x0) + 0.05, X_RIGHT)
-            placed.append(lab)
-            marks.append((f"{prefix}_{i + 1}_point_{len(marks) + 1}", x, VGroup(dot, lab)))
+            # Une valeur identique a celle du point precedent de la meme serie
+            # ne se reecrit pas - le point seul apparait -, sauf si la voix
+            # l'enonce (partie nommee par le script). Une ligne plate de
+            # versements ne porte ainsi sa valeur qu'une fois.
+            if prev_y is not None and y == prev_y:
+                repeats.add(mk)
+            else:
+                placed.append(lab)
+            prev_y = y
+            marks.append((mk, x, VGroup(dot, lab)))
         curves.append((ys, ln, marks))
         cues.point(f"{prefix}_{i + 1}_fin", fr.pt(*s[-1]))
         if fill:
@@ -990,7 +1002,8 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
                 continue
             t_arr = _arrival(kf, f)
             rev.times[mk] = t_arr
-            cues.at(t_arr, FadeIn(m, scale=0.6), rt=LABEL_RT)
+            shown = m[0] if (mk in repeats and mk not in rev.fixed) else m
+            cues.at(t_arr, FadeIn(shown, scale=0.6), rt=LABEL_RT)
     cues.meta["first_data"] = first_motion
 
     if cross is not None:
