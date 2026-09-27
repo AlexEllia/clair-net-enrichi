@@ -129,9 +129,13 @@ def values_S17(rows, cues):
 
 
 def frames(ep, sid):
+    """Nombre d'images du plan, depuis les bornes absolues de la timeline -
+    recalculee ici, sans dependre de build/ (hors depot)."""
     from build import FPS
-    tl = json.loads((PROJECT / "episodes" / ep / "build" / "timeline.json")
-                    .read_text(encoding="utf-8"))
+    from timeline import build_timeline
+    script, durations, ep_dir = _load(ep)
+    with contextlib.redirect_stderr(io.StringIO()):
+        tl = build_timeline(ep, script, durations, ep_dir)
     r = next(x for x in tl["segments"] if x["id"] == sid)
     return round(r["fin_s"] * FPS) - round(r["debut_s"] * FPS)
 

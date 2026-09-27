@@ -509,6 +509,20 @@ def _interp(pts, xs, mode, growth):
     return np.exp(np.interp(xs, kx, np.log(ky)))
 
 
+def _warn_unnamed(sid, keys, rev):
+    """Barres et bandes : une categorie que la voix ne mentionne pas ne figure
+    pas dans `donnees` (CATALOGUE, R9). Une categorie sans revelation, dans un
+    plan cale par le script, est donc une erreur du script : signalee, puis
+    placee entre ses voisines (voir _named_times)."""
+    if not rev.fixed:
+        return
+    for k in keys:
+        if k not in rev.fixed:
+            print(f"[ATTENTION] {sid} : {k} sans revelation - une categorie que la voix ne "
+                  f"mentionne pas ne doit pas figurer dans donnees (CATALOGUE, R9)",
+                  file=sys.stderr, flush=True)
+
+
 def _named_times(keys, rev):
     """Rendez-vous de parties successives (barres, bandes).
 
@@ -1540,6 +1554,7 @@ def Bars(seg, cues):
     # l'instant du mot. Sa croissance est un trace, jusqu'a CONTINUOUS_MAX : la
     # barre suivante commence a monter pendant que la voix parle encore de la
     # precedente. Le mouvement anticipe, l'information attend.
+    _warn_unnamed(sid, order, rev)
     times = _named_times(order, rev)
     tracks = {k: [(1.0, times[k])] for k in order}
     frame_end = _frame_end(tracks)
@@ -1583,6 +1598,7 @@ def Bars(seg, cues):
 # =============================================================================
 
 AREA_MODES = ("aires", "bandes")
+AIRES_DISPONIBLE = False   # mode "aires" en attente de son plan pilote, hors catalogue
 BAND_BOUNDS = ("plancher", "plafond")
 
 
@@ -1601,6 +1617,9 @@ def Areas(seg, cues):
         raise SystemExit(f"{seg.get('id', '?')} : manim_brief.mode obligatoire pour Areas, "
                          f"parmi {', '.join(AREA_MODES)} (recu {mode!r})")
     if mode == "aires":
+        if not AIRES_DISPONIBLE:
+            raise SystemExit(f"{seg.get('id', '?')} : Areas mode 'aires' en attente de "
+                             f"validation, hors catalogue ; seul le mode 'bandes' est disponible")
         return _line_points(seg, cues, prefix="area", fill=True, family="Areas")
     return _bands(seg, cues)
 
@@ -1705,6 +1724,7 @@ def _bands(seg, cues):
         order.append(key)
 
     rev = Reveal(seg, cues, order, t0=1.6, rt=PUNCTUAL_MAX, margin=0.6)
+    _warn_unnamed(sid, order, rev)
     times = _named_times(order, rev)
     tracks = {k: [(1.0, times[k])] for k in order}
     frame_end = _frame_end(tracks)

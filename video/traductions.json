@@ -1,5 +1,5 @@
 {
-  "_statut": "HERITAGE EP001b - table gelee : une entree par segment manim de l'EP001b, rien au-dela. A partir de l'EP002, le script ecrit directement une famille du catalogue et ses noms de parties. Chaque traduction utilisee est journalisee au rendu ([TRADUCTION]) ; le jour ou plus aucune n'apparait, ce fichier se supprime.",
+  "_statut": "HERITAGE EP001b - table CLOSE : aucune entree nouvelle. Elle ne sert plus qu'a rendre S09 et S17 de l'EP001b reproductibles, references de non-regression du moteur. L'EP001b ne sera pas rendu en entier ; a partir de l'EP001c, le script ecrit directement les familles du catalogue et leurs noms de parties.",
   "_role": "Ramene un nom d'usage invente par le generateur a une famille du catalogue : famille, parametres par defaut (le brief l'emporte s'il les donne), et nom de partie pour chaque element des revelations.",
   "two_growth_curves": {
     "famille": "LineChart",
@@ -40,20 +40,6 @@
       "bar_low_rate": "bar_2",
       "bar_mid_rate": "bar_3",
       "bar_high_rate": "bar_4"
-    }
-  },
-  "dispersion_bands_by_holding_period": {
-    "famille": "Areas",
-    "parametres": {
-      "mode": "bandes",
-      "borne": "plancher"
-    },
-    "elements": {
-      "chart_frame": "frame",
-      "band_5y": null,
-      "lower_bound_5y": "band_1",
-      "band_30y": null,
-      "lower_bound_30y": "band_4"
     }
   }
 }
