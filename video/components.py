@@ -22,7 +22,7 @@ from manim import *
 import numpy as np
 
 from style import (BG, INK, INK_SOFT, MUTED, RULE, RULE_SOFT, CONTRIB, INTEREST,
-                   TEAL, NEG, WHITE_DIM, PLOT_W, PLOT_H, Y_TOP,
+                   TEAL, NEG, WHITE_DIM, PLOT_W, PLOT_H, Y_TOP, X_RIGHT,
                    SZ_TITLE, SZ_BODY, SZ_LABEL, SZ_SOURCE,
                    txt, fade_up, euro, pct)
 from plotting import (Frame, epargne_mensuelle, calibrate, compound_index,
@@ -746,6 +746,31 @@ def _nice_step(raw):
     return next(m * mag for m in (1, 2, 2.5, 5, 10) if m * mag >= raw - 1e-9)
 
 
+def _boxes_overlap(a, b, pad=0.05):
+    return not (a.get_right()[0] + pad < b.get_left()[0] or b.get_right()[0] + pad < a.get_left()[0]
+                or a.get_top()[1] + pad < b.get_bottom()[1] or b.get_top()[1] + pad < a.get_bottom()[1])
+
+
+def _place_label(lab, dot, placed, xmin, xmax):
+    """Pose l'etiquette d'un point source.
+
+    Par defaut en haut a gauche du point - la place validee a l'ecran sur S09.
+    Si elle y franchirait l'axe vertical (premier point en debut d'axe), sortirait
+    du cadre, ou couvrirait une etiquette deja posee (deux series proches a la
+    meme abscisse), elle prend la premiere place libre : en haut a droite, en
+    bas a gauche, en bas a droite. Sans place libre, elle garde le defaut.
+    """
+    for vdir, hdir in ((UP, LEFT), (UP, RIGHT), (DOWN, LEFT), (DOWN, RIGHT)):
+        lab.next_to(dot, vdir, buff=0.14).shift(hdir * (lab.width / 2 + 0.06))
+        if lab.get_left()[0] < xmin or lab.get_right()[0] > xmax:
+            continue
+        if any(_boxes_overlap(lab, o) for o in placed):
+            continue
+        return lab
+    lab.next_to(dot, UP, buff=0.14).shift(LEFT * (lab.width / 2 + 0.06))
+    return lab
+
+
 def _ease_inverse(f):
     """Instant (0..1) ou ease_in_out_sine atteint la fraction f du trace."""
     return float(np.arccos(1 - 2 * np.clip(f, 0, 1)) / np.pi)
@@ -837,6 +862,7 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
     xs = np.linspace(x0, x1, 120)
     curves = []
     areas = {}
+    placed = []          # etiquettes deja posees, que les suivantes evitent
     for i, s in enumerate(series):
         ys = _interp(s, xs, mode, growth)
         ln = VMobject(stroke_color=cols[i], stroke_width=5.6 if i == 0 else 4.4)
@@ -850,7 +876,8 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
                 continue
             dot = Dot(fr.pt(x, y), radius=0.08, color=cols[i])
             lab = txt(nombres.fmt(y, yfmt), SZ_LABEL, cols[i], weight=SEMIBOLD)
-            lab.next_to(dot, UP, buff=0.14).shift(LEFT * (lab.width / 2 + 0.06))
+            _place_label(lab, dot, placed, fr.px(x0) + 0.05, X_RIGHT)
+            placed.append(lab)
             marks.append((f"{prefix}_{i + 1}_point_{len(marks) + 1}", x, VGroup(dot, lab)))
         curves.append((ys, ln, marks))
         cues.point(f"{prefix}_{i + 1}_fin", fr.pt(*s[-1]))
