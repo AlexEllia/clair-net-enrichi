@@ -119,6 +119,61 @@ def voice_track(ep_dir, order, durations, dest):
     return dest
 
 
+def _md5_variants(data):
+    """Empreintes md5 d'un meme contenu en fins de ligne d'origine, LF et
+    CRLF : git rend le catalogue en CRLF sur Windows et le garde en LF, sans
+    que son contenu change."""
+    import hashlib
+    lf = data.replace(b"\r\n", b"\n")
+    return {hashlib.md5(v).hexdigest() for v in (data, lf, lf.replace(b"\n", b"\r\n"))}
+
+
+def _catalogue_commit(md5):
+    """(commit, date) de la version de video/CATALOGUE.md dont l'empreinte est
+    `md5`, cherchee dans l'historique git - lecture seule. None si aucune."""
+    try:
+        log = subprocess.run(["git", "log", "--format=%h %ad", "--date=short", "--",
+                              "video/CATALOGUE.md"], cwd=PROJECT, capture_output=True,
+                             text=True, timeout=20)
+        for line in log.stdout.split("\n"):
+            if not line.strip():
+                continue
+            h, date = line.split(" ", 1)
+            blob = subprocess.run(["git", "show", f"{h}:video/CATALOGUE.md"], cwd=PROJECT,
+                                  capture_output=True, timeout=20)
+            if blob.returncode == 0 and md5 in _md5_variants(blob.stdout):
+                return h, date
+    except (OSError, subprocess.SubprocessError):
+        pass
+    return None
+
+
+def check_catalogue(ep, script):
+    """Le script a-t-il ete ecrit contre la version actuelle du catalogue ?
+
+    Chaque script.json porte meta.catalogue_md5, l'empreinte de
+    video/CATALOGUE.md que la redaction a lu. Un ecart n'est pas bloquant :
+    le catalogue a change depuis, et le script peut ne plus en suivre toutes
+    les regles. Renvoie la ligne a afficher dans le rapport de make check.
+    """
+    want = str((script.get("meta") or {}).get("catalogue_md5") or "").strip().lower()
+    if not want:
+        return "catalogue : le script ne porte pas meta.catalogue_md5, version d'origine inconnue"
+    if want in _md5_variants((ROOT / "CATALOGUE.md").read_bytes()):
+        return f"catalogue : script ecrit contre la version actuelle ({want[:8]})"
+    found = _catalogue_commit(want)
+    if found:
+        where = (f"celle du commit {found[0]} ({found[1]}) ; ce qui a change depuis : "
+                 f"git diff {found[0]} -- video/CATALOGUE.md")
+    else:
+        where = "une version absente de l'historique git (catalogue non commite ?)"
+    msg = (f"{ep} : le script a ete ecrit contre une autre version du catalogue - {where}. "
+           f"Il peut ne plus en suivre toutes les regles.")
+    from timeline import warn
+    warn(msg)
+    return f"catalogue : AUTRE VERSION ({want[:8]}) - {where}"
+
+
 def check_revelations(segments, durations):
     """Deux defauts distincts des plans manim, mesures sans rendu :
 
@@ -201,12 +256,17 @@ def main():
     durations = load_durations(ep_dir / "audio" / "durations.json")
     segments = script["segments"]
 
+    # Contre quelle version du catalogue le script a-t-il ete ecrit ? Un ecart
+    # est signale a chaque build, sans rien bloquer.
+    cat_line = check_catalogue(args.ep, script)
+
     # La timeline est la seule source des timecodes : ecrite avant tout rendu,
     # elle sert aussi aux sous-titres et au controle final.
     tl = build_timeline(args.ep, script, durations, ep_dir)
     write_timeline(tl, ep_dir / "build")
     if args.check:
         print_timeline(tl)
+        print(f"\n  {cat_line}")
         check_revelations(segments, durations)
         print(f"\n  ecrit : {ep_dir / 'build' / 'timeline.json'}")
         print(f"          {ep_dir / 'build' / 'chapitres.txt'}")
