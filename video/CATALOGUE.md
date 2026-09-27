@@ -111,7 +111,7 @@ impératives :
   `cent soixante cinq`) ;
 - **il est unique dans le segment** — la chaîne n'apparaît qu'une fois dans
   `vo_fr`. `trente` ne convient pas si la phrase dit aussi « trente-quatre » :
-  écris `trois cent trente`.
+  écris `trois cent trente-deux`.
 
 Choisis comme déclencheur le mot qui énonce la valeur elle-même, pas le mot
 qui l'annonce.
@@ -218,7 +218,7 @@ l'écran (`34,8 %` ou `34.8%`) dépend de la langue du rendu, pas du script.
 
 **Exemple réel** — le plan S09 de l'EP001b, validé à l'écran, réécrit dans
 ce format. Ne reprends pas ses données : « 330 » y est un arrondi, la valeur
-exacte à 5 % sur trente ans est 332,2 (1,05³⁰ = 4,3219). Il est vrai mais
+exacte à 5 % sur trente ans est 332,2 (1,05³⁰ = 4,3219). C'est un plan réel, mais
 **pas exemplaire** : la première valeur tombe à
 6,94 s, contre R5, parce que la phrase d'ouverture (« Ce n'est pas une
 opinion : l'AMF publie son propre calcul. ») ne porte aucun chiffre. Le
