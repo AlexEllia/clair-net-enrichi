@@ -217,7 +217,9 @@ l'écran (`34,8 %` ou `34.8%`) dépend de la langue du rendu, pas du script.
   l'arrivée.
 
 **Exemple réel** — le plan S09 de l'EP001b, validé à l'écran, réécrit dans
-ce format. Il est vrai mais **pas exemplaire** : la première valeur tombe à
+ce format. Ne reprends pas ses données : « 330 » y est un arrondi, la valeur
+exacte à 5 % sur trente ans est 332,2 (1,05³⁰ = 4,3219). Il est vrai mais
+**pas exemplaire** : la première valeur tombe à
 6,94 s, contre R5, parce que la phrase d'ouverture (« Ce n'est pas une
 opinion : l'AMF publie son propre calcul. ») ne porte aucun chiffre. Le
 tracé occupe l'attente, mais rien de chiffré ne se montre avant 7 s.
@@ -259,11 +261,11 @@ le recalage remplacera.
 
 ```json
 {
-  "vo_fr": "À cinq pour cent par an, un capital gagne cent soixante-cinq pour cent en vingt ans. À un pour cent, il gagne vingt-deux pour cent. Sur trente ans, l'écart se creuse : trois cent trente pour cent contre trente-quatre virgule huit. Le premier capital est multiplié par quatre virgule trois. C'est le calcul de l'AMF.",
+  "vo_fr": "À cinq pour cent par an, un capital gagne cent soixante-cinq pour cent en vingt ans. À un pour cent, il gagne vingt-deux pour cent. Sur trente ans, l'écart se creuse : trois cent trente-deux pour cent contre trente-quatre virgule huit. Le premier capital est multiplié par quatre virgule trois. C'est le calcul de l'AMF.",
   "type_visuel": "manim",
   "manim_brief": {
     "composant": "LineChart",
-    "donnees": [[20, 165], [20, 22], [30, 330], [30, 34.8]],
+    "donnees": [[20, 165], [20, 22], [30, 332.2], [30, 34.8]],
     "axes": {"unite_x": "years", "unite_y": "percent_growth"},
     "interpolation": "exponentielle",
     "origine": [0, 0],
@@ -272,7 +274,7 @@ le recalage remplacera.
     "revelations": [
       {"element": "series_1_point_1", "t_rel_s": 3.27, "declencheur": "cent soixante-cinq"},
       {"element": "series_2_point_1", "t_rel_s": 8.0, "declencheur": "vingt-deux"},
-      {"element": "series_1_point_2", "t_rel_s": 11.64, "declencheur": "trois cent trente"},
+      {"element": "series_1_point_2", "t_rel_s": 11.64, "declencheur": "trois cent trente-deux"},
       {"element": "series_2_point_2", "t_rel_s": 13.82, "declencheur": "trente-quatre virgule huit"},
       {"element": "factor", "t_rel_s": 17.09, "declencheur": "quatre virgule trois"}
     ]
