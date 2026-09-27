@@ -1,0 +1,17 @@
+# Secret : la cle ElevenLabs ne va jamais dans le depot.
+config/secrets.env
+
+# Medias lourds : voix sources et rendus. Ils restent dans le dossier ; le
+# depot garde ce qui permet de les refaire et de verifier le moteur (scripts,
+# durees, alignements, code, references de non-regression).
+*.wav
+*.mp3
+*.mp4
+
+# Sorties regenerables (media/ : cache de textes de Manim, cree la ou on le lance)
+episodes/*/build/
+episodes/*/video/
+media/
+video/media_exemple/
+__pycache__/
+*.pyc

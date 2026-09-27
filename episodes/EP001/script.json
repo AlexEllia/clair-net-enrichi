@@ -1,0 +1,926 @@
+{
+  "meta": {
+    "id_episode": "EP001",
+    "titre_principal": "L'année où votre argent gagne plus que vous n'épargnez",
+    "titres_alternatifs": [
+      "Intérêts composés : la date qui ne dépend pas de votre salaire",
+      "96 000 euros versés, 296 000 euros à l'arrivée : comment",
+      "Intérêts composés : la seule chose à comprendre pour débuter"
+    ],
+    "texte_miniature": "L'année de la bascule",
+    "description_youtube": "Il existe une année où votre argent vous rapporte plus, en douze mois, que ce que vous y avez versé pendant ces douze mois. Cette année a un numéro — et il ne dépend pas de la somme que vous mettez de côté. Épisode pour débuter : d'où vient la puissance des intérêts composés, à quoi ressemble vraiment la courbe les premières années, et pourquoi le nombre d'années compte plus que le montant. Tous les chiffres sont sourcés (AMF, Euronext, Banque de France, INSEE, ACPR, Service Public) et les simulations sont détaillées à l'écran.\n\nChapitres\n0:00 L'année dont personne ne parle\n0:49 D'où vient vraiment la puissance\n2:59 La forme du chemin : les premières années\n3:46 Le moment où les intérêts prennent le dessus\n4:53 Les deux questions honnêtes\n6:39 La bascule\n\nCe contenu est informatif et pédagogique. Il ne constitue ni un conseil en investissement ni une recommandation personnalisée. Les performances passées ne sont pas un indicateur fiable des résultats futurs. Les chiffres présentés sont des hypothèses de calcul.\n\nClair net enrichi",
+    "tags": [
+      "intérêts composés",
+      "épargne",
+      "débuter en bourse",
+      "finances personnelles",
+      "investir",
+      "liberté financière",
+      "PEA",
+      "assurance-vie",
+      "Livret A",
+      "dividendes",
+      "CAC 40",
+      "ETF",
+      "éducation financière",
+      "AMF",
+      "capitalisation"
+    ],
+    "mots_total": 1555,
+    "duree_estimee_s": 516.3,
+    "midrolls_timecodes": [
+      "3:11",
+      "5:35",
+      "7:42"
+    ]
+  },
+  "segments": [
+    {
+      "id": "S01",
+      "role": "hook",
+      "vo_fr": "Il existe une année, dans la vie d'un épargnant, où son argent lui rapporte plus en douze mois qu'il n'en a mis de côté pendant ces douze mois. Cette année a un numéro, et ce numéro est calculable. Le plus étonnant, c'est qu'il ne dépend pas du tout de la somme que vous versez chaque mois.",
+      "intention_visuelle": "Pattern interrupt d'ouverture : deux petites colonnes montent côte à côte sur une ligne de temps vide, l'une régulière, l'autre de plus en plus haute. L'instant où la seconde dépasse la première est laissé hors champ.",
+      "type_visuel": "manim",
+      "manim_brief": {
+        "composant": "BarRace",
+        "donnees": [
+          {
+            "series": "yearly_contributions",
+            "constant": true
+          },
+          {
+            "series": "yearly_interest",
+            "compounding": true
+          },
+          {
+            "crossover_hidden": true
+          }
+        ],
+        "axes": {
+          "x": "years",
+          "y": "amount per year",
+          "unite": "EUR"
+        },
+        "emphase": "the crossover moment deliberately cut off before it happens"
+      },
+      "overlay_texte": [
+        {
+          "ancre": "titre_haut",
+          "t_rel_s": 3.0,
+          "texte_fr": "Une année précise"
+        }
+      ],
+      "sources": [],
+      "midroll_apres": false,
+      "mots": 56,
+      "duree_estimee_s": 18.6
+    },
+    {
+      "id": "S02",
+      "role": "tension",
+      "vo_fr": "Si vous débutez, on vous a sûrement dit que tout dépendait du montant. Mettez plus de côté, vous aurez plus à la fin. C'est vrai pour le résultat final : plus vous mettez, plus vous aurez. Mais ce n'est pas vrai pour la date dont je viens de parler. Elle, elle obéit à autre chose.",
+      "intention_visuelle": "Typographie cinétique : une somme mensuelle s'affiche puis change plusieurs fois de valeur, tandis qu'un repère de date reste immobile.",
+      "type_visuel": "typo_cinetique",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "centre",
+          "t_rel_s": 7.0,
+          "texte_fr": "50 € · 200 € · 500 €"
+        }
+      ],
+      "sources": [],
+      "midroll_apres": false,
+      "mots": 54,
+      "duree_estimee_s": 17.9
+    },
+    {
+      "id": "S03",
+      "role": "tension",
+      "vo_fr": "La Banque de France mesure régulièrement les connaissances financières des Français. Son constat, mot pour mot : les Français maîtrisent insuffisamment le mécanisme des taux d'intérêt simples ou composés. Ce n'est pas un problème d'intelligence. C'est un problème d'intuition.",
+      "intention_visuelle": "Pattern interrupt : la citation s'affiche seule, sans habillage, tenue à l'écran plus longtemps que le reste.",
+      "type_visuel": "fond_anime",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "bas",
+          "t_rel_s": 5.0,
+          "texte_fr": "Banque de France, enquête de culture financière"
+        }
+      ],
+      "sources": [
+        "Banque de France, enquête de culture financière 2023 (verbatim) ; score global 12,82/20 en janvier 2026"
+      ],
+      "midroll_apres": false,
+      "mots": 38,
+      "duree_estimee_s": 12.6
+    },
+    {
+      "id": "S04",
+      "role": "acte1",
+      "vo_fr": "Commençons par le plus simple. Un intérêt composé, c'est un intérêt qui reçoit lui-même des intérêts. Ce n'est pas une théorie d'école : c'est écrit sur la fiche officielle du Livret A, vérifiée le 1er août 2026. Je cite : les intérêts ajoutés au capital en fin d'année produisent à leur tour des intérêts l'année suivante.",
+      "intention_visuelle": "Un socle qui reçoit une tranche par an, et chaque tranche nouvelle est légèrement plus épaisse que la précédente parce qu'elle pousse sur un socle plus large. Aucun chiffre.",
+      "type_visuel": "manim",
+      "manim_brief": {
+        "composant": "StackedBars",
+        "donnees": [
+          {
+            "year": 1
+          },
+          {
+            "year": 2
+          },
+          {
+            "year": 3
+          },
+          {
+            "year": 4
+          },
+          {
+            "year": 5
+          },
+          {
+            "year": 6
+          }
+        ],
+        "axes": {
+          "x": "years",
+          "y": "capital",
+          "unite": "EUR"
+        },
+        "emphase": "each yearly layer thicker than the one before it"
+      },
+      "overlay_texte": [
+        {
+          "ancre": "bas",
+          "t_rel_s": 15.0,
+          "texte_fr": "Service Public, fiche Livret A, vérifiée le 01/08/2026"
+        }
+      ],
+      "sources": [
+        "Service Public, fiche F2365 (Livret A), vérifiée le 01/08/2026 : « Les intérêts ajoutés au capital en fin d'année produisent à leur tour des intérêts l'année suivante »"
+      ],
+      "midroll_apres": false,
+      "mots": 54,
+      "duree_estimee_s": 17.9
+    },
+    {
+      "id": "S05",
+      "role": "acte1",
+      "vo_fr": "Tout tient dans un mot : réinvesti. Un intérêt que vous laissez dans le pot travaille pour vous l'année suivante. Un intérêt que vous sortez du pot ne travaille plus jamais. Ce n'est pas un détail, c'est la totalité du sujet. Et on peut mesurer très exactement ce que ce détail vaut, en euros.",
+      "intention_visuelle": "Typographie cinétique sur un seul mot, très grand, avec un silence visuel volontaire avant la dernière phrase.",
+      "type_visuel": "typo_cinetique",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "centre",
+          "t_rel_s": 2.0,
+          "texte_fr": "Réinvesti"
+        }
+      ],
+      "sources": [],
+      "midroll_apres": false,
+      "mots": 53,
+      "duree_estimee_s": 17.6
+    },
+    {
+      "id": "S06",
+      "role": "acte1",
+      "vo_fr": "Et si votre intuition résiste, c'est normal : elle est faite pour ça. Des chercheurs ont posé la question à des milliers de personnes. La grande majorité sous-estime la croissance composée et projette en ligne droite ce qui monte en courbe. Le phénomène porte même un nom : le biais de croissance exponentielle.",
+      "intention_visuelle": "Un tracé se dessine en ligne droite selon la prédiction moyenne, puis la vraie courbe le double par le haut et sort du cadre.",
+      "type_visuel": "typo_cinetique",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "centre",
+          "t_rel_s": 11.0,
+          "texte_fr": "Biais de croissance exponentielle"
+        }
+      ],
+      "sources": [
+        "Levy & Tasoff, Journal of the European Economic Association, 2016 ; Stango & Zinman, Journal of Finance, 2009 ; Goda et al., Economic Inquiry, 2019"
+      ],
+      "midroll_apres": false,
+      "mots": 51,
+      "duree_estimee_s": 16.9
+    },
+    {
+      "id": "S07",
+      "role": "acte1",
+      "vo_fr": "Prenons le CAC 40, l'indice qui suit les quarante plus grandes entreprises cotées à Paris. Il existe en deux versions. Celle que les journaux affichent ne compte que le prix des actions : depuis fin 1987, elle progresse de 5,52 % par an. L'autre version remet les dividendes dans le pot. Elle progresse de 8,81 % par an.",
+      "intention_visuelle": "Deux courbes partent du même point en 1987 et s'écartent lentement, la plus basse en gris, la plus haute accentuée. Le taux annuel s'inscrit au bout de chacune.",
+      "type_visuel": "manim",
+      "manim_brief": {
+        "composant": "LineChart",
+        "donnees": [
+          {
+            "series": "price_only",
+            "cagr": 5.52
+          },
+          {
+            "series": "gross_return",
+            "cagr": 8.81
+          },
+          {
+            "start_year": 1987,
+            "end_year": 2026
+          }
+        ],
+        "axes": {
+          "x": "years",
+          "y": "index value",
+          "unite": "index"
+        },
+        "emphase": "a gap that stays invisible for the first fifteen years then widens fast"
+      },
+      "overlay_texte": [
+        {
+          "ancre": "legende",
+          "t_rel_s": 8.0,
+          "texte_fr": "Sans les dividendes"
+        },
+        {
+          "ancre": "legende",
+          "t_rel_s": 13.0,
+          "texte_fr": "Dividendes réinvestis"
+        },
+        {
+          "ancre": "bas",
+          "t_rel_s": 17.0,
+          "texte_fr": "Euronext, données au 31/03/2026"
+        }
+      ],
+      "sources": [
+        "Euronext, CAC 40 Index Factsheet, données au 31/03/2026 : CAC 40 nu 5,52 %/an, CAC 40 GR 8,81 %/an depuis le 31/12/1987"
+      ],
+      "midroll_apres": false,
+      "mots": 57,
+      "duree_estimee_s": 18.9
+    },
+    {
+      "id": "S08",
+      "role": "acte1",
+      "vo_fr": "Un dividende, c'est la part du bénéfice qu'une entreprise verse à ses actionnaires. Trois points d'écart par an, cela paraît modeste. Sur trente-huit ans, mille euros placés fin 1987 seraient devenus environ sept mille huit cents euros sans les dividendes. Et environ vingt-cinq mille trois cents euros avec. Trois fois plus, pour les mêmes entreprises.",
+      "intention_visuelle": "Deux barres finales très inégales, avec le rapport de trois fois affiché entre elles. Pattern interrupt : la courbe se figera brusquement en barres.",
+      "type_visuel": "manim",
+      "manim_brief": {
+        "composant": "BarChart",
+        "donnees": [
+          {
+            "label": "A",
+            "value": 7800
+          },
+          {
+            "label": "B",
+            "value": 25300
+          }
+        ],
+        "axes": {
+          "x": "scenario",
+          "y": "final value",
+          "unite": "EUR"
+        },
+        "emphase": "a x3.2 ratio annotated between two bars built from the same starting amount"
+      },
+      "overlay_texte": [
+        {
+          "ancre": "titre_haut",
+          "t_rel_s": 6.0,
+          "texte_fr": "1 000 € placés fin 1987"
+        },
+        {
+          "ancre": "bas",
+          "t_rel_s": 16.0,
+          "texte_fr": "Simulation — hypothèse de calcul"
+        }
+      ],
+      "sources": [
+        "Euronext, CAC 40 Index Factsheet 31/03/2026 (taux) ; calcul Clair net enrichi sur 38,25 ans"
+      ],
+      "midroll_apres": false,
+      "mots": 55,
+      "duree_estimee_s": 18.3
+    },
+    {
+      "id": "S09",
+      "role": "acte1",
+      "vo_fr": "Le régulateur de la Bourse en France, l'Autorité des marchés financiers, a fait le calcul en sens inverse. Un capital rémunéré à 5 % par an est multiplié par 4,3 en trente ans. Le même capital à 1 % par an gagne 35 %. Pas 35 % par an : 35 % en tout, sur les trente ans.",
+      "intention_visuelle": "Typographie cinétique : les deux résultats s'inscrivent l'un sous l'autre, puis arrêt net sur la précision « en tout ».",
+      "type_visuel": "typo_cinetique",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "centre",
+          "t_rel_s": 8.0,
+          "texte_fr": "5 %/an → ×4,3"
+        },
+        {
+          "ancre": "centre",
+          "t_rel_s": 12.0,
+          "texte_fr": "1 %/an → +35 % en tout"
+        }
+      ],
+      "sources": [
+        "AMF, Stimuler la diversification de l'épargne de long terme en actions, décembre 2021 (calculs AMF)"
+      ],
+      "midroll_apres": false,
+      "mots": 57,
+      "duree_estimee_s": 18.9
+    },
+    {
+      "id": "S10",
+      "role": "acte1",
+      "vo_fr": "Une dernière chose sur le réinvestissement, et elle vient encore de l'AMF. Je cite : quelques séances positives ratées produisent à la longue une sous-performance importante, en raison de l'effet des intérêts cumulés. Et la suite est la phrase la plus utile de tout cet épisode : personne ne pouvant savoir quand les bonnes séances auront lieu, la seule manière de ne pas les rater est de rester investi.",
+      "intention_visuelle": "Fond animé sobre, la citation défile lentement en deux temps, avec un arrêt sur la dernière proposition.",
+      "type_visuel": "fond_anime",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "bas",
+          "t_rel_s": 16.0,
+          "texte_fr": "AMF, décembre 2021"
+        }
+      ],
+      "sources": [
+        "AMF, Stimuler la diversification de l'épargne de long terme en actions, décembre 2021, p. 28 (verbatim)"
+      ],
+      "midroll_apres": false,
+      "mots": 67,
+      "duree_estimee_s": 22.3
+    },
+    {
+      "id": "S11",
+      "role": "acte1",
+      "vo_fr": "Vous voyez donc le résultat. Ce que vous ne voyez pas encore, c'est la forme du chemin. Et c'est la forme qui explique pourquoi tant de gens abandonnent avant d'arriver à l'année qui nous intéresse.",
+      "intention_visuelle": "La courbe idéale s'affiche en pointillés, puis tout disparaît sauf ses cinq premières années, agrandies. Amorce ouverte.",
+      "type_visuel": "broll",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "titre_haut",
+          "t_rel_s": 7.0,
+          "texte_fr": "La forme du chemin"
+        }
+      ],
+      "sources": [],
+      "midroll_apres": true,
+      "mots": 35,
+      "duree_estimee_s": 11.6
+    },
+    {
+      "id": "S12",
+      "role": "acte2",
+      "vo_fr": "Prenons un exemple chiffré, et gardons-le jusqu'au bout. Deux cents euros par mois, à 5 % par an. C'est une hypothèse de calcul, pas une prévision, et c'est le taux que l'AMF utilise dans ses propres exemples. Première année : vos intérêts s'élèvent à cinquante-cinq euros. Cinquante-cinq euros, pour douze mois de patience.",
+      "intention_visuelle": "Pattern interrupt : un montant dérisoire s'affiche en très grand caractère, tenu longtemps, sans animation.",
+      "type_visuel": "manim",
+      "manim_brief": {
+        "composant": "BarChart",
+        "donnees": [
+          {
+            "year": 1,
+            "contributions": 2400,
+            "interest": 55
+          }
+        ],
+        "axes": {
+          "x": "year 1",
+          "y": "amount",
+          "unite": "EUR"
+        },
+        "emphase": "an almost invisible interest bar next to the contributions bar"
+      },
+      "overlay_texte": [
+        {
+          "ancre": "centre",
+          "t_rel_s": 13.0,
+          "texte_fr": "55 €"
+        }
+      ],
+      "sources": [
+        "Calcul Clair net enrichi : 200 €/mois, 5 %/an, capitalisation mensuelle ; taux d'hypothèse repris de l'AMF (décembre 2021)"
+      ],
+      "midroll_apres": false,
+      "mots": 52,
+      "duree_estimee_s": 17.3
+    },
+    {
+      "id": "S13",
+      "role": "acte2",
+      "vo_fr": "Au bout de cinq ans, vous avez versé douze mille euros et vous en avez treize mille cinq cents. Les intérêts représentent 11 % du total. À ce stade, la fameuse courbe exponentielle ressemble encore à une simple ligne droite. C'est ici que la plupart des gens décident que cela ne marche pas.",
+      "intention_visuelle": "Zoom serré sur les cinq premières années : la courbe est indiscernable d'une droite. Aucun effet visuel, volontairement plat.",
+      "type_visuel": "broll",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "bas",
+          "t_rel_s": 10.0,
+          "texte_fr": "Après 5 ans : 11 % d'intérêts"
+        }
+      ],
+      "sources": [
+        "Calcul Clair net enrichi : 200 €/mois à 5 %/an, 13 563 € après 5 ans dont 11,5 % d'intérêts"
+      ],
+      "midroll_apres": false,
+      "mots": 53,
+      "duree_estimee_s": 17.6
+    },
+    {
+      "id": "S14",
+      "role": "acte2",
+      "vo_fr": "Continuons. Au bout de dix ans, les intérêts font 22 % du total. Au bout de vingt ans, 41 %. Au bout de trente ans, 56 %. Au bout de quarante ans, 68 %. Passé un certain point, la majorité de votre argent ne vient plus de votre compte en banque.",
+      "intention_visuelle": "Deux aires empilées : les versements en bas, les intérêts au-dessus. La seconde aire rattrape puis dépasse la première.",
+      "type_visuel": "manim",
+      "manim_brief": {
+        "composant": "StackedAreaChart",
+        "donnees": [
+          {
+            "year": 10,
+            "interest_share": 22.3
+          },
+          {
+            "year": 20,
+            "interest_share": 40.9
+          },
+          {
+            "year": 30,
+            "interest_share": 55.8
+          },
+          {
+            "year": 40,
+            "interest_share": 67.6
+          }
+        ],
+        "axes": {
+          "x": "years",
+          "y": "share of capital",
+          "unite": "%"
+        },
+        "emphase": "the interest area overtaking the contributions area"
+      },
+      "overlay_texte": [
+        {
+          "ancre": "legende",
+          "t_rel_s": 3.0,
+          "texte_fr": "Vos versements"
+        },
+        {
+          "ancre": "legende",
+          "t_rel_s": 6.0,
+          "texte_fr": "Les intérêts"
+        },
+        {
+          "ancre": "bas",
+          "t_rel_s": 15.0,
+          "texte_fr": "Simulation : 200 €/mois, 5 %/an"
+        }
+      ],
+      "sources": [
+        "Calcul Clair net enrichi : part des intérêts 22,3 % à 10 ans, 40,9 % à 20 ans, 55,8 % à 30 ans, 67,6 % à 40 ans"
+      ],
+      "midroll_apres": false,
+      "mots": 51,
+      "duree_estimee_s": 16.9
+    },
+    {
+      "id": "S15",
+      "role": "acte2",
+      "vo_fr": "Et voici le chiffre qui résume tout. La première année, vos intérêts font cinquante-cinq euros. La quarantième année, ils font quatorze mille euros. Sur la même somme versée : deux mille quatre cents euros dans les deux cas. La quarantième année vous rapporte presque six fois ce que vous y mettez.",
+      "intention_visuelle": "Deux barres à la même échelle, la première quasi invisible, la seconde presque hors cadre. Pattern interrupt sur le rapport.",
+      "type_visuel": "manim",
+      "manim_brief": {
+        "composant": "BarChart",
+        "donnees": [
+          {
+            "year": 1,
+            "interest": 55
+          },
+          {
+            "year": 40,
+            "interest": 14057
+          },
+          {
+            "yearly_contribution": 2400
+          }
+        ],
+        "axes": {
+          "x": "year",
+          "y": "interest credited",
+          "unite": "EUR"
+        },
+        "emphase": "same scale for both bars so the first one is nearly invisible"
+      },
+      "overlay_texte": [
+        {
+          "ancre": "centre",
+          "t_rel_s": 11.0,
+          "texte_fr": "Année 40 : ×5,9 vos versements"
+        }
+      ],
+      "sources": [
+        "Calcul Clair net enrichi : intérêts crédités 55 € en année 1 et 14 057 € en année 40, pour 2 400 € versés chaque année"
+      ],
+      "midroll_apres": false,
+      "mots": 50,
+      "duree_estimee_s": 16.6
+    },
+    {
+      "id": "S16",
+      "role": "acte2",
+      "vo_fr": "Additionnez les quarante années. Vous avez versé quatre-vingt-seize mille euros. Vous en avez deux cent quatre-vingt-seize mille. Les intérêts valent deux fois vos versements. Vous n'avez pas gagné plus parce que vous avez mis plus. Vous avez gagné plus parce que vous avez attendu plus longtemps.",
+      "intention_visuelle": "Deux volumes côte à côte, ce qui a été versé et ce qui a été gagné, le second deux fois plus gros.",
+      "type_visuel": "typo_cinetique",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "centre",
+          "t_rel_s": 4.0,
+          "texte_fr": "96 000 € versés → 296 000 €"
+        }
+      ],
+      "sources": [
+        "Calcul Clair net enrichi : 296 505 € après 40 ans pour 96 000 € versés (200 €/mois, 5 %/an)"
+      ],
+      "midroll_apres": false,
+      "mots": 46,
+      "duree_estimee_s": 15.3
+    },
+    {
+      "id": "S17",
+      "role": "acte2",
+      "vo_fr": "Et si deux cents euros par mois vous paraissent hors de portée, refaites le calcul avec cinquante. Sur quarante ans, toujours à 5 % par an, vous auriez versé vingt-quatre mille euros et vous en auriez environ soixante-quatorze mille. Les proportions sont rigoureusement identiques. Le montant change le résultat. Il ne change pas la mécanique.",
+      "intention_visuelle": "Le même graphique que le précédent, redessiné à une échelle quatre fois plus petite, et dont la forme est superposable au premier.",
+      "type_visuel": "fond_anime",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "centre",
+          "t_rel_s": 9.0,
+          "texte_fr": "24 000 € versés → 74 000 €"
+        }
+      ],
+      "sources": [
+        "Calcul Clair net enrichi : 50 €/mois à 5 %/an sur 40 ans, 74 126 € pour 24 000 € versés"
+      ],
+      "midroll_apres": false,
+      "mots": 55,
+      "duree_estimee_s": 18.3
+    },
+    {
+      "id": "S18",
+      "role": "acte2",
+      "vo_fr": "Et arrêtons-nous une seconde sur ce que cela veut dire. À ce stade, votre capital vous verse quatorze mille euros par an tout seul, pendant que vous continuez d'en verser deux mille quatre cents. Autrement dit, votre argent vous rapporte presque six fois ce que vous lui apportez. C'est précisément ce que les gens appellent la liberté financière. Ce n'est pas un état d'esprit, c'est un croisement de courbes.",
+      "intention_visuelle": "Deux flèches de sens opposé et d'épaisseur très inégale : la petite entre, la grande sort. Aucun graphique, seulement le rapport de taille.",
+      "type_visuel": "fond_anime",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "centre",
+          "t_rel_s": 12.0,
+          "texte_fr": "Ce que votre capital verse > ce que vous versez"
+        }
+      ],
+      "sources": [
+        "Calcul Clair net enrichi : intérêts de 14 057 € en année 40 contre 2 400 € versés dans l'année (200 €/mois, 5 %/an)"
+      ],
+      "midroll_apres": false,
+      "mots": 69,
+      "duree_estimee_s": 22.9
+    },
+    {
+      "id": "S19",
+      "role": "acte2",
+      "vo_fr": "Alors si le temps fait presque tout le travail, il reste deux questions honnêtes. La première : est-ce que ça marche toujours ? La seconde : qu'est-ce qui peut déplacer la fameuse année ? Commençons par la première, parce que c'est celle qu'on escamote le plus souvent, et parce que c'est elle qui décide si vous tiendrez la distance ou non.",
+      "intention_visuelle": "Fond animé sobre, deux questions qui s'inscrivent sans réponse. Amorce ouverte.",
+      "type_visuel": "fond_anime",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "titre_haut",
+          "t_rel_s": 8.0,
+          "texte_fr": "Deux questions honnêtes"
+        }
+      ],
+      "sources": [],
+      "midroll_apres": true,
+      "mots": 57,
+      "duree_estimee_s": 18.9
+    },
+    {
+      "id": "S20",
+      "role": "acte3",
+      "vo_fr": "Est-ce que ça marche toujours ? Non, et ce n'est pas moi qui le dis : l'AMF le documente elle-même, sur ses propres données. Elle a classé les performances de la Bourse de Paris depuis 1950, dividendes réinvestis, après inflation. Sur cinq ans de détention, 1 % des cas étaient sous moins 13 % par an. Sur trente ans de détention, 99 % des cas dépassaient 2,4 % par an.",
+      "intention_visuelle": "Un nuage de points très étalé pour les courtes durées, qui se resserre en entonnoir quand la durée de détention augmente.",
+      "type_visuel": "manim",
+      "manim_brief": {
+        "composant": "FunnelScatter",
+        "donnees": [
+          {
+            "holding_years": 5,
+            "p1": -13.0
+          },
+          {
+            "holding_years": 10,
+            "p1": -4.8
+          },
+          {
+            "holding_years": 20,
+            "p1": -3.0
+          },
+          {
+            "holding_years": 30,
+            "p1": 2.4
+          }
+        ],
+        "axes": {
+          "x": "holding period",
+          "y": "annualised real return",
+          "unite": "%"
+        },
+        "emphase": "dispersion narrowing as the holding period lengthens"
+      },
+      "overlay_texte": [
+        {
+          "ancre": "legende",
+          "t_rel_s": 12.0,
+          "texte_fr": "5 ans"
+        },
+        {
+          "ancre": "legende",
+          "t_rel_s": 16.0,
+          "texte_fr": "30 ans"
+        },
+        {
+          "ancre": "bas",
+          "t_rel_s": 18.0,
+          "texte_fr": "AMF, 2021 — Bourse de Paris, après inflation"
+        }
+      ],
+      "sources": [
+        "AMF, décembre 2021 (calculs Harvest cités par l'AMF) : sur 5 ans 1 % des performances réelles annualisées < −13 % ; sur 30 ans 99 % > +2,4 %"
+      ],
+      "midroll_apres": false,
+      "mots": 68,
+      "duree_estimee_s": 22.6
+    },
+    {
+      "id": "S21",
+      "role": "acte3",
+      "vo_fr": "La durée ne supprime donc pas le risque : elle en resserre l'éventail. Et l'AMF pose sa propre limite, noir sur blanc : sur un marché concentré comme les actions françaises, vingt ans ne suffisent pas à éliminer totalement le risque. Sur les 168 placements de vingt ans commencés depuis 1988, tous ont fini gagnants après inflation. Six sur 168 ont fait moins bien que le Livret A.",
+      "intention_visuelle": "Cent soixante-huit petites barres alignées au-dessus de la ligne zéro, dont six changent de teinte. Le comptage s'arrête net sur les six.",
+      "type_visuel": "manim",
+      "manim_brief": {
+        "composant": "BarStrip",
+        "donnees": [
+          {
+            "count": 168,
+            "all_positive": true,
+            "highlighted": 6
+          }
+        ],
+        "axes": {
+          "x": "start year",
+          "y": "real result",
+          "unite": "%"
+        },
+        "emphase": "six highlighted bars among 168, all above the zero line"
+      },
+      "overlay_texte": [
+        {
+          "ancre": "bas",
+          "t_rel_s": 17.0,
+          "texte_fr": "168 placements de 20 ans depuis 1988 — AMF"
+        }
+      ],
+      "sources": [
+        "AMF, décembre 2021 : 168 placements de 20 ans en CAC 40 dividendes réinvestis depuis janvier 1988, tous positifs après inflation, 6 sur 168 sous le Livret A ; verbatim sur la limite des 20 ans"
+      ],
+      "midroll_apres": false,
+      "mots": 66,
+      "duree_estimee_s": 21.9
+    },
+    {
+      "id": "S22",
+      "role": "acte3",
+      "vo_fr": "Deuxième point d'honnêteté : il faut pouvoir commencer. L'Institut national de la statistique mesure combien les ménages épargnent réellement. Pour les 20 % les plus modestes, le taux d'épargne est négatif. Pour les 20 % suivants, il est nul. Et 28,5 % des personnes déclaraient en 2024 ne pas pouvoir faire face à une dépense imprévue de mille euros.",
+      "intention_visuelle": "B-roll sobre, sans chiffre à l'écran pendant les deux premières phrases, puis deux valeurs en bas de cadre. Registre ralenti.",
+      "type_visuel": "broll",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "bas",
+          "t_rel_s": 14.0,
+          "texte_fr": "Taux d'épargne : négatif, puis nul — INSEE"
+        }
+      ],
+      "sources": [
+        "INSEE, Insee Focus n° 338, 05/11/2024 : taux d'épargne nette −29 % (premier cinquième) et 0 % (deuxième cinquième) ; INSEE, Insee Focus n° 353 : 28,5 % en 2024"
+      ],
+      "midroll_apres": false,
+      "mots": 58,
+      "duree_estimee_s": 19.3
+    },
+    {
+      "id": "S23",
+      "role": "acte3",
+      "vo_fr": "Et si vous remboursez un crédit à la consommation, l'ordre des priorités change. Au deuxième trimestre 2026, le taux moyen pratiqué sur les petits prêts à la consommation était de 17,65 %, d'après la Banque de France. Les intérêts composés jouent aussi dans ce sens-là, et beaucoup plus vite. Rembourser vient avant placer. C'est la seule situation où le meilleur placement disponible n'est pas un placement.",
+      "intention_visuelle": "Deux rouages filmés au ralenti, l'un lent, l'autre nettement plus rapide. Registre concret, pas de graphique.",
+      "type_visuel": "broll",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "legende",
+          "t_rel_s": 10.0,
+          "texte_fr": "Petit crédit conso : 17,65 % par an"
+        }
+      ],
+      "sources": [
+        "Banque de France, Taux d'usure 2026-Q3, mis en ligne le 29/06/2026 : taux effectif moyen pratiqué au T2 2026 de 17,65 % sur les prêts ≤ 3 000 €"
+      ],
+      "midroll_apres": false,
+      "mots": 66,
+      "duree_estimee_s": 21.9
+    },
+    {
+      "id": "S24",
+      "role": "acte3",
+      "vo_fr": "Troisième point : le chiffre qui compte n'est pas celui qu'on vous annonce, c'est celui qui reste après l'inflation. Un exemple tout frais. Au premier août deux mille vingt-six, le Livret A rapporte un virgule soixante-dix pour cent. En juillet, les prix à la consommation montaient de deux virgule un pour cent sur un an. Le rendement affiché est positif ; le rendement réel, lui, ne l'est pas.",
+      "intention_visuelle": "Deux lignes horizontales très proches, celle des prix légèrement au-dessus de celle du rendement, l'espace entre les deux hachuré vers le bas.",
+      "type_visuel": "typo_cinetique",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "legende",
+          "t_rel_s": 9.0,
+          "texte_fr": "Livret A : 1,70 %"
+        },
+        {
+          "ancre": "legende",
+          "t_rel_s": 13.0,
+          "texte_fr": "Prix à la consommation : 2,1 %"
+        }
+      ],
+      "sources": [
+        "Arrêté du 28/07/2026, JO du 29/07/2026 : Livret A 1,70 % ; INSEE, Informations Rapides n° 188, juillet 2026 : +2,1 % sur un an"
+      ],
+      "midroll_apres": false,
+      "mots": 66,
+      "duree_estimee_s": 21.9
+    },
+    {
+      "id": "S25",
+      "role": "acte3",
+      "vo_fr": "Dernier point, et celui-là rassure. Toujours à 5 % par an : une pause de trois ans au bout de cinq ans coûte 14 % du capital final. Commencer trois ans plus tard en coûte 21 %. Ce qui compte n'est donc pas de ne jamais s'interrompre. C'est le nombre total d'années. Ce qui nous ramène à la question du début.",
+      "intention_visuelle": "Trois trajectoires superposées : la trajectoire continue, celle avec une pause au milieu, celle qui démarre plus tard. Amorce ouverte vers le payoff.",
+      "type_visuel": "manim",
+      "manim_brief": {
+        "composant": "LineChart",
+        "donnees": [
+          {
+            "series": "uninterrupted",
+            "final": 100.0
+          },
+          {
+            "series": "three_year_pause",
+            "final": 85.5
+          },
+          {
+            "series": "three_year_later_start",
+            "final": 79.0
+          }
+        ],
+        "axes": {
+          "x": "years",
+          "y": "final capital",
+          "unite": "%"
+        },
+        "emphase": "the late-start curve ending below the paused curve"
+      },
+      "overlay_texte": [
+        {
+          "ancre": "legende",
+          "t_rel_s": 9.0,
+          "texte_fr": "Pause de 3 ans : −14 %"
+        },
+        {
+          "ancre": "legende",
+          "t_rel_s": 12.0,
+          "texte_fr": "Départ 3 ans plus tard : −21 %"
+        }
+      ],
+      "sources": [
+        "Calcul Clair net enrichi : 200 €/mois sur 40 ans, pause de 3 ans après 5 ans −14 %, départ 3 ans plus tard −21 %"
+      ],
+      "midroll_apres": true,
+      "mots": 60,
+      "duree_estimee_s": 19.9
+    },
+    {
+      "id": "S26",
+      "role": "payoff",
+      "vo_fr": "Cette année, appelons-la la bascule : la première année où vos intérêts dépassent vos versements. À 5 % par an, elle tombe la quinzième année. Et voici pourquoi son numéro ne dépend pas du montant que vous versez.",
+      "intention_visuelle": "Les deux colonnes du hook reviennent et le croisement, cette fois, est montré et marqué d'un repère net. La boucle se referme.",
+      "type_visuel": "manim",
+      "manim_brief": {
+        "composant": "BarRace",
+        "donnees": [
+          {
+            "series": "yearly_contributions",
+            "constant": true
+          },
+          {
+            "series": "yearly_interest",
+            "compounding": true
+          },
+          {
+            "crossover_year": 15
+          }
+        ],
+        "axes": {
+          "x": "years",
+          "y": "amount per year",
+          "unite": "EUR"
+        },
+        "emphase": "the crossover finally shown, marked on year 15"
+      },
+      "overlay_texte": [
+        {
+          "ancre": "titre_haut",
+          "t_rel_s": 2.0,
+          "texte_fr": "La bascule"
+        }
+      ],
+      "sources": [
+        "Calcul Clair net enrichi : bascule en année 15 à 5 %/an, identique pour 50 €, 200 € et 500 € par mois"
+      ],
+      "midroll_apres": false,
+      "mots": 37,
+      "duree_estimee_s": 12.3
+    },
+    {
+      "id": "S27",
+      "role": "payoff",
+      "vo_fr": "Vos versements et vos intérêts grandissent au même rythme. Que vous mettiez cinquante euros ou cinq cents euros par mois, la bascule arrive la même année. Seul le rendement la déplace, et il la déplace beaucoup : la neuvième année à 8,81 %, la quinzième à 5 %, la vingt-huitième à 2,6 %, et la quarante-deuxième à 1,70 %. Voilà la vraie question quand on débute.",
+      "intention_visuelle": "Trois repères très éloignés sur un même axe de temps. Dernier plan : l'axe seul, avec les trois années.",
+      "type_visuel": "manim",
+      "manim_brief": {
+        "composant": "Timeline",
+        "donnees": [
+          {
+            "rate": 8.81,
+            "year": 9
+          },
+          {
+            "rate": 5.0,
+            "year": 15
+          },
+          {
+            "rate": 2.6,
+            "year": 28
+          },
+          {
+            "rate": 1.7,
+            "year": 42
+          }
+        ],
+        "axes": {
+          "x": "years",
+          "y": "",
+          "unite": "year"
+        },
+        "emphase": "four markers spread very unevenly along the same time axis"
+      },
+      "overlay_texte": [
+        {
+          "ancre": "bas",
+          "t_rel_s": 11.0,
+          "texte_fr": "Simulation — rendement net constant"
+        }
+      ],
+      "sources": [
+        "Calcul Clair net enrichi ; taux issus d'Euronext (8,81 %), ACPR (2,6 % fonds euros 2025) et de l'arrêté du 28/07/2026 (Livret A 1,70 %)"
+      ],
+      "midroll_apres": false,
+      "mots": 65,
+      "duree_estimee_s": 21.6
+    },
+    {
+      "id": "S28",
+      "role": "cta",
+      "vo_fr": "Vous savez maintenant quelle année guetter, et pourquoi elle ne dépend pas de votre salaire. Ce contenu est informatif et pédagogique. Il ne constitue ni un conseil en investissement ni une recommandation personnalisée. Les performances passées ne sont pas un indicateur fiable des résultats futurs, et les chiffres présentés sont des hypothèses de calcul. Abonnez-vous à Clair net enrichi.",
+      "intention_visuelle": "Fond animé sobre. Mention légale lisible à l'écran pendant toute la durée du segment.",
+      "type_visuel": "fond_anime",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "bas",
+          "t_rel_s": 2.0,
+          "texte_fr": "Contenu informatif et pédagogique — ni conseil en investissement ni recommandation personnalisée"
+        }
+      ],
+      "sources": [],
+      "midroll_apres": false,
+      "mots": 59,
+      "duree_estimee_s": 19.6
+    }
+  ]
+}

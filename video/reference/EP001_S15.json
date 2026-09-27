@@ -1,0 +1,39 @@
+{
+ "calendrier": [
+  [
+   1.1,
+   0.7,
+   "Create"
+  ],
+  [
+   1.7,
+   0.9,
+   "GrowFromEdge"
+  ],
+  [
+   1.8,
+   0.4,
+   "FadeIn"
+  ],
+  [
+   2.25,
+   0.5,
+   "FadeIn+FadeIn"
+  ],
+  [
+   3.2,
+   0.9,
+   "GrowFromEdge"
+  ],
+  [
+   3.75,
+   0.5,
+   "FadeIn+FadeIn"
+  ],
+  [
+   11.0,
+   0.6,
+   "FadeIn"
+  ]
+ ]
+}

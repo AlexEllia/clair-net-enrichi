@@ -1,0 +1,1387 @@
+{
+  "meta": {
+    "id_episode": "EP001b",
+    "titre_principal": "L'année où vos intérêts dépassent vos versements",
+    "titres_alternatifs": [
+      "Intérêts composés : l'année de bascule que personne ne calcule",
+      "50 € ou 500 € par mois : la même année de bascule",
+      "Intérêts composés : ce n'est pas le montant qui compte"
+    ],
+    "texte_miniature": "L'année de bascule",
+    "description_youtube": "Deux mille quatre cents euros versés dans l'année. Quatorze mille euros d'intérêts la même année. Hypothèse de calcul : 200 € par mois, 5 % par an, 40 ans. Mais le vrai moment clé arrive bien avant : l'année où vos intérêts dépassent vos versements, pour la première fois. Elle a un numéro, et il est le même que vous versiez cinquante euros par mois ou cinq cents.\n\nAu programme : le mécanisme officiel de la capitalisation, les chiffres de l'AMF sur l'effet de la durée, l'année exacte où les intérêts d'une année dépassent les versements de cette année-là, et surtout pourquoi le montant versé ne déplace pas cette date. Puis quatre limites, toutes sourcées : l'horizon réel des épargnants français, la dispersion des performances, la capacité d'épargne des ménages, et le crédit à la consommation.\n\nNiveau : débutant. Aucune notion préalable nécessaire.\n\nChapitres\n00:00 2 400 € versés, 14 000 € d'intérêts : la même année\n00:19 Pourquoi la première année déçoit\n00:51 Comment la capitalisation fabrique la puissance\n03:11 La bascule, et pourquoi le montant n'y change rien\n05:33 Les quatre limites, sans les cacher\n07:38 La réponse : la quinzième année\n08:10 Mention légale et rendez-vous\n\nSources principales : AMF (décembre 2021, mars 2026), Euronext (31/03/2026), ACPR (30/06/2026), INSEE, Banque de France, France Assureurs, Service Public.\n\nCe contenu est informatif et pédagogique. Il ne constitue ni un conseil en investissement ni une recommandation personnalisée. Les performances passées ne sont pas un indicateur fiable des résultats futurs.\n\nClair net enrichi",
+    "tags": [
+      "intérêts composés",
+      "épargne",
+      "investissement",
+      "finances personnelles",
+      "capitalisation",
+      "livret A",
+      "assurance-vie",
+      "AMF",
+      "épargne long terme",
+      "bascule",
+      "débutant",
+      "Clair net enrichi"
+    ],
+    "niveau": "debutant",
+    "mots_total": 1401,
+    "duree_estimee_s": 509.4,
+    "longueur_phrase_moyenne": 10.53,
+    "longueur_phrase_max": 21,
+    "midrolls_timecodes": [
+      "03:11",
+      "05:33",
+      "07:38"
+    ],
+    "voix": "Victoria - Content Creator",
+    "debit_mots_min": 165.1,
+    "volume_cible_mots": 1400
+  },
+  "segments": [
+    {
+      "id": "S01",
+      "role": "hook",
+      "vo_fr": "Deux mille quatre cents euros versés dans l'année. Quatorze mille euros d'intérêts la même année. Hypothèse de calcul : deux cents euros par mois, cinq pour cent par an, quarante ans. Mais le vrai moment clé arrive bien avant. L'année où vos intérêts dépassent vos versements, pour la première fois. Elle a un numéro.",
+      "mots": 53,
+      "duree_estimee_s": 19.3,
+      "intention_visuelle": "Pattern interrupt d'ouverture par choc de chiffres : deux montants juxtaposés, sans verbe d'introduction. Première phrase de huit mots, 2,9 s à 165,1 mots/min. Étiquette hypothèse de calcul posée dès la troisième phrase (conformité AMF). Boucle narrative ouverte : le numéro de l'année de bascule n'est pas donné, il ne l'est qu'en S26. Hook sans aucune tournure négative, à la demande de l'autrice. Typographie cinétique, les deux montants face à face.",
+      "type_visuel": "typo_cinetique",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "centre",
+          "t_rel_s": 0.0,
+          "texte_fr": "Deux mille quatre cents euros versés"
+        },
+        {
+          "ancre": "centre",
+          "t_rel_s": 2.9,
+          "texte_fr": "Quatorze mille euros d'intérêts"
+        },
+        {
+          "ancre": "bas",
+          "t_rel_s": 5.5,
+          "texte_fr": "Hypothèse de calcul — 200 € par mois, 5 % par an, 40 ans"
+        },
+        {
+          "ancre": "titre_haut",
+          "t_rel_s": 13.8,
+          "texte_fr": "L'année de bascule"
+        }
+      ],
+      "sources": [
+        "T2 — Simulation 9A (année 40 : 14 057 € d'intérêts contre 2 400 € versés, arrondi à quatorze mille)",
+        "T3 bis — Simulation 9A (200 €/mois, 5 %/an, 40 ans)",
+        "T3 — Simulation 9A (bascule à la 15e année, livrée en S26)"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S02",
+      "role": "tension",
+      "vo_fr": "Alors pourquoi personne ne la voit venir ? Parce que le début est décevant. Première année, deux cents euros par mois, cinq pour cent par an : les intérêts de l'année s'élèvent à cinquante-cinq euros. Face à deux mille quatre cents euros versés. Cinquante-cinq euros. De quoi se dire que ça ne vaut pas le coup. L'AMF, le régulateur de la Bourse en France, l'écrit noir sur blanc. Les épargnants raisonnent année par année, sans voir ce que fait le temps. Et c'est exactement là que le calcul les piège.",
+      "mots": 88,
+      "duree_estimee_s": 32.0,
+      "intention_visuelle": "Chiffre isolé répété, cinquante-cinq euros, en pattern interrupt. Sigle AMF explicité à sa première occurrence, comme l'exige le niveau débutant. Ouverture de la boucle secondaire 1 : pourquoi le début est-il si lent.",
+      "type_visuel": "fond_anime",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "titre_haut",
+          "t_rel_s": 4.7,
+          "texte_fr": "Année 1"
+        },
+        {
+          "ancre": "centre",
+          "t_rel_s": 10.5,
+          "texte_fr": "Cinquante-cinq euros d'intérêts"
+        },
+        {
+          "ancre": "centre",
+          "t_rel_s": 12.0,
+          "texte_fr": "Deux mille quatre cents euros versés"
+        }
+      ],
+      "sources": [
+        "T2 — Simulation 9A (calcul maison, 200 €/mois à 5 %/an)",
+        "R2 — AMF, Stimuler la diversification de l'épargne de long terme en actions, décembre 2021, p. 27"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S03",
+      "role": "acte1",
+      "vo_fr": "Un exemple qu'on garde jusqu'au bout : deux cents euros par mois, cinq pour cent par an. Et ce taux n'est pas sorti du chapeau : c'est celui que l'AMF utilise dans ses propres exemples. Ce n'est pas une promesse de rendement, c'est une hypothèse de calcul, rien d'autre.",
+      "mots": 47,
+      "duree_estimee_s": 17.1,
+      "intention_visuelle": "Pose de l'hypothèse de calcul, étiquetée comme telle pour la conformité AMF. Typographie en trois cartons : montant, taux, statut du chiffre.",
+      "type_visuel": "typo_cinetique",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "centre",
+          "t_rel_s": 2.2,
+          "texte_fr": "Deux cents euros par mois"
+        },
+        {
+          "ancre": "centre",
+          "t_rel_s": 4.0,
+          "texte_fr": "Cinq pour cent par an"
+        },
+        {
+          "ancre": "bas",
+          "t_rel_s": 15.3,
+          "texte_fr": "Hypothèse de calcul — taux utilisé par l'AMF, décembre 2021"
+        }
+      ],
+      "sources": [
+        "R4 — AMF, décembre 2021 (rendement de 5 % utilisé dans les exemples du régulateur)",
+        "Simulation 9A — hypothèses du script"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S04",
+      "role": "acte1",
+      "vo_fr": "Le mécanisme, vous l'avez déjà sur un Livret A. Chaque année, au trente et un décembre, les intérêts s'ajoutent à votre capital. Dès le premier janvier, ces intérêts produisent à leur tour des intérêts. C'est ça, la capitalisation. Un mot compliqué pour une idée simple : les intérêts restent dans le pot, et le pot grossit.",
+      "mots": 55,
+      "duree_estimee_s": 20.0,
+      "intention_visuelle": "Définition du seul terme technique de l'acte 1, la capitalisation, en langage courant. Support familier au public débutant : le Livret A, que presque tout le monde possède.",
+      "type_visuel": "fond_anime",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "titre_haut",
+          "t_rel_s": 13.1,
+          "texte_fr": "La capitalisation"
+        },
+        {
+          "ancre": "centre",
+          "t_rel_s": 17.1,
+          "texte_fr": "Les intérêts restent dans le pot"
+        }
+      ],
+      "sources": [
+        "R1 — Service Public F2365 (Livret A), vérifiée le 01/08/2026"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S05",
+      "role": "acte1",
+      "vo_fr": "Prenons les cinquante-cinq euros de la première année. Ils restent dans le pot. L'année suivante, ils rapportent à leur tour deux euros et soixante-quinze centimes. C'est ridicule, sauf que ces deux euros restent aussi, et que ce petit empilement dure quarante ans.",
+      "mots": 42,
+      "duree_estimee_s": 15.3,
+      "intention_visuelle": "Pattern interrupt par changement d'échelle : on descend au centime après avoir parlé en milliers. Rythme volontairement haché, deux phrases courtes avant une longue.",
+      "type_visuel": "typo_cinetique",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "centre",
+          "t_rel_s": 0.7,
+          "texte_fr": "Cinquante-cinq euros"
+        },
+        {
+          "ancre": "centre",
+          "t_rel_s": 7.3,
+          "texte_fr": "Deux euros soixante-quinze"
+        },
+        {
+          "ancre": "centre",
+          "t_rel_s": 13.8,
+          "texte_fr": "Et ainsi de suite"
+        }
+      ],
+      "sources": [
+        "T2 — Simulation 9A (calcul maison) ; 55 € × 5 % = 2,75 €"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S06",
+      "role": "acte1",
+      "vo_fr": "Regardez ce que ça donne, année après année. Année un : cinquante-cinq euros d'intérêts. Année cinq : cinq cent quatre-vingt-trois euros. Année dix : mille quatre cent huit euros. Année vingt : trois mille huit cent deux euros. Vous, vous versez toujours deux mille quatre cents euros par an. La ligne des versements est plate, l'autre monte.",
+      "mots": 53,
+      "duree_estimee_s": 19.3,
+      "intention_visuelle": "Première scène animée. Révélation progressive point par point : aucune valeur n'existe à l'écran avant que le chiffre ne soit prononcé. La ligne plate des versements n'arrive qu'à la fin, pour que le contraste soit une découverte et non un décor.",
+      "type_visuel": "manim",
+      "manim_brief": {
+        "composant": "annual_interest_line_chart",
+        "donnees": [
+          [
+            1,
+            55
+          ],
+          [
+            5,
+            583
+          ],
+          [
+            10,
+            1408
+          ],
+          [
+            20,
+            3802
+          ]
+        ],
+        "axes": {
+          "unite_x": "years",
+          "unite_y": "EUR_per_year"
+        },
+        "emphase": "growing_interest_versus_flat_contribution",
+        "revelations": [
+          {
+            "element": "grid_frame",
+            "t_rel_s": 0.0,
+            "declencheur": "Regardez"
+          },
+          {
+            "element": "interest_marker_y1",
+            "t_rel_s": 3.6,
+            "declencheur": "cinquante-cinq"
+          },
+          {
+            "element": "interest_marker_y5",
+            "t_rel_s": 6.2,
+            "declencheur": "quatre-vingt-trois"
+          },
+          {
+            "element": "interest_marker_y10",
+            "t_rel_s": 7.6,
+            "declencheur": "mille quatre cent huit"
+          },
+          {
+            "element": "interest_marker_y20",
+            "t_rel_s": 10.2,
+            "declencheur": "trois mille huit cent deux"
+          },
+          {
+            "element": "flat_contribution_line",
+            "t_rel_s": 18.2,
+            "declencheur": "plate"
+          }
+        ]
+      },
+      "overlay_texte": [
+        {
+          "ancre": "titre_haut",
+          "t_rel_s": 0.6,
+          "texte_fr": "Intérêts crédités dans l'année"
+        },
+        {
+          "ancre": "axe_x",
+          "t_rel_s": 0.6,
+          "texte_fr": "Années"
+        },
+        {
+          "ancre": "axe_y",
+          "t_rel_s": 0.6,
+          "texte_fr": "Euros par an"
+        },
+        {
+          "ancre": "legende",
+          "t_rel_s": 18.6,
+          "texte_fr": "Versements annuels"
+        }
+      ],
+      "sources": [
+        "T2 — Simulation 9A (calcul maison, 200 €/mois à 5 %/an)"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S07",
+      "role": "acte1",
+      "vo_fr": "Pourquoi si lent au départ ? Parce que les intérêts se calculent sur ce qu'il y a dans le pot. Et la première année, le pot est presque vide. Vous ne faites pas encore tourner la machine, vous la construisez. Gardez cette image en tête.",
+      "mots": 44,
+      "duree_estimee_s": 16.0,
+      "intention_visuelle": "Fermeture de la boucle secondaire 1, et ouverture de la boucle secondaire 2 par un rendez-vous explicite deux minutes plus loin. B-roll d'atelier, métaphore mécanique tenue jusqu'au payoff.",
+      "type_visuel": "broll",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "centre",
+          "t_rel_s": 13.1,
+          "texte_fr": "On construit avant de faire tourner"
+        }
+      ],
+      "sources": [
+        "R1 — Service Public F2365 (mécanisme officiel de la capitalisation)"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S08",
+      "role": "acte1",
+      "vo_fr": "Mesurons la machine autrement : quelle part de votre capital n'est pas sortie de votre poche ? À cinq ans : onze pour cent. À dix ans : vingt-deux pour cent. À vingt ans : quarante et un pour cent. À trente ans : cinquante-six pour cent. Passé trente ans, plus de la moitié de votre capital vient des intérêts.",
+      "mots": 54,
+      "duree_estimee_s": 19.6,
+      "intention_visuelle": "Barres empilées révélées une par une, au rythme des quatre horizons annoncés. Le repère de la moitié n'apparaît qu'à la dernière phrase, au moment où elle est franchie.",
+      "type_visuel": "manim",
+      "manim_brief": {
+        "composant": "stacked_share_bars",
+        "donnees": [
+          [
+            5,
+            11.5
+          ],
+          [
+            10,
+            22.3
+          ],
+          [
+            20,
+            40.9
+          ],
+          [
+            30,
+            55.8
+          ]
+        ],
+        "axes": {
+          "unite_x": "years",
+          "unite_y": "percent"
+        },
+        "emphase": "interest_share_crossing_half",
+        "revelations": [
+          {
+            "element": "bars_frame",
+            "t_rel_s": 0.0,
+            "declencheur": "Mesurons"
+          },
+          {
+            "element": "bar_5y",
+            "t_rel_s": 6.5,
+            "declencheur": "onze"
+          },
+          {
+            "element": "bar_10y",
+            "t_rel_s": 8.7,
+            "declencheur": "vingt-deux"
+          },
+          {
+            "element": "bar_20y",
+            "t_rel_s": 10.9,
+            "declencheur": "quarante et un"
+          },
+          {
+            "element": "bar_30y",
+            "t_rel_s": 13.8,
+            "declencheur": "cinquante-six"
+          },
+          {
+            "element": "half_marker",
+            "t_rel_s": 17.1,
+            "declencheur": "moitié"
+          }
+        ]
+      },
+      "overlay_texte": [
+        {
+          "ancre": "titre_haut",
+          "t_rel_s": 0.6,
+          "texte_fr": "Part des intérêts dans le capital"
+        },
+        {
+          "ancre": "axe_x",
+          "t_rel_s": 0.6,
+          "texte_fr": "Durée de détention"
+        },
+        {
+          "ancre": "axe_y",
+          "t_rel_s": 0.6,
+          "texte_fr": "Part du capital"
+        }
+      ],
+      "sources": [
+        "T1 — Simulation 9A (calcul maison, 200 €/mois à 5 %/an)"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S09",
+      "role": "acte1",
+      "vo_fr": "Ce n'est pas une opinion : l'AMF publie son propre calcul. À cinq pour cent par an, un capital gagne cent soixante-cinq pour cent en vingt ans. À un pour cent par an, il gagne vingt-deux pour cent. Et sur trente ans, le premier est multiplié par quatre virgule trois.",
+      "mots": 49,
+      "duree_estimee_s": 17.8,
+      "intention_visuelle": "Deux courbes, révélées l'une après l'autre : la seconde n'existe pas tant que la phrase qui l'introduit n'est pas prononcée. Chiffres du régulateur, pas du script.",
+      "type_visuel": "manim",
+      "manim_brief": {
+        "composant": "two_growth_curves",
+        "donnees": [
+          [
+            20,
+            165
+          ],
+          [
+            20,
+            22
+          ],
+          [
+            30,
+            330
+          ],
+          [
+            30,
+            34.8
+          ]
+        ],
+        "axes": {
+          "unite_x": "years",
+          "unite_y": "percent_growth"
+        },
+        "emphase": "gap_widening_with_duration",
+        "revelations": [
+          {
+            "element": "grid_frame",
+            "t_rel_s": 1.5,
+            "declencheur": "opinion"
+          },
+          {
+            "element": "curve_high_rate",
+            "t_rel_s": 6.9,
+            "declencheur": "cent soixante-cinq"
+          },
+          {
+            "element": "curve_low_rate",
+            "t_rel_s": 12.4,
+            "declencheur": "vingt-deux"
+          },
+          {
+            "element": "gap_bracket_y30",
+            "t_rel_s": 16.7,
+            "declencheur": "quatre virgule trois"
+          }
+        ]
+      },
+      "overlay_texte": [
+        {
+          "ancre": "titre_haut",
+          "t_rel_s": 0.6,
+          "texte_fr": "Deux rendements, même durée"
+        },
+        {
+          "ancre": "axe_x",
+          "t_rel_s": 0.6,
+          "texte_fr": "Années"
+        },
+        {
+          "ancre": "axe_y",
+          "t_rel_s": 0.6,
+          "texte_fr": "Gain en pourcentage"
+        },
+        {
+          "ancre": "legende",
+          "t_rel_s": 7.3,
+          "texte_fr": "Cinq pour cent par an"
+        },
+        {
+          "ancre": "legende",
+          "t_rel_s": 12.8,
+          "texte_fr": "Un pour cent par an"
+        },
+        {
+          "ancre": "bas",
+          "t_rel_s": 16.0,
+          "texte_fr": "Source : AMF, décembre 2021"
+        }
+      ],
+      "sources": [
+        "R4 — AMF, Stimuler la diversification…, décembre 2021 (calculs AMF)",
+        "S5 — Vérification indépendante : 1,05^30 = 4,32"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S10",
+      "role": "acte1",
+      "vo_fr": "Quatre points d'écart sur le rendement, et à l'arrivée, deux mondes différents. Le temps compte, donc, et le rendement compte énormément. Et le montant que vous versez chaque mois ? Beaucoup moins que vous ne l'imaginez. C'est là que ça devient bizarre.",
+      "mots": 41,
+      "duree_estimee_s": 14.9,
+      "intention_visuelle": "Fin d'acte 1. Amorce ouverte sur la contre-intuition de l'acte 2, sans la révéler. Mid-roll placé juste après : la curiosité est à son maximum.",
+      "type_visuel": "typo_cinetique",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "centre",
+          "t_rel_s": 7.6,
+          "texte_fr": "Et le montant ?"
+        }
+      ],
+      "sources": [
+        "R4 — AMF, décembre 2021"
+      ],
+      "midroll_apres": true
+    },
+    {
+      "id": "S11",
+      "role": "acte2",
+      "vo_fr": "Voilà la question à laquelle personne ne répond jamais : quelle est la première année où les intérêts dépassent les versements ? Pas le capital total, l'année seule. Cette année-là, votre capital vous donne plus que vous ne lui donnez. Appelons-la la bascule, parce que c'est elle qui change tout.",
+      "mots": 48,
+      "duree_estimee_s": 17.4,
+      "intention_visuelle": "Définition posée avant toute donnée, pour un public débutant. Le mot bascule est nommé ici et sert de fil jusqu'au payoff.",
+      "type_visuel": "typo_cinetique",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "centre",
+          "t_rel_s": 3.3,
+          "texte_fr": "Intérêts de l'année contre versements de l'année"
+        },
+        {
+          "ancre": "titre_haut",
+          "t_rel_s": 14.2,
+          "texte_fr": "La bascule"
+        }
+      ],
+      "sources": [
+        "T3 — Simulation 9A (définition retenue pour l'épisode)"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S12",
+      "role": "acte2",
+      "vo_fr": "Vous connaissez déjà cette bascule. Au Monopoly, tant que vos terrains sont nus, vous vivez de la case départ. Puis vous posez des maisons, puis des hôtels. Et arrive le tour où les loyers rapportent plus que la case départ. Vous ne jouez plus du tout la même partie.",
+      "mots": 49,
+      "duree_estimee_s": 17.8,
+      "intention_visuelle": "RÉFÉRENCE DE CULTURE POPULAIRE (1 sur 2 autorisées). Monopoly, jeu installé depuis 1935 et universellement compris, sans lien avec une actualité. Elle porte l'analogie centrale : la case départ est le versement fixe, les loyers sont les intérêts, et le tour où les loyers dépassent la case départ EST la bascule. Aucune citation d'œuvre, aucune marque en contexte négatif. Sans elle, la notion reste abstraite pour un débutant.",
+      "type_visuel": "broll",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "centre",
+          "t_rel_s": 11.6,
+          "texte_fr": "Les loyers dépassent la case départ"
+        }
+      ],
+      "sources": [
+        "Analogie pédagogique — aucun chiffre avancé"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S13",
+      "role": "acte2",
+      "vo_fr": "Personne ne vous la donne, cette date. Alors la voici. D'un côté, vos versements, toujours les mêmes ; de l'autre, les intérêts de l'année, qui montent. À cinq pour cent par an, les deux se croisent la quinzième année. Et après, l'écart ne fait que se creuser.",
+      "mots": 46,
+      "duree_estimee_s": 16.7,
+      "intention_visuelle": "Scène pivot de l'épisode. Les deux lignes apparaissent séparément, dans l'ordre où la voix les nomme, et le repère de croisement seulement au mot croisent. L'élargissement de l'écart est joué en dernier.",
+      "type_visuel": "manim",
+      "manim_brief": {
+        "composant": "crossing_lines_chart",
+        "donnees": [
+          [
+            1,
+            2400,
+            55
+          ],
+          [
+            5,
+            2400,
+            583
+          ],
+          [
+            10,
+            2400,
+            1408
+          ],
+          [
+            15,
+            2400,
+            2444
+          ],
+          [
+            20,
+            2400,
+            3802
+          ],
+          [
+            25,
+            2400,
+            5480
+          ]
+        ],
+        "axes": {
+          "unite_x": "years",
+          "unite_y": "EUR_per_year"
+        },
+        "emphase": "crossing_at_year_15",
+        "revelations": [
+          {
+            "element": "grid_frame",
+            "t_rel_s": 0.0,
+            "declencheur": "Personne"
+          },
+          {
+            "element": "contribution_line",
+            "t_rel_s": 4.7,
+            "declencheur": "versements"
+          },
+          {
+            "element": "interest_line",
+            "t_rel_s": 7.3,
+            "declencheur": "intérêts"
+          },
+          {
+            "element": "crossing_marker_y15",
+            "t_rel_s": 12.4,
+            "declencheur": "croisent"
+          },
+          {
+            "element": "widening_gap",
+            "t_rel_s": 16.4,
+            "declencheur": "creuser"
+          }
+        ]
+      },
+      "overlay_texte": [
+        {
+          "ancre": "titre_haut",
+          "t_rel_s": 0.6,
+          "texte_fr": "Versements et intérêts, année par année"
+        },
+        {
+          "ancre": "axe_x",
+          "t_rel_s": 0.6,
+          "texte_fr": "Années"
+        },
+        {
+          "ancre": "axe_y",
+          "t_rel_s": 0.6,
+          "texte_fr": "Euros par an"
+        },
+        {
+          "ancre": "legende",
+          "t_rel_s": 5.1,
+          "texte_fr": "Versements de l'année"
+        },
+        {
+          "ancre": "legende",
+          "t_rel_s": 7.7,
+          "texte_fr": "Intérêts de l'année"
+        }
+      ],
+      "sources": [
+        "T3 — Simulation 9A (bascule à la 15e année pour un rendement net de 5 %/an)"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S14",
+      "role": "acte2",
+      "vo_fr": "Regardons juste après la bascule. Année vingt : trois mille huit cents euros d'intérêts, contre deux mille quatre cents versés. Année trente : sept mille sept cents euros d'intérêts, soit trois fois vos versements de l'année. C'est le nombre d'années qui a tout fait.",
+      "mots": 42,
+      "duree_estimee_s": 15.3,
+      "intention_visuelle": "Paires de barres révélées horizon par horizon. Le rapport de trois fois n'est affiché qu'au moment où il est dit. Pattern interrupt : retour au concret du virement mensuel.",
+      "type_visuel": "manim",
+      "manim_brief": {
+        "composant": "paired_bars_by_horizon",
+        "donnees": [
+          [
+            20,
+            2400,
+            3802
+          ],
+          [
+            30,
+            2400,
+            7703
+          ]
+        ],
+        "axes": {
+          "unite_x": "years",
+          "unite_y": "EUR_per_year"
+        },
+        "emphase": "interest_overtaking_contribution",
+        "revelations": [
+          {
+            "element": "bars_frame",
+            "t_rel_s": 0.0,
+            "declencheur": "Regardons"
+          },
+          {
+            "element": "bars_year_20",
+            "t_rel_s": 1.8,
+            "declencheur": "Année vingt"
+          },
+          {
+            "element": "bars_year_30",
+            "t_rel_s": 6.9,
+            "declencheur": "Année trente"
+          },
+          {
+            "element": "ratio_marker_3x",
+            "t_rel_s": 10.2,
+            "declencheur": "trois fois"
+          }
+        ]
+      },
+      "overlay_texte": [
+        {
+          "ancre": "titre_haut",
+          "t_rel_s": 0.6,
+          "texte_fr": "Intérêts de l'année contre versements de l'année"
+        },
+        {
+          "ancre": "axe_x",
+          "t_rel_s": 0.6,
+          "texte_fr": "Horizon"
+        },
+        {
+          "ancre": "axe_y",
+          "t_rel_s": 0.6,
+          "texte_fr": "Euros"
+        }
+      ],
+      "sources": [
+        "T2 — Simulation 9A (calcul maison, 200 €/mois à 5 %/an)"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S15",
+      "role": "acte2",
+      "vo_fr": "Maintenant, la phrase la plus utile de tout cet épisode. Cette quinzième année ne dépend pas du montant que vous versez. Cinquante euros par mois : quinzième année. Cinq cents euros par mois : quinzième année. Le capital final change, évidemment ; la date de la bascule, non.",
+      "mots": 45,
+      "duree_estimee_s": 16.4,
+      "intention_visuelle": "Cœur de la thèse, et réponse à l'objection numéro un du débutant : je n'ai pas assez. Typographie plein écran, deux lignes miroir pour rendre l'égalité visible.",
+      "type_visuel": "typo_cinetique",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "centre",
+          "t_rel_s": 7.6,
+          "texte_fr": "Cinquante euros par mois : 15e année"
+        },
+        {
+          "ancre": "centre",
+          "t_rel_s": 9.8,
+          "texte_fr": "Cinq cents euros par mois : 15e année"
+        }
+      ],
+      "sources": [
+        "T3 — Propriété vérifiée numériquement pour 50, 200 et 500 €/mois"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S16",
+      "role": "acte2",
+      "vo_fr": "La raison est presque bête. Multipliez les versements par dix, et tout est multiplié par dix. Le moment où les deux lignes se croisent ne bouge pas d'un pouce. À cinquante euros par mois, quarante ans donnent vingt-quatre mille euros versés et soixante-quatorze mille euros de capital. Mêmes proportions, exactement.",
+      "mots": 50,
+      "duree_estimee_s": 18.2,
+      "intention_visuelle": "Démonstration visuelle de la proportionnalité : le graphique change d'échelle sous les yeux du spectateur, et le croisement reste au même endroit. Les valeurs finales n'apparaissent qu'à la dernière phrase.",
+      "type_visuel": "manim",
+      "manim_brief": {
+        "composant": "rescaling_twin_charts",
+        "donnees": [
+          [
+            50,
+            24000,
+            74126
+          ],
+          [
+            500,
+            240000,
+            741260
+          ]
+        ],
+        "axes": {
+          "unite_x": "years",
+          "unite_y": "EUR"
+        },
+        "emphase": "scale_invariant_crossing",
+        "revelations": [
+          {
+            "element": "chart_small_amount",
+            "t_rel_s": 0.4,
+            "declencheur": "raison"
+          },
+          {
+            "element": "twin_curves",
+            "t_rel_s": 1.8,
+            "declencheur": "Multipliez"
+          },
+          {
+            "element": "rescaled_scale",
+            "t_rel_s": 3.3,
+            "declencheur": "dix"
+          },
+          {
+            "element": "crossing_marker_unchanged",
+            "t_rel_s": 8.4,
+            "declencheur": "croisent"
+          },
+          {
+            "element": "end_value_labels",
+            "t_rel_s": 15.3,
+            "declencheur": "soixante-quatorze"
+          }
+        ]
+      },
+      "overlay_texte": [
+        {
+          "ancre": "titre_haut",
+          "t_rel_s": 0.6,
+          "texte_fr": "Même mécanique, deux échelles"
+        },
+        {
+          "ancre": "axe_x",
+          "t_rel_s": 0.6,
+          "texte_fr": "Années"
+        },
+        {
+          "ancre": "axe_y",
+          "t_rel_s": 0.6,
+          "texte_fr": "Euros"
+        }
+      ],
+      "sources": [
+        "T4 — Simulation 9A (50 €/mois, 40 ans à 5 %/an : 24 000 € versés, 74 126 € de capital)",
+        "T3 — Invariance de l'année de bascule au montant versé"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S17",
+      "role": "acte2",
+      "vo_fr": "Une seule chose déplace la bascule : le rendement. À un virgule sept pour cent, le taux du Livret A depuis août 2026, elle tombe la quarante-deuxième année. À deux virgule six, la vingt-huitième : c'est le rendement moyen des fonds en euros en 2025, la partie garantie de l'assurance-vie. À cinq pour cent, la quinzième. À huit virgule huit, la neuvième.",
+      "mots": 60,
+      "duree_estimee_s": 21.8,
+      "intention_visuelle": "Quatre barres révélées une par une, du rendement le plus faible au plus élevé. Terme technique fonds en euros défini dans la foulée, comme l'exige le niveau débutant.",
+      "type_visuel": "manim",
+      "manim_brief": {
+        "composant": "tipping_year_bars",
+        "donnees": [
+          [
+            1.7,
+            42
+          ],
+          [
+            2.6,
+            28
+          ],
+          [
+            5.0,
+            15
+          ],
+          [
+            8.81,
+            9
+          ]
+        ],
+        "axes": {
+          "unite_x": "percent_per_year",
+          "unite_y": "years"
+        },
+        "emphase": "tipping_year_driven_by_rate_only",
+        "revelations": [
+          {
+            "element": "bars_frame",
+            "t_rel_s": 0.4,
+            "declencheur": "seule"
+          },
+          {
+            "element": "bar_lowest_rate",
+            "t_rel_s": 9.1,
+            "declencheur": "quarante-deuxième"
+          },
+          {
+            "element": "bar_low_rate",
+            "t_rel_s": 11.6,
+            "declencheur": "vingt-huitième"
+          },
+          {
+            "element": "bar_mid_rate",
+            "t_rel_s": 19.3,
+            "declencheur": "quinzième"
+          },
+          {
+            "element": "bar_high_rate",
+            "t_rel_s": 21.4,
+            "declencheur": "neuvième"
+          }
+        ]
+      },
+      "overlay_texte": [
+        {
+          "ancre": "titre_haut",
+          "t_rel_s": 0.6,
+          "texte_fr": "Année de bascule selon le rendement"
+        },
+        {
+          "ancre": "axe_x",
+          "t_rel_s": 0.6,
+          "texte_fr": "Rendement net annuel"
+        },
+        {
+          "ancre": "axe_y",
+          "t_rel_s": 0.6,
+          "texte_fr": "Année de bascule"
+        }
+      ],
+      "sources": [
+        "R15 — Livret A à 1,70 % du 01/08/2026 au 31/01/2027 (arrêté du 28/07/2026)",
+        "R13 — ACPR, Analyses et synthèses n° 180, 30/06/2026 : fonds euros 2,63 % en 2025",
+        "R12 — Euronext, CAC 40 Index Factsheet, 31/03/2026 : CAC 40 GR 8,81 %/an depuis 1987",
+        "T3 — Simulation 9A (années de bascule calculées)"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S18",
+      "role": "acte2",
+      "vo_fr": "C'est la performance historique du CAC 40, l'indice des quarante plus grandes entreprises cotées à Paris. Dividendes réinvestis : le dividende, c'est la part du bénéfice qu'une entreprise reverse à ses actionnaires. Huit virgule huit pour cent par an depuis 1987, du passé, pas une promesse. Et ce passé, justement, mérite qu'on l'ouvre.",
+      "mots": 52,
+      "duree_estimee_s": 18.9,
+      "intention_visuelle": "Fin d'acte 2. CAC 40 et dividende définis à leur première occurrence, niveau débutant. Amorce ouverte : on annonce l'examen critique du passé sans dire ce qu'il contient.",
+      "type_visuel": "fond_anime",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "titre_haut",
+          "t_rel_s": 1.8,
+          "texte_fr": "CAC 40, dividendes réinvestis"
+        },
+        {
+          "ancre": "centre",
+          "t_rel_s": 11.3,
+          "texte_fr": "Huit virgule huit pour cent par an depuis 1987"
+        },
+        {
+          "ancre": "bas",
+          "t_rel_s": 14.5,
+          "texte_fr": "Source : Euronext, 31/03/2026"
+        }
+      ],
+      "sources": [
+        "R12 — Euronext, CAC 40 Index Factsheet, 31/03/2026"
+      ],
+      "midroll_apres": true
+    },
+    {
+      "id": "S19",
+      "role": "acte3",
+      "vo_fr": "Il faut maintenant parler de ce qui abîme ce beau calcul : quatre limites. Première limite : en France, un contrat d'assurance-vie dure en moyenne douze virgule huit ans. Or la bascule à cinq pour cent arrive la quinzième. En moyenne, le contrat s'arrête avant le moment intéressant.",
+      "mots": 46,
+      "duree_estimee_s": 16.7,
+      "intention_visuelle": "Ouverture de l'acte d'honnêteté, annoncé comme tel. Première limite : l'horizon réel, et non l'horizon théorique. Le contraste 12,8 contre 15 est le pattern interrupt du segment.",
+      "type_visuel": "typo_cinetique",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "centre",
+          "t_rel_s": 8.4,
+          "texte_fr": "En moyenne 12,8 ans"
+        },
+        {
+          "ancre": "centre",
+          "t_rel_s": 12.4,
+          "texte_fr": "Bascule : 15e année"
+        }
+      ],
+      "sources": [
+        "R9 — France Assureurs, L'assurance vie en 2025, publié le 27/01/2026",
+        "T3 — Simulation 9A (bascule à la 15e année à 5 %/an)"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S20",
+      "role": "acte3",
+      "vo_fr": "Deuxième limite : le rendement n'est pas stable. L'AMF a mesuré la Bourse de Paris sur soixante-dix ans. Sur cinq ans de détention, un cas sur cent tombe sous moins treize pour cent par an. Sur trente ans, quatre-vingt-dix-neuf cas sur cent dépassent deux virgule quatre pour cent par an.",
+      "mots": 49,
+      "duree_estimee_s": 17.8,
+      "intention_visuelle": "Bandes de dispersion révélées horizon par horizon : celle des trente ans n'apparaît qu'après celle des cinq ans, pour que le rétrécissement soit vu et non expliqué.",
+      "type_visuel": "manim",
+      "manim_brief": {
+        "composant": "dispersion_bands_by_holding_period",
+        "donnees": [
+          [
+            5,
+            -13.0
+          ],
+          [
+            10,
+            -4.8
+          ],
+          [
+            20,
+            -3.0
+          ],
+          [
+            30,
+            2.4
+          ]
+        ],
+        "axes": {
+          "unite_x": "years",
+          "unite_y": "percent_per_year"
+        },
+        "emphase": "dispersion_narrowing_with_holding_period",
+        "revelations": [
+          {
+            "element": "chart_frame",
+            "t_rel_s": 0.0,
+            "declencheur": "Deuxième"
+          },
+          {
+            "element": "band_5y",
+            "t_rel_s": 6.5,
+            "declencheur": "cinq ans de détention"
+          },
+          {
+            "element": "lower_bound_5y",
+            "t_rel_s": 10.5,
+            "declencheur": "treize"
+          },
+          {
+            "element": "band_30y",
+            "t_rel_s": 12.4,
+            "declencheur": "Sur trente ans"
+          },
+          {
+            "element": "lower_bound_30y",
+            "t_rel_s": 15.3,
+            "declencheur": "deux virgule quatre"
+          }
+        ]
+      },
+      "overlay_texte": [
+        {
+          "ancre": "titre_haut",
+          "t_rel_s": 0.6,
+          "texte_fr": "Dispersion des performances selon la durée"
+        },
+        {
+          "ancre": "axe_x",
+          "t_rel_s": 0.6,
+          "texte_fr": "Durée de détention"
+        },
+        {
+          "ancre": "axe_y",
+          "t_rel_s": 0.6,
+          "texte_fr": "Performance réelle annualisée"
+        }
+      ],
+      "sources": [
+        "R5 — AMF, décembre 2021 (calculs Harvest, CAC All-Tradable 1950-2020, performances réelles)"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S21",
+      "role": "acte3",
+      "vo_fr": "L'AMF l'écrit elle-même : sur les actions françaises, vingt ans ne suffisent pas à supprimer le risque. Sur cent soixante-huit placements de vingt ans depuis 1988, tous finissent positifs après inflation. Mais six d'entre eux font moins bien que le Livret A.",
+      "mots": 41,
+      "duree_estimee_s": 14.9,
+      "intention_visuelle": "Contre-argument porté par le régulateur lui-même, pas par le script : c'est ce qui empêche l'épisode de virer au publireportage. Chiffre isolé en pattern interrupt : six sur cent soixante-huit.",
+      "type_visuel": "fond_anime",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "centre",
+          "t_rel_s": 6.2,
+          "texte_fr": "Cent soixante-huit placements de vingt ans"
+        },
+        {
+          "ancre": "centre",
+          "t_rel_s": 11.3,
+          "texte_fr": "Six d'entre eux sous le Livret A"
+        }
+      ],
+      "sources": [
+        "R6 — AMF, décembre 2021 (limite posée par le régulateur sur l'horizon de vingt ans)",
+        "R7 — AMF, décembre 2021 (168 placements de 20 ans depuis 1988)"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S22",
+      "role": "acte3",
+      "vo_fr": "Troisième limite : commencer tôt n'est pas toujours un choix. En 2024, vingt-huit virgule cinq pour cent des personnes ne pouvaient pas faire face à une dépense imprévue de mille euros. C'est l'Institut national de la statistique qui le mesure. Chez les vingt pour cent des ménages les plus modestes, le taux d'épargne est négatif.",
+      "mots": 54,
+      "duree_estimee_s": 19.6,
+      "intention_visuelle": "Changement de registre assumé : on sort du calcul pour parler de contrainte réelle. INSEE explicité en toutes lettres, comme l'exige le niveau débutant. B-roll sobre, sans misérabilisme.",
+      "type_visuel": "broll",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "centre",
+          "t_rel_s": 4.0,
+          "texte_fr": "Face à mille euros imprévus : 28,5 % ne peuvent pas"
+        },
+        {
+          "ancre": "bas",
+          "t_rel_s": 11.3,
+          "texte_fr": "Source : INSEE, données 2024"
+        }
+      ],
+      "sources": [
+        "R30 — INSEE, Insee Focus n° 353 (dépense imprévue de 1 000 €, 2024)",
+        "R30 — INSEE, Insee Focus n° 338, 05/11/2024 (taux d'épargne nette par cinquième de niveau de vie)"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S23",
+      "role": "acte3",
+      "vo_fr": "Quatrième limite : si vous avez un crédit à la consommation, la question ne se pose pas. Au deuxième trimestre 2026, un prêt de moins de trois mille euros coûtait près de dix-huit pour cent par an. Le rembourser, c'est gagner ce taux à coup sûr. Aucun placement ne propose ça.",
+      "mots": 50,
+      "duree_estimee_s": 18.2,
+      "intention_visuelle": "Le coût d'opportunité inversé, énoncé sans prescription : on décrit une comparaison de taux, on ne recommande rien. Chiffre isolé en typographie.",
+      "type_visuel": "typo_cinetique",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "centre",
+          "t_rel_s": 10.5,
+          "texte_fr": "Près de dix-huit pour cent par an"
+        },
+        {
+          "ancre": "bas",
+          "t_rel_s": 13.1,
+          "texte_fr": "Source : Banque de France, taux d'usure 2026-T3"
+        }
+      ],
+      "sources": [
+        "R31 — Banque de France, Taux d'usure 2026-Q3 (T2 2026, prêts ≤ 3 000 € : 17,65 % en moyenne)"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S24",
+      "role": "acte3",
+      "vo_fr": "Dernier point, et celui-là fait du bien. Beaucoup n'osent pas commencer, de peur de s'arrêter. Le calcul dit l'inverse. Une pause de trois ans après cinq années de versements coûte quatorze pour cent du capital final. Commencer trois ans plus tard en coûte vingt et un. S'arrêter en route coûte moins cher que ne pas partir.",
+      "mots": 56,
+      "duree_estimee_s": 20.4,
+      "intention_visuelle": "Sortie de l'acte 3 par une note actionnable et non anxiogène. Les deux barres de scénario n'apparaissent qu'au chiffre correspondant, la barre de référence en premier.",
+      "type_visuel": "manim",
+      "manim_brief": {
+        "composant": "scenario_bars",
+        "donnees": [
+          [
+            100,
+            0
+          ],
+          [
+            86,
+            -14
+          ],
+          [
+            79,
+            -21
+          ]
+        ],
+        "axes": {
+          "unite_x": "scenario_index",
+          "unite_y": "percent_of_baseline"
+        },
+        "emphase": "pause_cheaper_than_late_start",
+        "revelations": [
+          {
+            "element": "bars_frame",
+            "t_rel_s": 0.0,
+            "declencheur": "Dernier"
+          },
+          {
+            "element": "bar_baseline",
+            "t_rel_s": 5.8,
+            "declencheur": "calcul"
+          },
+          {
+            "element": "bar_pause",
+            "t_rel_s": 10.9,
+            "declencheur": "quatorze"
+          },
+          {
+            "element": "bar_late_start",
+            "t_rel_s": 15.6,
+            "declencheur": "vingt et un"
+          }
+        ]
+      },
+      "overlay_texte": [
+        {
+          "ancre": "titre_haut",
+          "t_rel_s": 0.6,
+          "texte_fr": "Capital final selon le scénario"
+        },
+        {
+          "ancre": "axe_x",
+          "t_rel_s": 0.6,
+          "texte_fr": "Scénario"
+        },
+        {
+          "ancre": "axe_y",
+          "t_rel_s": 0.6,
+          "texte_fr": "Part du capital de référence"
+        }
+      ],
+      "sources": [
+        "T6 — Simulation 9A (200 €/mois, 5 %/an, 40 ans : pause de 3 ans −14 %, départ retardé de 3 ans −21 %)"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S25",
+      "role": "acte3",
+      "vo_fr": "Alors où est le vrai levier ? Pas dans le montant, on l'a vu, ni dans une performance qu'on ne contrôle pas. Il reste une seule variable : le nombre d'années pendant lesquelles vous ne touchez à rien. Et ce nombre a une conséquence très concrète, qu'on peut chiffrer.",
+      "mots": 47,
+      "duree_estimee_s": 17.1,
+      "intention_visuelle": "Fin d'acte 3. Élimination par la négative, puis amorce ouverte sur le payoff. Mid-roll placé ici : la promesse du hook n'est toujours pas refermée.",
+      "type_visuel": "fond_anime",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "centre",
+          "t_rel_s": 9.4,
+          "texte_fr": "Le nombre d'années"
+        }
+      ],
+      "sources": [
+        "T3 — Simulation 9A",
+        "R4 — AMF, décembre 2021"
+      ],
+      "midroll_apres": true
+    },
+    {
+      "id": "S26",
+      "role": "payoff",
+      "vo_fr": "Cette année où vos intérêts dépassent vos versements ? C'est la quinzième, à cinq pour cent par an, avec des versements réguliers. Que vous mettiez cinquante euros ou cinq cents, le montant décide de ce que vous aurez. Il ne décide pas de la date.",
+      "mots": 44,
+      "duree_estimee_s": 16.0,
+      "intention_visuelle": "Fermeture de la boucle du hook, sur la formulation exacte de la première phrase. Le numéro promis à la septième seconde de l'épisode est enfin donné.",
+      "type_visuel": "typo_cinetique",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "centre",
+          "t_rel_s": 2.9,
+          "texte_fr": "La 15e année"
+        },
+        {
+          "ancre": "centre",
+          "t_rel_s": 13.4,
+          "texte_fr": "Le montant ne décide pas de la date"
+        }
+      ],
+      "sources": [
+        "T3 — Simulation 9A (bascule à la 15e année, invariante au montant versé)"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S27",
+      "role": "payoff",
+      "vo_fr": "Et si vous tenez quarante ans ? Quatre-vingt-seize mille euros versés, deux cent quatre-vingt-seize mille euros de capital. Cette année-là, les intérêts atteignent quatorze mille euros, presque six fois vos versements de l'année. Hypothèse de calcul, toujours ; mais la mécanique ne dépend d'aucune hypothèse.",
+      "mots": 43,
+      "duree_estimee_s": 15.6,
+      "intention_visuelle": "Dernière scène animée, révélation en trois temps : versements, puis capital, puis le rapport de six fois. Rappel de l'étiquette hypothèse de calcul, exigée par la conformité.",
+      "type_visuel": "manim",
+      "manim_brief": {
+        "composant": "contribution_versus_value_area",
+        "donnees": [
+          [
+            40,
+            96000,
+            296505
+          ],
+          [
+            40,
+            2400,
+            14057
+          ]
+        ],
+        "axes": {
+          "unite_x": "years",
+          "unite_y": "EUR"
+        },
+        "emphase": "interest_flow_versus_annual_contribution",
+        "revelations": [
+          {
+            "element": "chart_frame",
+            "t_rel_s": 1.1,
+            "declencheur": "tenez"
+          },
+          {
+            "element": "contribution_area",
+            "t_rel_s": 2.2,
+            "declencheur": "quatre-vingt-seize"
+          },
+          {
+            "element": "value_area",
+            "t_rel_s": 3.6,
+            "declencheur": "deux cent quatre-vingt-seize"
+          },
+          {
+            "element": "annual_interest_marker",
+            "t_rel_s": 8.0,
+            "declencheur": "quatorze mille"
+          },
+          {
+            "element": "ratio_marker",
+            "t_rel_s": 9.4,
+            "declencheur": "six fois"
+          }
+        ]
+      },
+      "overlay_texte": [
+        {
+          "ancre": "titre_haut",
+          "t_rel_s": 0.6,
+          "texte_fr": "Quarante ans, deux cents euros par mois"
+        },
+        {
+          "ancre": "axe_x",
+          "t_rel_s": 0.6,
+          "texte_fr": "Années"
+        },
+        {
+          "ancre": "axe_y",
+          "t_rel_s": 0.6,
+          "texte_fr": "Euros"
+        },
+        {
+          "ancre": "bas",
+          "t_rel_s": 11.6,
+          "texte_fr": "Hypothèse de calcul — 5 % par an"
+        }
+      ],
+      "sources": [
+        "T1 — Simulation 9A (40 ans : 96 000 € versés, 296 505 € de capital)",
+        "T3 bis — Simulation 9A (année 40 : 14 057 € d'intérêts contre 2 400 € versés)"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S28",
+      "role": "cta",
+      "vo_fr": "Ce contenu est informatif et pédagogique. Il ne constitue ni un conseil en investissement ni une recommandation personnalisée. Les performances passées ne sont pas un indicateur fiable des résultats futurs. Abonnez-vous : un sujet de finances personnelles décortiqué chaque semaine, sur Clair net enrichi. Et dites-moi en commentaire quelle est votre année de bascule.",
+      "mots": 53,
+      "duree_estimee_s": 19.3,
+      "intention_visuelle": "Mention légale en ouverture du segment, libellé réglementaire retenu pour les performances passées. Nom de la chaîne prononcé ici, et nulle part avant.",
+      "type_visuel": "fond_anime",
+      "manim_brief": null,
+      "overlay_texte": [
+        {
+          "ancre": "bas",
+          "t_rel_s": 0.5,
+          "texte_fr": "Contenu informatif — ni conseil en investissement, ni recommandation personnalisée"
+        },
+        {
+          "ancre": "centre",
+          "t_rel_s": 14.5,
+          "texte_fr": "Clair net enrichi"
+        }
+      ],
+      "sources": [
+        "R35 — Règlement délégué (UE) 2017/565, art. 44.4 d) (libellé réglementaire)",
+        "R37 — AMF, Position DOC-2008-23 (recommandation générale destinée au public)"
+      ],
+      "midroll_apres": false
+    }
+  ]
+}

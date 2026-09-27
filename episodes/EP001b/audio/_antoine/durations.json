@@ -1,0 +1,35 @@
+{
+  "S01": {
+    "duree_audio_s": 19.6,
+    "silence_apres_s": 1.0,
+    "duree_totale_s": 20.6
+  },
+  "S02": {
+    "duree_audio_s": 28.4,
+    "silence_apres_s": 1.0,
+    "duree_totale_s": 29.4
+  },
+  "S03": {
+    "duree_audio_s": 19.44,
+    "silence_apres_s": 0.45,
+    "duree_totale_s": 19.89
+  },
+  "S17": {
+    "duree_audio_s": 21.36,
+    "silence_apres_s": 0.45,
+    "duree_totale_s": 21.81
+  },
+  "S18": {
+    "duree_audio_s": 24.08,
+    "silence_apres_s": 1.0,
+    "duree_totale_s": 25.08
+  },
+  "_meta": {
+    "model_id": "eleven_v3",
+    "voice_id": "1a3lMdKLUcfcMtvN772u",
+    "format_source": "mp3_44100_192",
+    "wav": "44100 Hz mono 16 bits",
+    "stability": 0.5,
+    "regle": "le pipeline video se cale sur duree_totale_s ; le seuil des 485 s porte sur duree_audio_s"
+  }
+}

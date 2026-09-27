@@ -1,0 +1,215 @@
+{
+  "voice_id": "1a3lMdKLUcfcMtvN772u",
+  "model_id": "eleven_v3",
+  "output_format": "mp3_44100_192",
+  "voice_settings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "style": 0.35,
+    "use_speaker_boost": true,
+    "speed": 1.0
+  },
+  "segments": [
+    {
+      "id": "S01",
+      "texte_tts": "[curious] Il existe une année, dans la vie d'un épargnant, où son argent lui rapporte plus en douze mois qu'il n'en a mis de côté pendant ces douze mois. Cette année a un numéro, et ce numéro est calculable. Le plus étonnant, c'est qu'il ne dépend pas du tout de la somme que vous versez chaque mois.",
+      "fichier_sortie": "audio/S01.wav",
+      "previous_text": "",
+      "next_text": "[thoughtful] Si vous débutez, on vous a sûrement dit que tout dépendait du montant. Mettez plus de côté, vous aurez plus à la fin. C'est vrai pour le "
+    },
+    {
+      "id": "S02",
+      "texte_tts": "[thoughtful] Si vous débutez, on vous a sûrement dit que tout dépendait du montant. Mettez plus de côté, vous aurez plus à la fin. C'est vrai pour le résultat final : plus vous mettez, plus vous aurez. Mais ce n'est pas vrai pour la date dont je viens de parler. Elle, elle obéit à autre chose.",
+      "fichier_sortie": "audio/S02.wav",
+      "previous_text": "is. Cette année a un numéro, et ce numéro est calculable. Le plus étonnant, c'est qu'il ne dépend pas du tout de la somme que vous versez chaque mois.",
+      "next_text": "[thoughtful] La Banque de France mesure régulièrement les connaissances financières des Français. Son constat, mot pour mot : les Français maîtrisent "
+    },
+    {
+      "id": "S03",
+      "texte_tts": "[thoughtful] La Banque de France mesure régulièrement les connaissances financières des Français. Son constat, mot pour mot : les Français maîtrisent insuffisamment le mécanisme des taux d'intérêt simples ou composés. [serious] Ce n'est pas un problème d'intelligence. C'est un problème d'intuition.",
+      "fichier_sortie": "audio/S03.wav",
+      "previous_text": "ur le résultat final : plus vous mettez, plus vous aurez. Mais ce n'est pas vrai pour la date dont je viens de parler. Elle, elle obéit à autre chose.",
+      "next_text": "[thoughtful] Commençons par le plus simple. Un intérêt composé, c'est un intérêt qui reçoit lui-même des intérêts. Ce n'est pas une théorie d'école : "
+    },
+    {
+      "id": "S04",
+      "texte_tts": "[thoughtful] Commençons par le plus simple. Un intérêt composé, c'est un intérêt qui reçoit lui-même des intérêts. Ce n'est pas une théorie d'école : c'est écrit sur la fiche officielle du Livret A, vérifiée le premier août deux mille vingt-six. Je cite : les intérêts ajoutés au capital en fin d'année produisent à leur tour des intérêts l'année suivante.",
+      "fichier_sortie": "audio/S04.wav",
+      "previous_text": " insuffisamment le mécanisme des taux d'intérêt simples ou composés. [serious] Ce n'est pas un problème d'intelligence. C'est un problème d'intuition.",
+      "next_text": "[serious] Tout tient dans un mot : réinvesti. Un intérêt que vous laissez dans le pot travaille pour vous l'année suivante. Un intérêt que vous sortez"
+    },
+    {
+      "id": "S05",
+      "texte_tts": "[serious] Tout tient dans un mot : réinvesti. Un intérêt que vous laissez dans le pot travaille pour vous l'année suivante. Un intérêt que vous sortez du pot ne travaille plus jamais. Ce n'est pas un détail, c'est la totalité du sujet. Et on peut mesurer très exactement ce que ce détail vaut, en euros.",
+      "fichier_sortie": "audio/S05.wav",
+      "previous_text": "e le premier août deux mille vingt-six. Je cite : les intérêts ajoutés au capital en fin d'année produisent à leur tour des intérêts l'année suivante.",
+      "next_text": "[curious] Et si votre intuition résiste, c'est normal : elle est faite pour ça. Des chercheurs ont posé la question à des milliers de personnes. La gr"
+    },
+    {
+      "id": "S06",
+      "texte_tts": "[curious] Et si votre intuition résiste, c'est normal : elle est faite pour ça. Des chercheurs ont posé la question à des milliers de personnes. La grande majorité sous-estime la croissance composée et projette en ligne droite ce qui monte en courbe. Le phénomène porte même un nom : le biais de croissance exponentielle.",
+      "fichier_sortie": "audio/S06.wav",
+      "previous_text": " pot ne travaille plus jamais. Ce n'est pas un détail, c'est la totalité du sujet. Et on peut mesurer très exactement ce que ce détail vaut, en euros.",
+      "next_text": "[curious] Prenons le CAC quarante, l'indice qui suit les quarante plus grandes entreprises cotées à Paris. Il existe en deux versions. Celle que les j"
+    },
+    {
+      "id": "S07",
+      "texte_tts": "[curious] Prenons le CAC quarante, l'indice qui suit les quarante plus grandes entreprises cotées à Paris. Il existe en deux versions. Celle que les journaux affichent ne compte que le prix des actions : depuis fin mille neuf cent quatre-vingt-sept, elle progresse de cinq virgule cinquante-deux pour cent par an. L'autre version remet les dividendes dans le pot. Elle progresse de huit virgule quatre-vingt-un pour cent par an.",
+      "fichier_sortie": "audio/S07.wav",
+      "previous_text": "time la croissance composée et projette en ligne droite ce qui monte en courbe. Le phénomène porte même un nom : le biais de croissance exponentielle.",
+      "next_text": "Un dividende, c'est la part du bénéfice qu'une entreprise verse à ses actionnaires. Trois points d'écart par an, cela paraît modeste. Sur trente-huit "
+    },
+    {
+      "id": "S08",
+      "texte_tts": "Un dividende, c'est la part du bénéfice qu'une entreprise verse à ses actionnaires. Trois points d'écart par an, cela paraît modeste. Sur trente-huit ans, mille euros placés fin mille neuf cent quatre-vingt-sept seraient devenus environ sept mille huit cents euros sans les dividendes. Et environ vingt-cinq mille trois cents euros avec. Trois fois plus, pour les mêmes entreprises.",
+      "fichier_sortie": "audio/S08.wav",
+      "previous_text": "le cinquante-deux pour cent par an. L'autre version remet les dividendes dans le pot. Elle progresse de huit virgule quatre-vingt-un pour cent par an.",
+      "next_text": "[thoughtful] Le régulateur de la Bourse en France, l'Autorité des marchés financiers, a fait le calcul en sens inverse. Un capital rémunéré à cinq pou"
+    },
+    {
+      "id": "S09",
+      "texte_tts": "[thoughtful] Le régulateur de la Bourse en France, l'Autorité des marchés financiers, a fait le calcul en sens inverse. Un capital rémunéré à cinq pour cent par an est multiplié par quatre virgule trois en trente ans. Le même capital à un pour cent par an gagne trente-cinq pour cent. Pas trente-cinq pour cent par an : trente-cinq pour cent en tout, sur les trente ans.",
+      "fichier_sortie": "audio/S09.wav",
+      "previous_text": "iron sept mille huit cents euros sans les dividendes. Et environ vingt-cinq mille trois cents euros avec. Trois fois plus, pour les mêmes entreprises.",
+      "next_text": "[thoughtful] Une dernière chose sur le réinvestissement, et elle vient encore de l'AMF. Je cite : quelques séances positives ratées produisent à la lo"
+    },
+    {
+      "id": "S10",
+      "texte_tts": "[thoughtful] Une dernière chose sur le réinvestissement, et elle vient encore de l'AMF. Je cite : quelques séances positives ratées produisent à la longue une sous-performance importante, en raison de l'effet des intérêts cumulés. Et la suite est la phrase la plus utile de tout cet épisode : personne ne pouvant savoir quand les bonnes séances auront lieu, la seule manière de ne pas les rater est de rester investi.",
+      "fichier_sortie": "audio/S10.wav",
+      "previous_text": " même capital à un pour cent par an gagne trente-cinq pour cent. Pas trente-cinq pour cent par an : trente-cinq pour cent en tout, sur les trente ans.",
+      "next_text": "[curious] Vous voyez donc le résultat. Ce que vous ne voyez pas encore, c'est la forme du chemin. Et c'est la forme qui explique pourquoi tant de gens"
+    },
+    {
+      "id": "S11",
+      "texte_tts": "[curious] Vous voyez donc le résultat. Ce que vous ne voyez pas encore, c'est la forme du chemin. Et c'est la forme qui explique pourquoi tant de gens abandonnent avant d'arriver à l'année qui nous intéresse.",
+      "fichier_sortie": "audio/S11.wav",
+      "previous_text": "ile de tout cet épisode : personne ne pouvant savoir quand les bonnes séances auront lieu, la seule manière de ne pas les rater est de rester investi.",
+      "next_text": "[thoughtful] Prenons un exemple chiffré, et gardons-le jusqu'au bout. Deux cents euros par mois, à cinq pour cent par an. C'est une hypothèse de calcu"
+    },
+    {
+      "id": "S12",
+      "texte_tts": "[thoughtful] Prenons un exemple chiffré, et gardons-le jusqu'au bout. Deux cents euros par mois, à cinq pour cent par an. C'est une hypothèse de calcul, pas une prévision, et c'est le taux que l'AMF utilise dans ses propres exemples. Première année : vos intérêts s'élèvent à cinquante-cinq euros. Cinquante-cinq euros, pour douze mois de patience.",
+      "fichier_sortie": "audio/S12.wav",
+      "previous_text": "z pas encore, c'est la forme du chemin. Et c'est la forme qui explique pourquoi tant de gens abandonnent avant d'arriver à l'année qui nous intéresse.",
+      "next_text": "Au bout de cinq ans, vous avez versé douze mille euros et vous en avez treize mille cinq cents. Les intérêts représentent onze pour cent du total. À c"
+    },
+    {
+      "id": "S13",
+      "texte_tts": "Au bout de cinq ans, vous avez versé douze mille euros et vous en avez treize mille cinq cents. Les intérêts représentent onze pour cent du total. À ce stade, la fameuse courbe exponentielle ressemble encore à une simple ligne droite. [serious] C'est ici que la plupart des gens décident que cela ne marche pas.",
+      "fichier_sortie": "audio/S13.wav",
+      "previous_text": " utilise dans ses propres exemples. Première année : vos intérêts s'élèvent à cinquante-cinq euros. Cinquante-cinq euros, pour douze mois de patience.",
+      "next_text": "[thoughtful] Continuons. Au bout de dix ans, les intérêts font vingt-deux pour cent du total. Au bout de vingt ans, quarante et un pour cent. Au bout "
+    },
+    {
+      "id": "S14",
+      "texte_tts": "[thoughtful] Continuons. Au bout de dix ans, les intérêts font vingt-deux pour cent du total. Au bout de vingt ans, quarante et un pour cent. Au bout de trente ans, cinquante-six pour cent. Au bout de quarante ans, soixante-huit pour cent. Passé un certain point, la majorité de votre argent ne vient plus de votre compte en banque.",
+      "fichier_sortie": "audio/S14.wav",
+      "previous_text": " fameuse courbe exponentielle ressemble encore à une simple ligne droite. [serious] C'est ici que la plupart des gens décident que cela ne marche pas.",
+      "next_text": "[excited] Et voici le chiffre qui résume tout. La première année, vos intérêts font cinquante-cinq euros. La quarantième année, ils font quatorze mill"
+    },
+    {
+      "id": "S15",
+      "texte_tts": "[excited] Et voici le chiffre qui résume tout. La première année, vos intérêts font cinquante-cinq euros. La quarantième année, ils font quatorze mille euros. Sur la même somme versée : deux mille quatre cents euros dans les deux cas. La quarantième année vous rapporte presque six fois ce que vous y mettez.",
+      "fichier_sortie": "audio/S15.wav",
+      "previous_text": "r cent. Au bout de quarante ans, soixante-huit pour cent. Passé un certain point, la majorité de votre argent ne vient plus de votre compte en banque.",
+      "next_text": "Additionnez les quarante années. Vous avez versé quatre-vingt-seize mille euros. Vous en avez deux cent quatre-vingt-seize mille. Les intérêts valent "
+    },
+    {
+      "id": "S16",
+      "texte_tts": "Additionnez les quarante années. Vous avez versé quatre-vingt-seize mille euros. Vous en avez deux cent quatre-vingt-seize mille. Les intérêts valent deux fois vos versements. [serious] Vous n'avez pas gagné plus parce que vous avez mis plus. Vous avez gagné plus parce que vous avez attendu plus longtemps.",
+      "fichier_sortie": "audio/S16.wav",
+      "previous_text": " Sur la même somme versée : deux mille quatre cents euros dans les deux cas. La quarantième année vous rapporte presque six fois ce que vous y mettez.",
+      "next_text": "[warm] Et si deux cents euros par mois vous paraissent hors de portée, refaites le calcul avec cinquante. Sur quarante ans, toujours à cinq pour cent "
+    },
+    {
+      "id": "S17",
+      "texte_tts": "[warm] Et si deux cents euros par mois vous paraissent hors de portée, refaites le calcul avec cinquante. Sur quarante ans, toujours à cinq pour cent par an, vous auriez versé vingt-quatre mille euros et vous en auriez environ soixante-quatorze mille. Les proportions sont rigoureusement identiques. Le montant change le résultat. Il ne change pas la mécanique.",
+      "fichier_sortie": "audio/S17.wav",
+      "previous_text": "is vos versements. [serious] Vous n'avez pas gagné plus parce que vous avez mis plus. Vous avez gagné plus parce que vous avez attendu plus longtemps.",
+      "next_text": "[warm] Et arrêtons-nous une seconde sur ce que cela veut dire. À ce stade, votre capital vous verse quatorze mille euros par an tout seul, pendant que"
+    },
+    {
+      "id": "S18",
+      "texte_tts": "[warm] Et arrêtons-nous une seconde sur ce que cela veut dire. À ce stade, votre capital vous verse quatorze mille euros par an tout seul, pendant que vous continuez d'en verser deux mille quatre cents. Autrement dit, votre argent vous rapporte presque six fois ce que vous lui apportez. C'est précisément ce que les gens appellent la liberté financière. Ce n'est pas un état d'esprit, c'est un croisement de courbes.",
+      "fichier_sortie": "audio/S18.wav",
+      "previous_text": " auriez environ soixante-quatorze mille. Les proportions sont rigoureusement identiques. Le montant change le résultat. Il ne change pas la mécanique.",
+      "next_text": "[thoughtful] Alors si le temps fait presque tout le travail, il reste deux questions honnêtes. La première : est-ce que ça marche toujours ? La second"
+    },
+    {
+      "id": "S19",
+      "texte_tts": "[thoughtful] Alors si le temps fait presque tout le travail, il reste deux questions honnêtes. La première : est-ce que ça marche toujours ? La seconde : qu'est-ce qui peut déplacer la fameuse année ? Commençons par la première, parce que c'est celle qu'on escamote le plus souvent, et parce que c'est elle qui décide si vous tiendrez la distance ou non.",
+      "fichier_sortie": "audio/S19.wav",
+      "previous_text": "e vous lui apportez. C'est précisément ce que les gens appellent la liberté financière. Ce n'est pas un état d'esprit, c'est un croisement de courbes.",
+      "next_text": "[serious] Est-ce que ça marche toujours ? Non, et ce n'est pas moi qui le dis : l'AMF le documente elle-même, sur ses propres données. Elle a classé l"
+    },
+    {
+      "id": "S20",
+      "texte_tts": "[serious] Est-ce que ça marche toujours ? Non, et ce n'est pas moi qui le dis : l'AMF le documente elle-même, sur ses propres données. Elle a classé les performances de la Bourse de Paris depuis mille neuf cent cinquante, dividendes réinvestis, après inflation. Sur cinq ans de détention, un pour cent des cas étaient sous moins treize pour cent par an. Sur trente ans de détention, quatre-vingt-dix-neuf pour cent des cas dépassaient deux virgule quatre pour cent par an.",
+      "fichier_sortie": "audio/S20.wav",
+      "previous_text": "mençons par la première, parce que c'est celle qu'on escamote le plus souvent, et parce que c'est elle qui décide si vous tiendrez la distance ou non.",
+      "next_text": "[thoughtful] La durée ne supprime donc pas le risque : elle en resserre l'éventail. Et l'AMF pose sa propre limite, noir sur blanc : sur un marché con"
+    },
+    {
+      "id": "S21",
+      "texte_tts": "[thoughtful] La durée ne supprime donc pas le risque : elle en resserre l'éventail. Et l'AMF pose sa propre limite, noir sur blanc : sur un marché concentré comme les actions françaises, vingt ans ne suffisent pas à éliminer totalement le risque. Sur les cent soixante-huit placements de vingt ans commencés depuis mille neuf cent quatre-vingt-huit, tous ont fini gagnants après inflation. Six sur cent soixante-huit ont fait moins bien que le Livret A.",
+      "fichier_sortie": "audio/S21.wav",
+      "previous_text": " moins treize pour cent par an. Sur trente ans de détention, quatre-vingt-dix-neuf pour cent des cas dépassaient deux virgule quatre pour cent par an.",
+      "next_text": "[serious] Deuxième point d'honnêteté : il faut pouvoir commencer. L'Institut national de la statistique mesure combien les ménages épargnent réellemen"
+    },
+    {
+      "id": "S22",
+      "texte_tts": "[serious] Deuxième point d'honnêteté : il faut pouvoir commencer. L'Institut national de la statistique mesure combien les ménages épargnent réellement. Pour les vingt pour cent les plus modestes, le taux d'épargne est négatif. Pour les vingt pour cent suivants, il est nul. Et vingt-huit virgule cinq pour cent des personnes déclaraient en deux mille vingt-quatre ne pas pouvoir faire face à une dépense imprévue de mille euros.",
+      "fichier_sortie": "audio/S22.wav",
+      "previous_text": "ncés depuis mille neuf cent quatre-vingt-huit, tous ont fini gagnants après inflation. Six sur cent soixante-huit ont fait moins bien que le Livret A.",
+      "next_text": "[serious] Et si vous remboursez un crédit à la consommation, l'ordre des priorités change. Au deuxième trimestre deux mille vingt-six, le taux moyen p"
+    },
+    {
+      "id": "S23",
+      "texte_tts": "[serious] Et si vous remboursez un crédit à la consommation, l'ordre des priorités change. Au deuxième trimestre deux mille vingt-six, le taux moyen pratiqué sur les petits prêts à la consommation était de dix-sept virgule soixante-cinq pour cent, d'après la Banque de France. Les intérêts composés jouent aussi dans ce sens-là, et beaucoup plus vite. Rembourser vient avant placer. C'est la seule situation où le meilleur placement disponible n'est pas un placement.",
+      "fichier_sortie": "audio/S23.wav",
+      "previous_text": "ingt-huit virgule cinq pour cent des personnes déclaraient en deux mille vingt-quatre ne pas pouvoir faire face à une dépense imprévue de mille euros.",
+      "next_text": "[thoughtful] Troisième point : le chiffre qui compte n'est pas celui qu'on vous annonce, c'est celui qui reste après l'inflation. Un exemple tout frai"
+    },
+    {
+      "id": "S24",
+      "texte_tts": "[thoughtful] Troisième point : le chiffre qui compte n'est pas celui qu'on vous annonce, c'est celui qui reste après l'inflation. Un exemple tout frais. Au premier août deux mille vingt-six, le Livret A rapporte un virgule soixante-dix pour cent. En juillet, les prix à la consommation montaient de deux virgule un pour cent sur un an. Le rendement affiché est positif ; le rendement réel, lui, ne l'est pas.",
+      "fichier_sortie": "audio/S24.wav",
+      "previous_text": "ce sens-là, et beaucoup plus vite. Rembourser vient avant placer. C'est la seule situation où le meilleur placement disponible n'est pas un placement.",
+      "next_text": "[warm] Dernier point, et celui-là rassure. Toujours à cinq pour cent par an : une pause de trois ans au bout de cinq ans coûte quatorze pour cent du c"
+    },
+    {
+      "id": "S25",
+      "texte_tts": "[warm] Dernier point, et celui-là rassure. Toujours à cinq pour cent par an : une pause de trois ans au bout de cinq ans coûte quatorze pour cent du capital final. Commencer trois ans plus tard en coûte vingt et un pour cent. Ce qui compte n'est donc pas de ne jamais s'interrompre. C'est le nombre total d'années. Ce qui nous ramène à la question du début.",
+      "fichier_sortie": "audio/S25.wav",
+      "previous_text": " les prix à la consommation montaient de deux virgule un pour cent sur un an. Le rendement affiché est positif ; le rendement réel, lui, ne l'est pas.",
+      "next_text": "[warm] Cette année, appelons-la la bascule : la première année où vos intérêts dépassent vos versements. À cinq pour cent par an, elle tombe la quinzi"
+    },
+    {
+      "id": "S26",
+      "texte_tts": "[warm] Cette année, appelons-la la bascule : la première année où vos intérêts dépassent vos versements. À cinq pour cent par an, elle tombe la quinzième année. Et voici pourquoi son numéro ne dépend pas du montant que vous versez.",
+      "fichier_sortie": "audio/S26.wav",
+      "previous_text": "t et un pour cent. Ce qui compte n'est donc pas de ne jamais s'interrompre. C'est le nombre total d'années. Ce qui nous ramène à la question du début.",
+      "next_text": "[warm] Vos versements et vos intérêts grandissent au même rythme. Que vous mettiez cinquante euros ou cinq cents euros par mois, la bascule arrive la "
+    },
+    {
+      "id": "S27",
+      "texte_tts": "[warm] Vos versements et vos intérêts grandissent au même rythme. Que vous mettiez cinquante euros ou cinq cents euros par mois, la bascule arrive la même année. Seul le rendement la déplace, et il la déplace beaucoup : la neuvième année à huit virgule quatre-vingt-un pour cent, la quinzième à cinq pour cent, la vingt-huitième à deux virgule six pour cent, et la quarante-deuxième à un virgule soixante-dix pour cent. Voilà la vraie question quand on débute.",
+      "fichier_sortie": "audio/S27.wav",
+      "previous_text": "passent vos versements. À cinq pour cent par an, elle tombe la quinzième année. Et voici pourquoi son numéro ne dépend pas du montant que vous versez.",
+      "next_text": "Vous savez maintenant quelle année guetter, et pourquoi elle ne dépend pas de votre salaire. Ce contenu est informatif et pédagogique. Il ne constitue"
+    },
+    {
+      "id": "S28",
+      "texte_tts": "Vous savez maintenant quelle année guetter, et pourquoi elle ne dépend pas de votre salaire. Ce contenu est informatif et pédagogique. Il ne constitue ni un conseil en investissement ni une recommandation personnalisée. Les performances passées ne sont pas un indicateur fiable des résultats futurs, et les chiffres présentés sont des hypothèses de calcul. Abonnez-vous à Clair net enrichi.",
+      "fichier_sortie": "audio/S28.wav",
+      "previous_text": " la vingt-huitième à deux virgule six pour cent, et la quarante-deuxième à un virgule soixante-dix pour cent. Voilà la vraie question quand on débute.",
+      "next_text": ""
+    }
+  ],
+  "_notes_techniques": {
+    "stability": "0.5 (equivalent numerique de 'natural' : l'API refuse la valeur textuelle)",
+    "output_format": "mp3_44100_192 puis conversion WAV 44,1 kHz mono 16 bits par ffmpeg. pcm_44100 est reserve au palier Pro sur ce compte.",
+    "conditionnement": "previous_text / next_text conserves dans ce fichier a titre documentaire mais NON transmis a l'API : eleven_v3 les refuse (HTTP 400, unsupported_model). Arbitrage valide : on garde les balises de direction de lecture, que multilingual_v2 vocaliserait."
+  }
+}

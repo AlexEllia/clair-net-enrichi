@@ -1,0 +1,34 @@
+{
+ "calendrier": [
+  [
+   1.7,
+   8.432,
+   "Create"
+  ],
+  [
+   5.494,
+   8.432,
+   "Create"
+  ],
+  [
+   9.0,
+   0.55,
+   "FadeIn"
+  ],
+  [
+   9.288,
+   8.432,
+   "Create"
+  ],
+  [
+   12.0,
+   0.55,
+   "FadeIn"
+  ],
+  [
+   17.72,
+   0.4,
+   "FadeIn+FadeIn+FadeIn+FadeIn+FadeIn+FadeIn"
+  ]
+ ]
+}

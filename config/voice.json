@@ -1,0 +1,34 @@
+{
+  "voice_id": "O31r762Gb3WFygrEOGh0",
+  "nom_voix": "Victoria - Content Creator",
+  "model_id": "eleven_v3",
+
+  "syllabes_par_seconde": null,
+  "calibre_sur": null,
+
+  "debit_mots_min": 154,
+  "debit_mesure_sur": "O31r762Gb3WFygrEOGh0",
+  "volume_cible_mots": 1310,
+
+  "_unite": "L'unite de reference est la SYLLABE PAR SECONDE, pas le mot par minute. D'un segment a l'autre le debit en mots/minute varie d'environ 45 %, celui en syllabes/seconde d'environ 7 % : les mots francais n'ont pas tous la meme longueur, et un script de finances personnelles est rempli de nombres ecrits en toutes lettres. debit_mots_min et volume_cible_mots ne sont qu'un ordre de grandeur pour demarrer la redaction.",
+
+  "_etat": "syllabes_par_seconde est NUL : la Phase 0 doit etre executee sur le dernier episode termine (EP001b) pour l'etablir. Cette mesure est gratuite et porte sur un echantillon reel de plusieurs minutes. Les valeurs en mots/minute ci-dessus viennent de l'EP001b (1400 mots pour 546 s) et servent de garde-fou provisoire en attendant.",
+
+  "_historique": {
+    "Antoine": {
+      "debit_mots_min": 190.3,
+      "mesure": "calibration courte sans balise",
+      "resultat": "EP001 a 7 min 13 s — sous le seuil des 8 min, mid-rolls perdus"
+    },
+    "Victoria (calibration courte)": {
+      "debit_mots_min": 165.1,
+      "mesure": "139 mots, sans balise, 50 s de parole",
+      "resultat": "surestimation de 7 % : EP001b annonce a 509 s, sorti a 546 s"
+    },
+    "Victoria (production EP001b)": {
+      "debit_mots_min": 154,
+      "mesure": "546 s de parole reelle, balises incluses",
+      "resultat": "reference courante"
+    }
+  }
+}

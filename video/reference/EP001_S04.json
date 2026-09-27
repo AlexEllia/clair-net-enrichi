@@ -1,0 +1,39 @@
+{
+ "calendrier": [
+  [
+   2.0,
+   1.4,
+   "AnimationGroup"
+  ],
+  [
+   3.92,
+   1.4,
+   "AnimationGroup"
+  ],
+  [
+   5.84,
+   1.4,
+   "AnimationGroup"
+  ],
+  [
+   7.76,
+   1.4,
+   "AnimationGroup"
+  ],
+  [
+   9.68,
+   1.4,
+   "AnimationGroup"
+  ],
+  [
+   11.6,
+   1.4,
+   "AnimationGroup"
+  ],
+  [
+   15.0,
+   0.5,
+   "FadeIn"
+  ]
+ ]
+}

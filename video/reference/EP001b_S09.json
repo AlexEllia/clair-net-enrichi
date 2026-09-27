@@ -1,0 +1,342 @@
+{
+ "statut": "VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
+ "courante": 2,
+ "versions": [
+  {
+   "version": 1,
+   "validee_le": "23/09/2026",
+   "motif": "premiere validation a l'ecran",
+   "regle_cadre": "v1",
+   "vue_a_l_ecran": true,
+   "images": 522,
+   "clefs": [
+    [
+     "construction du cadre, fin",
+     "frame_end",
+     4.0
+    ],
+    [
+     "depart de la courbe a 5 %",
+     "trace_1_debut",
+     4.2
+    ],
+    [
+     "annee 20, courbe a 5 % (165 %)",
+     "label_165",
+     6.94
+    ],
+    [
+     "annee 30, courbe a 5 % (330 %)",
+     "label_330",
+     8.31
+    ],
+    [
+     "courbe a 1 %, debut",
+     "trace_2_debut",
+     8.51
+    ],
+    [
+     "courbe a 1 %, fin",
+     "trace_2_fin",
+     13.33
+    ],
+    [
+     "22 %",
+     "label_22",
+     11.72
+    ],
+    [
+     "x4,3",
+     "facteur",
+     15.97
+    ]
+   ],
+   "calendrier": [
+    [
+     0.0,
+     0.64,
+     "Create"
+    ],
+    [
+     0.4,
+     0.64,
+     "AnimationGroup"
+    ],
+    [
+     0.6,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     0.6,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     0.6,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     0.8,
+     0.64,
+     "AnimationGroup"
+    ],
+    [
+     1.2,
+     0.64,
+     "AnimationGroup"
+    ],
+    [
+     1.6,
+     0.64,
+     "AnimationGroup"
+    ],
+    [
+     2.0,
+     0.64,
+     "AnimationGroup"
+    ],
+    [
+     2.4,
+     0.64,
+     "FadeIn"
+    ],
+    [
+     2.8,
+     0.64,
+     "FadeIn"
+    ],
+    [
+     3.2,
+     0.64,
+     "FadeIn"
+    ],
+    [
+     3.6,
+     0.4,
+     "FadeIn"
+    ],
+    [
+     4.2,
+     4.11,
+     "Create"
+    ],
+    [
+     6.94,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     7.34,
+     0.55,
+     "FadeIn"
+    ],
+    [
+     8.31,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     8.51,
+     4.815,
+     "Create"
+    ],
+    [
+     11.72,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     12.12,
+     0.55,
+     "FadeIn"
+    ],
+    [
+     13.325,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     15.17,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     15.97,
+     0.99,
+     "Create+FadeIn"
+    ]
+   ],
+   "archivee_le": "25/09/2026",
+   "archivee_pour": "regle le cadre cede"
+  },
+  {
+   "version": 2,
+   "validee_le": "25/09/2026",
+   "motif": "regle le cadre cede",
+   "regle_cadre": "v2",
+   "vue_a_l_ecran": true,
+   "images": 522,
+   "clefs": [
+    [
+     "construction du cadre, fin",
+     "frame_end",
+     2.74
+    ],
+    [
+     "depart de la courbe a 5 %",
+     "trace_1_debut",
+     2.94
+    ],
+    [
+     "annee 20, courbe a 5 % (165 %)",
+     "label_165",
+     6.94
+    ],
+    [
+     "annee 30, courbe a 5 % (330 %)",
+     "label_330",
+     8.94
+    ],
+    [
+     "courbe a 1 %, debut",
+     "trace_2_debut",
+     9.14
+    ],
+    [
+     "courbe a 1 %, fin",
+     "trace_2_fin",
+     13.01
+    ],
+    [
+     "22 %",
+     "label_22",
+     11.72
+    ],
+    [
+     "x4,3",
+     "facteur",
+     15.97
+    ]
+   ],
+   "calendrier": [
+    [
+     0.0,
+     0.438,
+     "Create"
+    ],
+    [
+     0.274,
+     0.438,
+     "AnimationGroup"
+    ],
+    [
+     0.548,
+     0.438,
+     "AnimationGroup"
+    ],
+    [
+     0.6,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     0.6,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     0.6,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     0.822,
+     0.438,
+     "AnimationGroup"
+    ],
+    [
+     1.096,
+     0.438,
+     "AnimationGroup"
+    ],
+    [
+     1.37,
+     0.438,
+     "AnimationGroup"
+    ],
+    [
+     1.644,
+     0.438,
+     "FadeIn"
+    ],
+    [
+     1.918,
+     0.438,
+     "FadeIn"
+    ],
+    [
+     2.192,
+     0.438,
+     "FadeIn"
+    ],
+    [
+     2.466,
+     0.274,
+     "FadeIn"
+    ],
+    [
+     2.94,
+     6.0,
+     "Create"
+    ],
+    [
+     6.94,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     7.34,
+     0.55,
+     "FadeIn"
+    ],
+    [
+     8.94,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     9.14,
+     3.87,
+     "Create"
+    ],
+    [
+     11.72,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     12.12,
+     0.55,
+     "FadeIn"
+    ],
+    [
+     13.01,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     15.17,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     15.97,
+     0.99,
+     "Create+FadeIn"
+    ]
+   ]
+  }
+ ]
+}
