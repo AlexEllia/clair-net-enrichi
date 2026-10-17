@@ -52,8 +52,9 @@ renuméroter les segments après la phase 2.
 
 **Quatre registres visuels**, selon `type_visuel` :
 
-- `manim` — un graphe, choisi par `manim_brief.composant`. Huit composants sont
-  implémentés dans `components.py`.
+- `manim` — un graphe, choisi par `manim_brief.composant`. Douze composants sont
+  implémentés dans `components.py` : les cinq familles du catalogue (`LineChart`,
+  `Bars`, `Areas`, `Comparaison`, `Flux`) et l'héritage de l'EP001.
 - `typo_cinetique` — le texte des overlays en grand, seul à l'écran.
 - `fond_anime` — un champ de points en dérive lente.
 - `broll` — des bandes d'horizon en parallaxe. **Ce ne sont pas des rushes :**
@@ -101,6 +102,8 @@ Les noms de parties, par composant :
 | `FunnelScatter` | `envelope`, `cloud`, `point_1`…`point_n` |
 | `BarStrip` | `strip_1`…`strip_k`, `tag` — la liste décide du nombre de tranches |
 | `Timeline` | `mark_1`…`mark_n` |
+| `Comparaison` | `value_1`…`value_n`, `pictos_k`, `suite` (traces) ; `gap`, `highlight` |
+| `Flux` | `node_k`, `link_k`, `highlight` (surgissements) |
 
 Ces noms partent dans le `manim_brief` : ils sont en anglais et sans accent,
 comme le reste du brief.
@@ -179,10 +182,10 @@ bandes du b-roll) ne compte pas : elle reste sous le seuil. Deux usages :
 ## Les familles pilotes
 
 Une famille nouvelle se rend d'abord sur un plan pilote, hors catalogue, avant
-d'être validée à l'écran. `Comparaison` et `Flux` en sont là : le build refuse
-qu'un `script.json` les demande. Leur brief est écrit dans `video/pilotes/`, et
-il remplace, pour ce seul rendu, les champs visuels du segment, sans toucher au
-script validé :
+d'être validée à l'écran. Tant qu'elle figure dans `PILOTES` (`components.py`),
+le build refuse qu'un `script.json` la demande. Son brief est écrit dans
+`video/pilotes/`, et il remplace, pour ce seul rendu, les champs visuels du
+segment, sans toucher au script validé :
 
 ```bash
 python video/pilote.py video/pilotes/EP001c_S02.json
@@ -192,8 +195,19 @@ Le pilote recale chaque déclencheur sur l'alignement réel de la voix, rend le
 plan avec sa voix dans `episodes/EPxxx/video/pilotes/`, et écrit sa carte de
 densité dans `episodes/EPxxx/build/pilotes/`. `--full` rend en 1920×1080.
 
-Leurs pictogrammes viennent de Lucide 1.59.0 (licence ISC), copiés avec leur
-licence dans `video/pictos/lucide/` : voir `PROVENANCE.md` avant d'en ajouter.
+Une fois le plan validé à l'écran : la famille sort de `PILOTES`, entre au
+catalogue avec un exemple réel et un exemple exemplaire, et son plan pilote est
+figé en non-régression, avec ses valeurs clefs (`LIBELLES` dans
+`non_regression.py`) :
+
+```bash
+python video/non_regression.py --valider EP001c_S02 --motif "..."
+```
+
+`Comparaison` et `Flux` ont suivi ce chemin le 17/10/2026 (pilotes S02 et S12
+de l'EP001c). Leurs pictogrammes viennent de Lucide 1.59.0 (licence ISC),
+copiés avec leur licence dans `video/pictos/lucide/` : voir `PROVENANCE.md`
+avant d'en ajouter.
 
 ## Deux pièges Manim, si vous modifiez le code
 

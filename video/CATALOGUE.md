@@ -30,8 +30,9 @@ doit figurer dans les sources du segment. Vérifie ce que la valeur mesure :
 énonce et que le visuel illustre doit être lisible à l'écran au moment où
 la voix le dit. Pour chaque valeur de `donnees` que la voix énonce, écris
 une révélation qui nomme cette valeur (`series_k_point_j` pour une courbe,
-`bar_g` pour une barre, `band_g` pour une bande), calée sur le mot qui
-l'énonce (section 2). Sinon le visuel n'illustre rien.
+`bar_g` pour une barre, `band_g` pour une bande, `value_g` pour une jauge,
+`link_k` pour un montant de flux), calée sur le mot qui l'énonce (section 2).
+Sinon le visuel n'illustre rien.
 
 **R5 — Première donnée tôt.** La première révélation de donnée tombe dans
 la première phrase du segment, avant 4,5 s, idéalement vers 3 s. Le cadre
@@ -54,21 +55,27 @@ ne doit pas rester figé plus de 4 s. Tout dépend de l'élément qui vient :
   de l'animation précédente, soit ~4,3 s après une valeur et ~5,5 s après un
   autre surgissement.
 
+R6 se juge sur ce que voit le spectateur : une fois le plan rendu, `make
+check` mesure ses temps morts en pixels. Un fondu ne s'y voit qu'à ~20 %
+d'opacité, soit ~0,5 s après son mot : vise 3,5 s au plus entre la fin d'une
+animation et le mot suivant.
+
 **R7 — Pas de mots dans la scène.** Le graphe n'écrit que des chiffres et
-les symboles € et %. Tout mot passe par `overlay_texte` : titre, titres
-d'axes, légendes, source (section 3).
+les symboles € et %, et ne dessine que les pictogrammes du catalogue. Tout mot
+passe par `overlay_texte` : titre, titres d'axes, légendes, source, noms des
+options et des nœuds (section 3).
 
 **R8 — Le cadre n'est pas une révélation.** N'écris pas de révélation pour
 le cadre, la grille ou les axes : ils se construisent seuls avant la
 première donnée.
 
 **R9 — Pas de catégorie muette.** Sur une famille à catégories distinctes
-— `Bars`, `Areas` en bandes —, chaque ligne de `donnees` est une catégorie
+— `Bars`, `Areas` en bandes, `Comparaison` —, chaque ligne de `donnees` est une catégorie
 que la voix mentionne, et elle a sa révélation. Une catégorie que la voix ne
 mentionne pas ne figure pas dans `donnees` : elle s'afficherait pendant que
 la voix parle d'autre chose. Les courbes, elles, gardent leurs points
 intermédiaires : ils sont sur le chemin du tracé. Le build signale toute
-barre ou bande sans révélation.
+barre, bande ou jauge sans révélation.
 
 ---
 
@@ -151,10 +158,16 @@ unique quand leur instant dépend de la voix.
 | `legende` | bandeau sous le titre | une entrée par série, **dans l'ordre des séries** : la 1re légende prend la couleur de la série 1, etc. |
 | `bas` | pied d'image | source, mention |
 | `centre` | encart à droite du graphe | propos court |
+| `option_1`, `option_2` | au-dessus de chaque colonne de `Comparaison` | nom de l'option, dans sa couleur |
+| `noeud_k` | sous le k-ième nœud de `Flux` | nom du nœud |
+| `lien_k` | le long du k-ième lien de `Flux` | nom du flux, dans sa couleur |
 
 - `axe_x`, `axe_y` et `titre_haut` : poser à ~0,6 s.
 - Une légende : poser juste après la première révélation de sa série.
 - Les titres d'axes commencent par une majuscule.
+- `option_k`, `noeud_k`, `lien_k` : poser sur le mot qui nomme l'option, le
+  nœud ou le flux, avec un `declencheur`. Ces ancres n'existent que sur leur
+  famille.
 
 ---
 
@@ -499,6 +512,281 @@ la voix introduit son horizon et atteint son plancher sur la valeur ; le
 plancher des 30 ans passe au-dessus du zéro, en vert. L'écran n'est jamais
 figé entre la première et la dernière valeur.
 
+#### `Comparaison` — deux options face à face
+
+Deux colonnes, une par option, qui se remplissent en alternance au rythme de
+la voix. Pour opposer deux montants, deux pourcentages, deux durées : ce que
+vous versez et ce que le capital vous verse, deux taux, deux scénarios. Les
+éléments sont des jauges (une valeur écrite à leur sommet), des
+pictogrammes qui se comptent, un écart, une mise en avant. Le nom de chaque
+option passe en overlay, sur `option_1` et `option_2` (R7).
+
+**`donnees`** — `[option, valeur]`, une ligne par jauge, dans l'ordre
+d'entrée. `option` vaut 1 (colonne de gauche) ou 2 (colonne de droite) ; une
+option peut porter plusieurs jauges. Toutes les jauges partagent la même
+échelle : une jauge de 55 face à une jauge de 2 400 reste un trait, et c'est
+voulu. Les valeurs sont positives ou nulles.
+
+**Paramètres** :
+
+| Paramètre | Obligatoire | Valeurs admises | Effet |
+|---|---|---|---|
+| `unite` | **oui** | `"EUR"`, `"percent"`, ou autre | Format des valeurs écrites : `€`, `%`, nombre nu. |
+| `couleurs` | non | deux couleurs, comme `LineChart` | Une par option. Convention de la chaîne : bleu = ce que vous versez, ambre = ce que le capital verse. |
+| `pictogrammes` | non | `[{"option": k, "icone": nom, "nombre": n}]` | `n` pictogrammes (1 à 40) qui apparaissent un à un dans la colonne k, à côté de ses jauges. `n` est un nombre que la voix énonce et que les sources portent (R3) : « douze mois » donne 12. `icone` : un nom de la liste ci-dessous. |
+| `ecart` | non | `{"entre": [g1, g2], "valeur": v, "format": f}` | Pointillé à la hauteur de la plus petite des jauges `g1` et `g2` (rangs dans `donnees`) et accolade le long de la plus grande. `valeur` est facultative ; si elle est écrite, elle vient des sources (R3). `format` : comme `LineChart`. |
+| `mise_en_avant` | non | `{"option": k}` | Encadre l'option k et estompe l'autre. |
+| `suite` | non | `{"option": k}` | Une bande ouverte au-dessus de la dernière jauge de k, en dégradé, sans borne ni valeur : ce qui viendra et qu'on ne chiffre pas encore. Des particules y montent jusqu'à la fin du plan. |
+
+**Éléments adressables dans `revelations`** :
+
+| Élément | Type | Remarque |
+|---|---|---|
+| `value_g` | tracé (≤ 6 s) + étiquette | La jauge de la g-ième ligne de `donnees` monte et atteint sa hauteur sur le mot qui énonce sa valeur ; la valeur s'écrit alors. À écrire pour **chaque** ligne (R4, R9). |
+| `pictos_k` | tracé (≤ 6 s) | Les pictogrammes de la k-ième entrée de `pictogrammes` apparaissent un à un ; le dernier arrive sur le mot qui énonce leur nombre. |
+| `suite` | tracé (≤ 6 s) | Exige `suite`. La bande atteint son sommet sur son mot ; les particules continuent ensuite jusqu'à la fin du plan. |
+| `gap` | surgissement (1,5 s) | Exige `ecart`. |
+| `highlight` | surgissement (1,5 s) | Exige `mise_en_avant`. |
+| ~~`frame`~~ | décor | Ne pas écrire (R8). Les deux lignes de base et le séparateur se construisent seuls. |
+
+**Comment les deux options se partagent le temps** : comme les barres, un
+seul tracé bouge à la fois, et il commence à monter pendant que la voix parle
+encore de l'élément précédent. Alterne les options dans l'ordre où la voix les
+oppose. Laisse au moins 0,7 s entre deux valeurs énoncées. Un tracé qui suit un
+écart ou une mise en avant attend sa fin pour partir : pour qu'une `suite`
+monte sur toute sa durée, place son mot au moins 7,7 s après le surgissement
+qui la précède (1,5 s + 0,2 s + 6 s), sinon elle monte plus vite.
+
+**Pictogrammes disponibles** (Lucide, licence ISC, `video/pictos/lucide/`) :
+`banknote`, `building-2`, `calendar`, `coins`, `flag`, `hand-coins`, `hotel`,
+`hourglass`, `house`, `landmark`, `percent`, `piggy-bank`, `sprout`,
+`trending-up`, `user`, `wallet`. Aucun autre : un nom absent de cette liste
+est refusé.
+
+**Exemple réel** — le plan pilote S02 de l'EP001c, validé à l'écran le
+17/10/2026. Il est vrai mais **pas exemplaire** : la première valeur n'est
+lisible qu'à 8,14 s, contre R5, parce que les deux phrases d'ouverture
+(« Sauf que tout commence mal. Les intérêts, c'est ce que votre épargne vous
+rapporte. ») ne portent aucun chiffre. Les overlays d'option et de titre
+occupent l'attente.
+
+```json
+{
+  "type_visuel": "manim",
+  "manim_brief": {
+    "composant": "Comparaison",
+    "unite": "EUR",
+    "donnees": [[1, 55], [2, 2400]],
+    "couleurs": ["INTEREST", "CONTRIB"],
+    "pictogrammes": [{"option": 2, "icone": "calendar", "nombre": 12}],
+    "ecart": {"entre": [1, 2]},
+    "mise_en_avant": {"option": 1},
+    "suite": {"option": 1},
+    "revelations": [
+      {"element": "value_1", "t_rel_s": 8.14, "declencheur": "cinquante-cinq euros, pour deux"},
+      {"element": "value_2", "t_rel_s": 9.62, "declencheur": "deux mille quatre cents"},
+      {"element": "pictos_1", "t_rel_s": 13.48, "declencheur": "douze mois"},
+      {"element": "gap", "t_rel_s": 16.27, "declencheur": "ça ne vaut pas la peine"},
+      {"element": "highlight", "t_rel_s": 18.96, "declencheur": "l'effet paraît nul"},
+      {"element": "suite", "t_rel_s": 31.4, "declencheur": "cache la suite"}
+    ]
+  },
+  "overlay_texte": [
+    {"ancre": "option_1", "t_rel_s": 2.22, "texte_fr": "Intérêts", "declencheur": "intérêts, c'est"},
+    {"ancre": "titre_haut", "t_rel_s": 5.56, "texte_fr": "Année 1", "declencheur": "première année"},
+    {"ancre": "option_2", "t_rel_s": 10.53, "texte_fr": "Versements", "declencheur": "versés"},
+    {"ancre": "bas", "t_rel_s": 23.0, "texte_fr": "Source : AMF, décembre 2021", "declencheur": "l'a écrit"}
+  ]
+}
+```
+
+Ce que ça donne : le cadre se pose en 1,94 s ; « 55 € » s'écrit sur
+« cinquante-cinq » au sommet d'une jauge réduite à un trait ; la jauge de
+2 400 € monte en 1,3 s ; les douze calendriers apparaissent un à un de 9,82 s
+à « douze mois » ; l'écart surgit sur « ça ne vaut pas la peine », la mise en
+avant sur « l'effet paraît nul » ; la bande monte de 25,4 s à « cache la
+suite », et l'argent y monte jusqu'à la fin du plan. Plus longue immobilité,
+mesurée en pixels : 3,0 s (27,9 s figées avant, en fond animé).
+
+**Exemple exemplaire** — le même propos, écrit pour respecter toutes les
+règles. **C'est celui-ci qu'il faut imiter.** La première phrase porte la
+première valeur ; chaque valeur et le nombre de pictogrammes ont leur
+révélation sur le mot qui les énonce ; la `suite` vient assez tard après la
+mise en avant pour monter sur toute sa durée. Les `t_rel_s` sont des
+estimations (3,94 syllabes/s) que le recalage remplacera.
+
+```json
+{
+  "vo_fr": "À cinq pour cent, vos intérêts de la première année : cinquante-cinq euros. Vos versements, eux : deux mille quatre cents euros. Cinquante-cinq euros, pour douze mois d'efforts. Vu comme ça, l'écart semble sans appel, et l'effet paraît nul. Ce que le temps fabrique ne se voit pas encore : il travaille en silence.",
+  "type_visuel": "manim",
+  "manim_brief": {
+    "composant": "Comparaison",
+    "unite": "EUR",
+    "donnees": [[1, 55], [2, 2400]],
+    "couleurs": ["INTEREST", "CONTRIB"],
+    "pictogrammes": [{"option": 2, "icone": "calendar", "nombre": 12}],
+    "ecart": {"entre": [1, 2]},
+    "mise_en_avant": {"option": 1},
+    "suite": {"option": 1},
+    "revelations": [
+      {"element": "value_1", "t_rel_s": 3.3, "declencheur": "cinquante-cinq euros. Vos"},
+      {"element": "value_2", "t_rel_s": 6.09, "declencheur": "deux mille quatre cents"},
+      {"element": "pictos_1", "t_rel_s": 9.39, "declencheur": "douze mois"},
+      {"element": "gap", "t_rel_s": 11.17, "declencheur": "l'écart semble"},
+      {"element": "highlight", "t_rel_s": 12.94, "declencheur": "l'effet paraît nul"},
+      {"element": "suite", "t_rel_s": 18.27, "declencheur": "en silence"}
+    ]
+  },
+  "overlay_texte": [
+    {"ancre": "option_1", "t_rel_s": 1.02, "texte_fr": "Intérêts", "declencheur": "vos intérêts"},
+    {"ancre": "titre_haut", "t_rel_s": 2.54, "texte_fr": "Année 1", "declencheur": "première année"},
+    {"ancre": "option_2", "t_rel_s": 4.82, "texte_fr": "Versements", "declencheur": "Vos versements"},
+    {"ancre": "bas", "t_rel_s": 14.21, "texte_fr": "Hypothèse de calcul : 200 € par mois, 5 % par an", "declencheur": "Ce que le temps"}
+  ]
+}
+```
+
+Ce que ça donne : le cadre se pose en 1 s ; la jauge des intérêts monte et
+« 55 € » s'écrit sur « cinquante-cinq » ; celle des versements monte pendant
+« Vos versements, eux » et atteint 2 400 € sur son mot ; les calendriers
+comblent l'attente jusqu'à « douze mois » ; écart puis mise en avant ; la
+bande part à 14,64 s, à la fin de la mise en avant, et l'argent y monte
+jusqu'au dernier mot. Aucune immobilité de plus de 2 s.
+
+#### `Flux` — nœuds, liens, argent qui circule
+
+Des nœuds reliés par des flèches, où l'argent circule en particules : du
+versement vers l'enveloppe, de l'enveloppe vers les intérêts, des intérêts
+vers l'enveloppe. Pour montrer un mécanisme : d'où vient l'argent, où il
+s'accumule, ce qu'il produit. Un nœud est un pictogramme dans un cercle ; son
+nom passe en overlay sur `noeud_k`, celui d'un flux sur `lien_k` (R7). Les
+montants, eux, sont écrits dans la scène, sur leur lien.
+
+**Pas de `donnees`** : la structure est dans `noeuds` et `liens`.
+
+**Paramètres** :
+
+| Paramètre | Obligatoire | Valeurs admises | Effet |
+|---|---|---|---|
+| `noeuds` | **oui** | `[{"icone": nom, "position": [x, y], "couleur": c}]` | Un nœud par entrée ; `node_1` est le premier. `icone` : la liste des pictogrammes de `Comparaison`. `position` en unités de scène, centre (0, 0) : x de −5,5 à 5,5, y de −2,4 à 1,8 ; sans position, les nœuds s'alignent de gauche à droite. `couleur` : celle du cercle (gris clair par défaut). |
+| `liens` | **oui** | `[{"de": i, "vers": j, "couleur": c, "intensite": n, "courbure": a, "montant": v, "format": f}]` | Une flèche du nœud i vers le nœud j ; `link_1` est le premier. `intensite` (1 à 3) règle le débit visible des particules : un flux plus fort se voit plus dense. `courbure` (en radians, 1,0 conseillé) courbe le lien : deux liens opposés entre les mêmes nœuds, de même courbure, forment une boucle. `montant` est facultatif ; s'il est écrit, il vient des sources (R3), au `format` `"euro"` par défaut. |
+| `mise_en_avant` | non | `{"liens": [k, …]}` | Ces liens s'affirment ; les autres et leurs particules s'estompent. |
+
+**Éléments adressables dans `revelations`** :
+
+| Élément | Type | Remarque |
+|---|---|---|
+| `node_k` | surgissement (1,5 s) | Le nœud apparaît sur son mot. |
+| `link_k` | surgissement (1,5 s) | La flèche se trace de sa source à sa cible sur son mot ; son montant s'écrit au même instant. Puis l'argent y circule jusqu'à la fin du plan. Ses deux nœuds doivent déjà être là, ou arriver sur le même mot : le build signale un lien qui part avant eux. |
+| `highlight` | surgissement (1,5 s) | Exige `mise_en_avant`. |
+
+`Flux` n'a pas de cadre : le premier nœud est la première donnée (R5). Un nœud
+et le lien qui y mène peuvent partager un mot : ils forment une seule
+apparition. Tant qu'aucun lien n'est posé, l'écran ne vit que des
+surgissements : moins de 4 s entre deux nœuds (R6). Dès qu'un lien est posé,
+l'argent qui circule tient l'écran jusqu'à la fin.
+
+**Exemple réel** — le plan pilote S12 de l'EP001c, validé à l'écran le
+17/10/2026, qui remplace un b-roll sans overlay. L'analogie du jeu de société
+en est le propos : la case départ est le versement fixe (bleu), les loyers
+sont les intérêts (ambre). Aucun visuel de marque : pictogrammes génériques,
+et le nom du jeu n'est écrit nulle part. Pas de montant : le script n'en
+avance aucun.
+
+```json
+{
+  "type_visuel": "manim",
+  "manim_brief": {
+    "composant": "Flux",
+    "noeuds": [
+      {"icone": "flag", "position": [-4.8, 0.2]},
+      {"icone": "wallet", "position": [0.0, 0.2]},
+      {"icone": "house", "position": [4.6, 1.35]},
+      {"icone": "hotel", "position": [4.6, -1.45]}
+    ],
+    "liens": [
+      {"de": 1, "vers": 2, "couleur": "CONTRIB", "intensite": 1},
+      {"de": 3, "vers": 2, "couleur": "INTEREST", "intensite": 2},
+      {"de": 4, "vers": 2, "couleur": "INTEREST", "intensite": 2}
+    ],
+    "mise_en_avant": {"liens": [2, 3]},
+    "revelations": [
+      {"element": "node_2", "t_rel_s": 1.95, "declencheur": "vous vivez"},
+      {"element": "node_1", "t_rel_s": 3.97, "declencheur": "case départ. Puis"},
+      {"element": "link_1", "t_rel_s": 3.97, "declencheur": "case départ. Puis"},
+      {"element": "node_3", "t_rel_s": 6.11, "declencheur": "maisons"},
+      {"element": "node_4", "t_rel_s": 7.08, "declencheur": "hôtels"},
+      {"element": "link_2", "t_rel_s": 10.0, "declencheur": "loyers"},
+      {"element": "link_3", "t_rel_s": 10.0, "declencheur": "loyers"},
+      {"element": "highlight", "t_rel_s": 11.04, "declencheur": "plus que la case"}
+    ]
+  },
+  "overlay_texte": [
+    {"ancre": "noeud_2", "t_rel_s": 1.95, "texte_fr": "Vous", "declencheur": "vous vivez"},
+    {"ancre": "noeud_1", "t_rel_s": 3.97, "texte_fr": "Case départ", "declencheur": "case départ. Puis"},
+    {"ancre": "noeud_3", "t_rel_s": 6.11, "texte_fr": "Maisons", "declencheur": "maisons"},
+    {"ancre": "noeud_4", "t_rel_s": 7.08, "texte_fr": "Hôtels", "declencheur": "hôtels"},
+    {"ancre": "lien_2", "t_rel_s": 10.0, "texte_fr": "Loyers", "declencheur": "loyers"}
+  ]
+}
+```
+
+Ce que ça donne : « Vous » apparaît sur « vous vivez », la case départ et sa
+flèche sur « case départ », et l'argent circule dès 5,47 s ; maisons et hôtels
+surgissent sur leur mot ; les deux flux de loyers, plus denses, partent sur
+« loyers » ; sur « plus que la case », ils s'affirment et la case départ
+s'estompe. Plus longue immobilité : les 2 premières secondes (14,7 s figées
+avant, en b-roll).
+
+**Exemple exemplaire** — un mécanisme avec ses montants : versement,
+enveloppe, intérêts qui y restent. **C'est celui-ci qu'il faut imiter.** Le
+premier montant est dans la première phrase, sur le lien qui le porte ; chaque
+nœud et chaque lien arrivent sur le mot qui les nomme ; la boucle
+enveloppe ↔ intérêts est faite de deux liens opposés de même courbure. Les
+`t_rel_s` sont des estimations (3,94 syllabes/s) que le recalage remplacera.
+
+```json
+{
+  "vo_fr": "Chaque mois, vous versez deux cents euros sur votre livret. Ce livret, c'est l'enveloppe : il garde votre capital. Au bout d'un an, il produit cinquante-cinq euros d'intérêts. Et ces intérêts restent dans l'enveloppe : l'année suivante, ils rapportent à leur tour. C'est la capitalisation.",
+  "type_visuel": "manim",
+  "manim_brief": {
+    "composant": "Flux",
+    "noeuds": [
+      {"icone": "hand-coins", "position": [-4.8, -0.2]},
+      {"icone": "piggy-bank", "position": [0.0, -0.2]},
+      {"icone": "sprout", "position": [4.6, -0.2]}
+    ],
+    "liens": [
+      {"de": 1, "vers": 2, "couleur": "CONTRIB", "intensite": 1, "montant": 200},
+      {"de": 2, "vers": 3, "couleur": "INTEREST", "intensite": 1, "courbure": 1.0, "montant": 55},
+      {"de": 3, "vers": 2, "couleur": "INTEREST", "intensite": 2, "courbure": 1.0}
+    ],
+    "mise_en_avant": {"liens": [3]},
+    "revelations": [
+      {"element": "node_1", "t_rel_s": 0.76, "declencheur": "vous versez"},
+      {"element": "node_2", "t_rel_s": 1.52, "declencheur": "deux cents euros"},
+      {"element": "link_1", "t_rel_s": 1.52, "declencheur": "deux cents euros"},
+      {"element": "node_3", "t_rel_s": 8.63, "declencheur": "cinquante-cinq euros"},
+      {"element": "link_2", "t_rel_s": 8.63, "declencheur": "cinquante-cinq euros"},
+      {"element": "link_3", "t_rel_s": 12.18, "declencheur": "restent dans l'enveloppe"},
+      {"element": "highlight", "t_rel_s": 14.72, "declencheur": "rapportent à leur tour"}
+    ]
+  },
+  "overlay_texte": [
+    {"ancre": "noeud_1", "t_rel_s": 0.76, "texte_fr": "Versement mensuel", "declencheur": "vous versez"},
+    {"ancre": "noeud_2", "t_rel_s": 4.31, "texte_fr": "Enveloppe", "declencheur": "c'est l'enveloppe"},
+    {"ancre": "noeud_3", "t_rel_s": 8.63, "texte_fr": "Intérêts", "declencheur": "cinquante-cinq euros"}
+  ]
+}
+```
+
+Ce que ça donne : le versement apparaît sur « vous versez » ; l'enveloppe, la
+flèche et « 200 € » sur « deux cents euros », et l'argent circule dès 3 s ;
+les intérêts et « 55 € » sur « cinquante-cinq euros » ; le retour des intérêts
+vers l'enveloppe ferme la boucle sur « restent dans l'enveloppe », et
+s'affirme sur « rapportent à leur tour ». L'écran n'est jamais figé après la
+première seconde.
+
 ### Pas encore disponible — ne pas utiliser
 
 Tant qu'une famille ne figure pas dans la section *Disponibles*, un segment
@@ -524,11 +812,14 @@ s'appelle `Bars`, pas `BarChart`.
 1. `composant` est une famille *disponible*.
 2. Les paramètres obligatoires sont présents : `interpolation` pour
    `LineChart`, `mode` pour `Bars` et `Areas`, `borne` pour une bande à une
-   seule valeur, `axes.unite_y` partout.
+   seule valeur, `axes.unite_y` pour ces trois familles, `unite` pour
+   `Comparaison`, `noeuds` et `liens` pour `Flux`.
 3. Chaque valeur que la voix énonce a sa révélation (`series_k_point_j`,
-   `bar_g`, `band_g`…) sur le mot qui l'énonce.
-4. Barres et bandes : chaque catégorie de `donnees` est mentionnée par la
-   voix et a sa révélation ; aucune catégorie muette.
+   `bar_g`, `band_g`, `value_g`, `link_k`…) sur le mot qui l'énonce ; un
+   nombre de pictogrammes, sur le mot qui énonce ce nombre (`pictos_k`).
+4. Barres, bandes et jauges : chaque catégorie de `donnees` est mentionnée
+   par la voix et a sa révélation ; aucune catégorie muette. Un lien de
+   `Flux` ne part pas avant ses deux nœuds.
 5. Chaque `declencheur` recopie `vo_fr` mot pour mot et n'y apparaît qu'une
    fois.
 6. Aucun nombre à l'écran n'est calculé : chaque valeur écrite est dans
@@ -536,4 +827,6 @@ s'appelle `Bars`, pas `BarChart`.
 7. La première révélation de donnée tombe avant ~4,5 s.
 8. Aucun intervalle entre deux révélations ne laisse l'écran figé plus de
    4 s.
-9. Aucune révélation pour le cadre, et aucun mot dans la scène.
+9. Aucune révélation pour le cadre, et aucun mot dans la scène : les noms
+   des options et des nœuds passent par `option_k`, `noeud_k`, `lien_k`.
+10. Chaque pictogramme est dans la liste du catalogue.
