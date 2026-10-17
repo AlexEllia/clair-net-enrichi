@@ -174,21 +174,28 @@ def check_catalogue(ep, script):
     return f"catalogue : AUTRE VERSION ({want[:8]}) - {where}"
 
 
-def check_revelations(segments, durations):
-    """Deux defauts distincts des plans manim, mesures sans rendu :
+def check_revelations(segments, durations, plans_dir=None, script_path=None):
+    """Deux defauts distincts des plans manim :
 
     - l'ouverture inerte : le cadre est construit, aucune donnee ne bouge
       encore (correctif : premiere donnee plus tot dans le script) ;
-    - les temps morts internes de plus de 4 s entre deux revelations
-      (correctif : rapprocher ou ajouter des revelations).
+    - R6, les temps morts internes de plus de 4 s entre la premiere donnee et
+      la derniere revelation (correctif : rapprocher ou ajouter des
+      revelations).
 
-    Exact quand le composant se construit (animations reellement posees,
-    overlays compris) ; estime depuis le script sinon."""
+    R6 se juge sur ce que voit le spectateur : quand le plan est deja rendu
+    (`plans_dir`/Sxx.mp4), ses temps morts sont mesures en pixels (densite.py)
+    et ce sont eux qui declenchent l'avertissement. Sinon, ou en complement,
+    le calendrier : exact quand le composant se construit (animations
+    reellement posees, overlays compris), estime depuis le script sinon. La
+    mesure en pixels voit un temps mort ~0,5 s plus long que le calendrier :
+    un fondu adouci ne se voit qu'a ~20 % d'opacite."""
     import contextlib
     import io
     from briefs import resolve, still_times, opening, MAX_STILL
     from components import COMPONENTS, Cues
     from scenes import add_overlays
+    import densite
 
     rows = []
     for s in segments:
@@ -209,25 +216,64 @@ def check_revelations(segments, durations):
             pass
         op = opening(target, meta, dur)
         stills = still_times(target, dur, intervals)
-        rows.append((s["id"], op, stills, intervals is None))
+        pixels, perime = None, False
+        plan = plans_dir / f"{s['id']}.mp4" if plans_dir else None
+        if plan is not None and plan.exists():
+            times = sorted(float(r["t_rel_s"]) for r in s["manim_brief"]["revelations"])
+            first = op[1] if op and op[1] is not None else times[0]
+            pixels = densite.plages_plan(plan, first, times[-1])
+            perime = bool(script_path) and plan.stat().st_mtime < script_path.stat().st_mtime
+        rows.append((s["id"], op, stills, intervals is None, pixels, perime))
 
     print(f"\n  plans manim : ouverture inerte et temps morts internes (> {MAX_STILL:.0f} s)")
     print(f"  {'seg':<4} {'cadre':>6} {'1re donnee':>11} {'ouverture':>10}  "
-          f"{'temps morts internes':<40} mesure")
-    for sid, op, stills, est in rows:
+          f"{'R6, calendrier':<34} {'R6, pixels du plan rendu':<28} calendrier")
+    for sid, op, stills, est, pixels, perime in rows:
         f, d, inert, _ = op if op else (0, 0, 0, est)
         internal = "; ".join(f"{l:.2f} s ({a} -> {b})" for a, b, _, l in stills) or "-"
-        print(f"  {sid:<4} {f:5.2f}s {d:10.2f}s {inert:9.2f}s  {internal:<40} "
-              f"{'estimee' if est else 'exacte'}")
+        if pixels is None:
+            vu = "pas de rendu"
+        else:
+            vu = "; ".join(f"{l:.1f} s a {a:.1f} s" for a, l in pixels) or "-"
+            vu += " (rendu anterieur au script)" if perime else ""
+        print(f"  {sid:<4} {f:5.2f}s {d:10.2f}s {inert:9.2f}s  {internal:<34} {vu:<28} "
+              f"{'estime' if est else 'exact'}")
         if inert > MAX_STILL:
             print(f"[ATTENTION] {sid} : ouverture inerte de {inert:.2f} s", file=sys.stderr)
-        for a, b, _, l in stills:
-            print(f"[ATTENTION] {sid} : ecran fige {l:.2f} s entre {a!r} et {b!r}",
-                  file=sys.stderr)
-    if any(est for *_, est in rows):
-        print("  estimee = segment pas encore traduit : type de chaque partie devine sur son "
+        if pixels is not None:
+            for a, l in pixels:
+                print(f"[ATTENTION] {sid} : ecran fige {l:.1f} s a partir de {a:.1f} s "
+                      f"(R6, mesure en pixels sur le plan rendu)", file=sys.stderr)
+        else:
+            for a, b, _, l in stills:
+                print(f"[ATTENTION] {sid} : ecran fige {l:.2f} s entre {a!r} et {b!r} "
+                      f"(R6, calendrier : aucun plan rendu a mesurer)", file=sys.stderr)
+    if any(r[3] for r in rows):
+        print("  estime = segment pas encore traduit : type de chaque partie devine sur son "
               "nom ; une barre monte jusqu'a 6 s avant son mot, une courbe, une aire ou une "
               "bande est supposee ne rien anticiper (prudent)")
+    if any(r[4] is not None for r in rows):
+        print("  R6 se juge en pixels quand le plan est rendu (video/densite.py) : un fondu ne "
+              "se voit qu'a ~20 % d'opacite, la mesure compte donc ~0,5 s de plus que le "
+              "calendrier.")
+
+
+def check_density(final, tl, segments, dest):
+    """Controle final : carte de densite de l'episode monte, en pixels.
+
+    Avertit pour chaque plage figee de plus de 4 s, quel que soit le type de
+    plan. Ne bloque rien : le montage est deja ecrit."""
+    import densite
+    kinds = {s["id"]: s["type_visuel"] for s in segments}
+    segs = [{"id": r["id"], "type_visuel": kinds.get(r["id"], "?"),
+             "debut_s": r["debut_s"], "fin_s": r["fin_s"]} for r in tl["segments"]]
+    res = densite.carte(final, segs, dest)
+    print(f"densite     : {dest / 'densite.png'}  (ecran fige > {densite.MAX_STILL:.0f} s : "
+          f"{res['total_fige_s']:.0f} s sur {res['duree_s']:.0f} s, "
+          f"{100 * res['part_fige']:.0f} %, {len(res['plages'])} plages)")
+    for p in res["plages"]:
+        print(f"[ATTENTION] {p['segment']} ({p['type_visuel']}) : ecran fige {p['duree_s']:.1f} s "
+              f"a partir de {p['debut_segment_s']:.1f} s", file=sys.stderr)
 
 
 def main():
@@ -267,7 +313,8 @@ def main():
     if args.check:
         print_timeline(tl)
         print(f"\n  {cat_line}")
-        check_revelations(segments, durations)
+        check_revelations(segments, durations, ep_dir / "video" / "plans_cales",
+                          ep_dir / "script.json")
         print(f"\n  ecrit : {ep_dir / 'build' / 'timeline.json'}")
         print(f"          {ep_dir / 'build' / 'chapitres.txt'}")
         return
@@ -338,6 +385,7 @@ def main():
         print("ATTENTION : sous 8 minutes, les coupures intermediaires ne se debloquent pas")
     for k, m in enumerate(tl["midrolls"], 1):
         print(f"mid-roll {k} : {m['tc']}  (apres {m['apres']})")
+    check_density(final, tl, segments, ep_dir / "build")
 
 
 if __name__ == "__main__":
