@@ -1,0 +1,138 @@
+{
+ "statut": "VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
+ "courante": 1,
+ "versions": [
+  {
+   "version": 1,
+   "validee_le": "17/10/2026",
+   "motif": "pilote de la famille, valide a l'ecran le 17/10/2026, entree au catalogue",
+   "regle_cadre": "v2",
+   "vue_a_l_ecran": true,
+   "images": 443,
+   "clefs": [
+    [
+     "noeud Vous",
+     "noeud_vous",
+     1.95
+    ],
+    [
+     "noeud et lien Case depart",
+     "case_depart",
+     3.97
+    ],
+    [
+     "argent de la case depart, debut",
+     "courant_depart",
+     5.47
+    ],
+    [
+     "noeud Maisons",
+     "maisons",
+     6.11
+    ],
+    [
+     "noeud Hotels",
+     "hotels",
+     7.08
+    ],
+    [
+     "liens Loyers",
+     "loyers",
+     10.0
+    ],
+    [
+     "argent des loyers, debut",
+     "courant_loyers",
+     10.84
+    ],
+    [
+     "mise en avant des loyers",
+     "mise_en_avant",
+     11.04
+    ]
+   ],
+   "calendrier": [
+    [
+     1.95,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     1.95,
+     1.5,
+     "FadeIn"
+    ],
+    [
+     3.97,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     3.97,
+     1.5,
+     "Create+FadeIn"
+    ],
+    [
+     3.97,
+     1.5,
+     "FadeIn"
+    ],
+    [
+     5.47,
+     8.85,
+     "Courant"
+    ],
+    [
+     6.11,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     6.11,
+     0.77,
+     "FadeIn"
+    ],
+    [
+     7.08,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     7.08,
+     1.5,
+     "FadeIn"
+    ],
+    [
+     10.0,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     10.0,
+     0.84,
+     "Create+FadeIn"
+    ],
+    [
+     10.0,
+     0.84,
+     "Create+FadeIn"
+    ],
+    [
+     10.84,
+     3.48,
+     "Courant"
+    ],
+    [
+     10.84,
+     3.48,
+     "Courant"
+    ],
+    [
+     11.04,
+     1.5,
+     "Restyle+Restyle+Restyle+Restyle"
+    ]
+   ]
+  }
+ ]
+}

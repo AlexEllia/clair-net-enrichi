@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""Rendu d'un plan pilote : une famille hors catalogue, sur la voix actuelle.
+"""Rendu d'un plan pilote sur la voix actuelle : une famille hors catalogue, ou
+une famille du catalogue essayee sur un segment deja valide.
 
     python video/pilote.py video/pilotes/EP001c_S02.json            960x540
     python video/pilote.py video/pilotes/EP001c_S02.json --full     1920x1080

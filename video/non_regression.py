@@ -8,11 +8,15 @@
                                                    archive la version courante d'un
                                                    plan valide et fige le calendrier
                                                    actuel comme version suivante
+    python video/non_regression.py --valider EP001c_S02 --motif "..."
+                                                   fige la premiere version d'un plan
+                                                   qui vient d'etre valide a l'ecran
 
 Par ordre d'importance :
 
 1. Les plans VALIDES A L'ECRAN - approuves par un oeil humain (S09 et S17 de
-   l'EP001b). Leur reference est versionnee : chaque version garde sa date,
+   l'EP001b ; S02 et S12 de l'EP001c, pilotes de Comparaison et Flux, rendus
+   depuis leur brief de video/pilotes/ et non depuis script.json). Leur reference est versionnee : chaque version garde sa date,
    son motif, la regle de cadre qui l'a produite, ses valeurs clefs, son
    nombre d'images et son calendrier complet. Rien n'est jamais ecrase : une
    nouvelle version s'ajoute, l'ancienne est archivee, et seule une
@@ -64,6 +68,21 @@ LIBELLES = {
         "barre_3_debut": "barre 3 : depart", "barre_3_fin": "barre 3 atteint 15",
         "barre_4_debut": "barre 4 : depart", "barre_4_fin": "barre 4 atteint 9",
     },
+    "EP001c_S02": {
+        "frame_end": "construction du cadre, fin",
+        "jauge_1_debut": "jauge 55 EUR : depart", "jauge_1_fin": "55 EUR ecrit",
+        "jauge_2_debut": "jauge 2 400 EUR : depart", "jauge_2_fin": "2 400 EUR ecrit",
+        "pictos_debut": "12 mois : premier picto", "pictos_fin": "12 mois : dernier picto",
+        "ecart": "ecart", "mise_en_avant": "mise en avant des interets",
+        "suite_debut": "suite : depart", "suite_fin": "suite : arrivee",
+    },
+    "EP001c_S12": {
+        "noeud_vous": "noeud Vous", "case_depart": "noeud et lien Case depart",
+        "courant_depart": "argent de la case depart, debut",
+        "maisons": "noeud Maisons", "hotels": "noeud Hotels",
+        "loyers": "liens Loyers", "courant_loyers": "argent des loyers, debut",
+        "mise_en_avant": "mise en avant des loyers",
+    },
 }
 
 
@@ -96,8 +115,25 @@ def _segment(ep, sid):
 
 
 def _shot(name):
+    """Calendrier d'un plan de reference. Un plan pilote (video/pilotes/<nom>.json)
+    se rend depuis son brief, recale sur la voix comme dans video/pilote.py."""
     ep, sid = name.split("_")
-    return _calendar(*_segment(ep, sid))
+    seg, dur = _segment(ep, sid)
+    brief = HERE / "pilotes" / f"{name}.json"
+    if brief.exists():
+        import copy
+        from pilote import recaler
+        b = json.loads(brief.read_text(encoding="utf-8"))
+        seg = copy.deepcopy(seg)
+        for k in ("type_visuel", "manim_brief", "overlay_texte"):
+            seg[k] = copy.deepcopy(b["remplace"][k])
+        seg["_pilote"] = True
+        al = json.loads((PROJECT / "episodes" / ep / "audio" / "alignments" / f"{sid}.json")
+                        .read_text(encoding="utf-8"))
+        with contextlib.redirect_stderr(io.StringIO()):
+            recaler(sid, seg["manim_brief"].get("revelations") or [], al, "revelation")
+            recaler(sid, seg["overlay_texte"], al, "overlay")
+    return _calendar(seg, dur)
 
 
 def values_S09(rows, cues):
@@ -126,6 +162,46 @@ def values_S17(rows, cues):
         # La valeur doit apparaitre a l'arrivee de la barre, pas avant.
         v[f"barre_{k}_fin"] = end if any(abs(f - end) < 0.005 for f in fades) else None
     return v
+
+
+def values_S02(rows, cues):
+    """EP001c S02, Comparaison."""
+    grows = [r for r in rows if r[2] == "GrowBar"]
+    labels = sorted(r[0] for r in rows if r[2] == "FadeIn" and abs(r[1] - 0.3) < 1e-6)
+    pic = next((r for r in rows if r[2] == "FillPictos"), None)
+    gap = next((r for r in rows if r[2] == "Create+Create"), None)
+    hl = next((r for r in rows if r[2].startswith("Create+Restyle")), None)
+    v = {"frame_end": round(cues.meta.get("frame_end"), 3)}
+    for k, g in enumerate(grows[:2], 1):
+        end = round(g[0] + g[1], 3)
+        v[f"jauge_{k}_debut"] = g[0]
+        # La valeur s'ecrit a l'arrivee de la jauge, pas avant.
+        v[f"jauge_{k}_fin"] = end if any(abs(f - end) < 0.005 for f in labels) else None
+    v["pictos_debut"] = pic[0] if pic else None
+    v["pictos_fin"] = round(pic[0] + pic[1], 3) if pic else None
+    v["ecart"] = gap[0] if gap else None
+    v["mise_en_avant"] = hl[0] if hl else None
+    s = grows[2] if len(grows) > 2 else None
+    v["suite_debut"] = s[0] if s else None
+    v["suite_fin"] = round(s[0] + s[1], 3) if s else None
+    return v
+
+
+def values_S12(rows, cues):
+    """EP001c S12, Flux. Les noeuds surgissent en 1,5 s au plus (les overlays en
+    0,5 s) ; les liens se tracent (Create+FadeIn), puis l'argent circule."""
+    nodes = sorted(r[0] for r in rows if r[2] == "FadeIn" and abs(r[1] - 0.5) > 1e-6)
+    links = sorted(r[0] for r in rows if r[2] == "Create+FadeIn")
+    flows = sorted(r[0] for r in rows if r[2] == "Courant")
+    hl = next((r[0] for r in rows if r[2].startswith("Restyle")), None)
+    return {"noeud_vous": nodes[0] if nodes else None,
+            "case_depart": links[0] if links else None,
+            "courant_depart": flows[0] if flows else None,
+            "maisons": nodes[2] if len(nodes) > 2 else None,
+            "hotels": nodes[3] if len(nodes) > 3 else None,
+            "loyers": links[1] if len(links) > 1 else None,
+            "courant_loyers": flows[1] if len(flows) > 1 else None,
+            "mise_en_avant": hl}
 
 
 def frames(ep, sid):
@@ -235,6 +311,36 @@ def new_version(name, motif, vue):
         print(f"          {label:<34} {value}")
 
 
+def first_version(name, motif):
+    """Fige la premiere version d'un plan qui vient d'etre valide a l'ecran."""
+    import components
+    path = REF / f"{name}.json"
+    if path.exists():
+        raise SystemExit(f"{name} : reference deja figee ; une modification approuvee passe "
+                         f"par --nouvelle-version")
+    if name not in LIBELLES:
+        raise SystemExit(f"{name} : ajouter d'abord ses valeurs clefs a LIBELLES")
+    rows, cues = _shot(name)
+    v = _values(name, rows, cues)
+    missing = [k for k in LIBELLES[name] if v.get(k) is None]
+    if missing:
+        raise SystemExit(f"{name} : valeurs clefs introuvables dans le calendrier : {missing}")
+    ep, sid = name.split("_")
+    doc = {"statut": "VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une "
+                     "modification approuvee ajoute une version, n'en ecrase aucune.",
+           "courante": 1,
+           "versions": [{"version": 1,
+                         "validee_le": datetime.date.today().strftime("%d/%m/%Y"),
+                         "motif": motif, "regle_cadre": components.FRAME_RULE,
+                         "vue_a_l_ecran": True, "images": frames(ep, sid),
+                         "clefs": [[LIBELLES[name][k], k, v[k]] for k in LIBELLES[name]],
+                         "calendrier": rows}]}
+    path.write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    print(f"{name} : v1 figee ({motif})")
+    for label, key, value in doc["versions"][0]["clefs"]:
+        print(f"          {label:<34} {value}")
+
+
 def calendars_unvalidated():
     out = {}
     s, d, _ = _load("EP001")
@@ -254,6 +360,13 @@ def main():
         if not motif:
             raise SystemExit("--motif obligatoire : pourquoi cette nouvelle version ?")
         new_version(name, motif, vue="--pas-vue" not in args)
+        return
+    if "--valider" in args:
+        name = args[args.index("--valider") + 1]
+        motif = args[args.index("--motif") + 1] if "--motif" in args else ""
+        if not motif:
+            raise SystemExit("--motif obligatoire : qu'est-ce qui a ete valide a l'ecran ?")
+        first_version(name, motif)
         return
     fige = "--fige" in args
     REF.mkdir(exist_ok=True)

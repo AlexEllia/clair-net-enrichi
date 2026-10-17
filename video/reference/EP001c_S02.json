@@ -1,0 +1,143 @@
+{
+ "statut": "VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
+ "courante": 1,
+ "versions": [
+  {
+   "version": 1,
+   "validee_le": "17/10/2026",
+   "motif": "pilote de la famille, valide a l'ecran le 17/10/2026, entree au catalogue",
+   "regle_cadre": "v2",
+   "vue_a_l_ecran": true,
+   "images": 998,
+   "clefs": [
+    [
+     "construction du cadre, fin",
+     "frame_end",
+     1.94
+    ],
+    [
+     "jauge 55 EUR : depart",
+     "jauge_1_debut",
+     2.14
+    ],
+    [
+     "55 EUR ecrit",
+     "jauge_1_fin",
+     8.14
+    ],
+    [
+     "jauge 2 400 EUR : depart",
+     "jauge_2_debut",
+     8.34
+    ],
+    [
+     "2 400 EUR ecrit",
+     "jauge_2_fin",
+     9.62
+    ],
+    [
+     "12 mois : premier picto",
+     "pictos_debut",
+     9.82
+    ],
+    [
+     "12 mois : dernier picto",
+     "pictos_fin",
+     13.48
+    ],
+    [
+     "ecart",
+     "ecart",
+     16.27
+    ],
+    [
+     "mise en avant des interets",
+     "mise_en_avant",
+     18.96
+    ],
+    [
+     "suite : depart",
+     "suite_debut",
+     25.4
+    ],
+    [
+     "suite : arrivee",
+     "suite_fin",
+     31.4
+    ]
+   ],
+   "calendrier": [
+    [
+     0.0,
+     1.94,
+     "Create"
+    ],
+    [
+     2.14,
+     6.0,
+     "GrowBar"
+    ],
+    [
+     2.22,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     5.56,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     8.14,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     8.34,
+     1.28,
+     "GrowBar"
+    ],
+    [
+     9.62,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     9.82,
+     3.66,
+     "FillPictos"
+    ],
+    [
+     10.53,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     16.27,
+     1.5,
+     "Create+Create"
+    ],
+    [
+     18.96,
+     1.5,
+     "Create+Restyle+Restyle+Restyle"
+    ],
+    [
+     23.0,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     25.4,
+     6.0,
+     "GrowBar"
+    ],
+    [
+     25.4,
+     6.84,
+     "Courant"
+    ]
+   ]
+  }
+ ]
+}

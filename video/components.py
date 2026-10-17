@@ -1818,9 +1818,11 @@ def _opacity_to(m, value):
 # Familles pilotes - hors catalogue tant que leur plan pilote n'est pas valide
 # a l'ecran. Le script ne peut pas les demander (briefs.resolve les refuse) ;
 # seul video/pilote.py les rend, depuis un brief de video/pilotes/.
+# Comparaison et Flux : pilotes EP001c S02 et S12, valides le 17/10/2026,
+# entrees au catalogue.
 # =============================================================================
 
-PILOTES = {"Comparaison", "Flux"}
+PILOTES = set()
 
 
 def _schedule(points, default=1.0):
@@ -1937,7 +1939,10 @@ def _unit_format(unite):
     return "nombre"
 
 
-# --- Comparaison ---------------------------------------------------------------
+# =============================================================================
+# Comparaison  -  deux options face a face (pilote : EP001c S02)
+# Parties : value_g, pictos_k, suite (traces) ; highlight, gap (surgissements)
+# =============================================================================
 
 def Comparaison(seg, cues):
     """Deux options face a face, qui se remplissent en alternance.
@@ -2094,7 +2099,19 @@ def Comparaison(seg, cues):
 
     later = [(t, False) for k, t in rev.times.items() if k in rev.fixed and k not in tracks]
     runs, first_motion = _plan_runs(sid, tracks, frame_end, later, CONTINUOUS_MAX, cues.dur)
-    cues.meta["first_data"] = first_motion
+    # Un surgissement cale par le script (ecart, mise en avant) ne partage pas
+    # l'ecran avec un trace : le trace qui le suit attend sa fin (+ GAP), quitte
+    # a monter plus vite, jamais en moins de MIN_LEAD.
+    surg = [(t, t + rev.run_time(k, PUNCTUAL_MAX)) for k, t in rev.times.items()
+            if k in rev.fixed and k not in tracks]
+    for k in tracked:
+        for kf in runs.get(k) or []:
+            t0, t1 = kf[0][0], kf[-1][0]
+            for a, b in surg:
+                if a < t1 and b + GAP > t0:
+                    t0 = max(t0, min(b + GAP, t1 - MIN_LEAD))
+            if t0 > kf[0][0]:
+                kf[0] = (t0, kf[0][1])
     arrive = {}
     for k in tracked:
         for kf in runs.get(k) or []:
@@ -2139,7 +2156,10 @@ def Comparaison(seg, cues):
                   *[g for g, _ in pic_groups.values()])
 
 
-# --- Flux ----------------------------------------------------------------------
+# =============================================================================
+# Flux  -  noeuds, liens, argent qui circule (pilote : EP001c S12)
+# Parties : node_k, link_k, highlight (surgissements)
+# =============================================================================
 
 def Flux(seg, cues):
     """Des noeuds relies par des fleches, ou l'argent circule.
@@ -2156,7 +2176,8 @@ def Flux(seg, cues):
                      s'estompent.
     Parties : node_k, link_k, highlight - toutes surgissent (1,5 s) sur leur
     mot. Un lien se trace de sa source a sa cible, puis l'argent y circule
-    jusqu'a la fin du plan.
+    jusqu'a la fin du plan ; son montant s'ecrit des le depart du trace. Un
+    lien relie deux noeuds deja poses : sinon, avertissement.
     Ancres d'overlay : noeud_k (sous le noeud), lien_k (le long du lien).
     """
     import nombres
@@ -2201,15 +2222,20 @@ def Flux(seg, cues):
             raise SystemExit(f"{sid} : liens[{i}].intensite de 1 a 3")
         dots = _particles(3 + 3 * k, 0.05 + 0.02 * k, col)
         mid = path.point_from_proportion(0.5)
-        normal = np.array([-u[1], u[0], 0.0])
-        if normal[1] < 0:
-            normal = -normal
+        bulge = mid - (p0 + p1) / 2
+        if np.linalg.norm(bulge) > 0.05:
+            # Lien courbe : montant et nom du cote exterieur de la courbure.
+            normal = bulge / np.linalg.norm(bulge)
+        else:
+            normal = np.array([-u[1], u[0], 0.0])
+            if normal[1] < 0:
+                normal = -normal
         label = None
         if ln.get("montant") is not None:
             label = txt(nombres.fmt(float(ln["montant"]), ln.get("format", "euro")), SZ_LABEL,
                         col, weight=SEMIBOLD).move_to(mid + normal * 0.34)
         key = f"link_{i + 1}"
-        links[key] = (path, tip, dots, label, k)
+        links[key] = (path, tip, dots, label, k, (int(ln["de"]), int(ln["vers"])))
         order.append(key)
         cues.point(f"lien_{i + 1}", mid + normal * (0.80 if label is not None else 0.42))
         cues.anchor_colors[f"lien_{i + 1}"] = col
@@ -2234,12 +2260,18 @@ def Flux(seg, cues):
         if k in nodes:
             rev.at(k, FadeIn(nodes[k][0], scale=0.7), rt=PUNCTUAL_MAX)
             continue
-        path, tip, dots, label, inten = links[k]
+        path, tip, dots, label, inten, ends = links[k]
         rt = rev.run_time(k, PUNCTUAL_MAX)
         t0 = rev.t(k)
+        late = [f"node_{e}" for e in ends if rev.t(f"node_{e}") > t0 + 1e-6]
+        if late:
+            print(f"[ATTENTION] {sid} : {k} part a {t0:.2f} s, avant {', '.join(late)} : "
+                  f"un lien relie deux noeuds deja a l'ecran", file=sys.stderr, flush=True)
         rev.at(k, Create(path), FadeIn(tip), rt=PUNCTUAL_MAX)
         if label is not None:
-            cues.at(t0 + rt, FadeIn(label, scale=0.6), rt=LABEL_RT)
+            # L'information au mot : le montant s'ecrit quand la fleche part,
+            # pas quand elle arrive.
+            cues.at(t0, FadeIn(label, scale=0.6), rt=LABEL_RT)
         level = None
         if t_hl is not None and k not in focus:
             level = _schedule([(t_hl, 1.0), (t_hl + PUNCTUAL_MAX, 0.25)])
@@ -2252,7 +2284,7 @@ def Flux(seg, cues):
 
     if t_hl is not None:
         anims = []
-        for k, (path, tip, dots, label, inten) in links.items():
+        for k, (path, tip, dots, label, inten, _) in links.items():
             if rev.t(k) >= t_hl:
                 continue
             if k in focus:
