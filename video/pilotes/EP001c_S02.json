@@ -1,0 +1,32 @@
+{
+  "_note": "Plan pilote de la famille Comparaison. Remplace, pour ce seul rendu (video/pilote.py), les champs visuels de S02 ; script.json n'est pas modifie. S02 est le segment classe comparaison qui restait le plus longtemps fige (27,9 s sur 33,2 s, diagnostic du 17/10/2026). t_rel_s : recales sur l'alignement reel par pilote.py.",
+  "episode": "EP001c",
+  "segment": "S02",
+  "remplace": {
+    "type_visuel": "manim",
+    "manim_brief": {
+      "composant": "Comparaison",
+      "unite": "EUR",
+      "donnees": [[1, 55], [2, 2400]],
+      "couleurs": ["INTEREST", "CONTRIB"],
+      "pictogrammes": [{"option": 2, "icone": "calendar", "nombre": 12}],
+      "ecart": {"entre": [1, 2]},
+      "mise_en_avant": {"option": 1},
+      "suite": {"option": 1},
+      "revelations": [
+        {"element": "value_1", "t_rel_s": 8.14, "declencheur": "cinquante-cinq euros, pour deux"},
+        {"element": "value_2", "t_rel_s": 9.62, "declencheur": "deux mille quatre cents"},
+        {"element": "pictos_1", "t_rel_s": 13.48, "declencheur": "douze mois"},
+        {"element": "gap", "t_rel_s": 16.27, "declencheur": "ça ne vaut pas la peine"},
+        {"element": "highlight", "t_rel_s": 18.96, "declencheur": "l'effet paraît nul"},
+        {"element": "suite", "t_rel_s": 31.4, "declencheur": "cache la suite"}
+      ]
+    },
+    "overlay_texte": [
+      {"ancre": "option_1", "t_rel_s": 2.22, "texte_fr": "Intérêts", "declencheur": "intérêts, c'est"},
+      {"ancre": "titre_haut", "t_rel_s": 5.56, "texte_fr": "Année 1", "declencheur": "première année"},
+      {"ancre": "option_2", "t_rel_s": 10.53, "texte_fr": "Versements", "declencheur": "versés"},
+      {"ancre": "bas", "t_rel_s": 23.0, "texte_fr": "Source : AMF, décembre 2021", "declencheur": "l'a écrit"}
+    ]
+  }
+}

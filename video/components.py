@@ -21,7 +21,7 @@ import sys
 from manim import *
 import numpy as np
 
-from style import (BG, INK, INK_SOFT, MUTED, RULE, RULE_SOFT, CONTRIB, INTEREST,
+from style import (BG, BG_LIFT, INK, INK_SOFT, MUTED, RULE, RULE_SOFT, CONTRIB, INTEREST,
                    TEAL, NEG, WHITE_DIM, PLOT_W, PLOT_H, Y_TOP, X_RIGHT,
                    SZ_TITLE, SZ_BODY, SZ_LABEL, SZ_SOURCE,
                    txt, fade_up, euro, pct)
@@ -45,6 +45,10 @@ class Cues:
         # Mesures pour make check : fin de construction du cadre, debut de la
         # premiere animation de donnee.
         self.meta = {}
+        # Ancres nommees des familles pilotes (option_k, noeud_k, lien_k) :
+        # couleur et largeur maximale du libelle que l'overlay y pose.
+        self.anchor_colors = {}
+        self.anchor_widths = {}
 
     def add(self, *m):
         self.static.extend(m)
@@ -1810,6 +1814,455 @@ def _opacity_to(m, value):
     return Transform(m, m.copy().set_opacity(value))
 
 
+# =============================================================================
+# Familles pilotes - hors catalogue tant que leur plan pilote n'est pas valide
+# a l'ecran. Le script ne peut pas les demander (briefs.resolve les refuse) ;
+# seul video/pilote.py les rend, depuis un brief de video/pilotes/.
+# =============================================================================
+
+PILOTES = {"Comparaison", "Flux"}
+
+
+def _schedule(points, default=1.0):
+    """Fonction du temps, lineaire par morceaux, depuis [(instant, valeur)]."""
+    pts = sorted(points)
+    if not pts:
+        return lambda t: default
+    ts = np.array([p[0] for p in pts])
+    vs = np.array([p[1] for p in pts])
+    return lambda t: float(np.interp(t, ts, vs))
+
+
+class Courant(Animation):
+    """Des particules circulent le long d'un chemin, de `t0` a la fin du plan.
+
+    C'est l'argent qui circule : le mouvement porte l'information (le sens du
+    flux, son intensite), ce n'est pas un decor. La particule i part du debut
+    du chemin a t0 + i / (n * cadence) : rien ne surgit d'un bloc au milieu
+    du trajet. `extent(t)` borne la part du chemin deja ouverte (une bande qui
+    grandit) ; `level(t)` module l'opacite (mise en avant, estompage).
+    """
+
+    def __init__(self, group, path_fn, t0, cadence, extent=None, level=None, **kw):
+        self.path_fn = path_fn
+        self.t0 = float(t0)
+        self.cadence = float(cadence)            # tours par seconde
+        self.extent = extent or (lambda t: 1.0)
+        self.level = level or (lambda t: 1.0)
+        super().__init__(group, rate_func=linear, introducer=True, **kw)
+
+    def interpolate_mobject(self, alpha):
+        t = self.t0 + alpha * self.run_time
+        e, lv = self.extent(t), self.level(t)
+        n = len(self.mobject.submobjects)
+        for i, d in enumerate(self.mobject.submobjects):
+            run = (t - self.t0) * self.cadence - i / n
+            if run < 0 or e <= 1e-3:
+                d.set_fill(opacity=0)
+                continue
+            p = run % 1.0
+            d.move_to(self.path_fn(p * e))
+            fade = min(1.0, p / 0.12, (1.0 - p) / 0.12)
+            d.set_fill(opacity=max(fade, 0.0) * lv)
+
+
+def _particles(n, radius, color):
+    g = VGroup(*[Dot(radius=radius, color=color, fill_opacity=0, stroke_width=0)
+                 for _ in range(n)])
+    return g
+
+
+def _set_alpha(m, u):
+    """Opacite d'un pictogramme : trait pour les traces, remplissage pour les points."""
+    for sm in m.family_members_with_points():
+        if isinstance(sm, Dot):
+            sm.set_fill(opacity=u)
+        else:
+            sm.set_stroke(opacity=u)
+
+
+class FillPictos(Animation):
+    """Des pictogrammes surgissent un a un, dans l'ordre du groupe. C'est un
+    trace : le dernier arrive a l'instant du mot qui enonce leur nombre."""
+
+    def __init__(self, group, keyframes, **kw):
+        self.frac = _keyframe_rate(keyframes)
+        super().__init__(group, rate_func=linear, introducer=True, **kw)
+
+    def interpolate_mobject(self, alpha):
+        subs = self.mobject.submobjects
+        n = len(subs)
+        f = self.frac(alpha) * n
+        for i, (m, m0) in enumerate(zip(subs, self.starting_mobject.submobjects)):
+            u = float(np.clip(f - i, 0.0, 1.0))
+            m.become(m0)
+            m.scale(0.55 + 0.45 * rate_functions.smooth(u))
+            _set_alpha(m, u)
+
+
+def _dim_to(m, value):
+    """Estompe un objet sans remplir ce qui n'est qu'un trait (pictogramme,
+    arc, ligne). Decide par la nature de chaque piece, pas par son opacite du
+    moment : un pictogramme encore invisible a la construction (il surgit
+    plus tard) doit s'estomper, pas disparaitre. Une copie par animation."""
+    c = m.copy()
+    for sm in c.family_members_with_points():
+        if isinstance(sm, Dot):
+            sm.set_fill(opacity=value)
+        elif sm.get_stroke_width() > 1e-3:
+            sm.set_stroke(opacity=value)
+        else:
+            sm.set_fill(opacity=value)
+    return Restyle(m, c)
+
+
+class Restyle(Transform):
+    """Transform d'un objet deja introduit par sa propre animation.
+
+    Manim pose a la premiere image les objets des animations qui ne sont pas
+    des « introducers » (voir LISEZ-MOI, pieges) : une mise en avant jouee a
+    12 s ferait apparaitre ses cibles des 0 s. Declaree introductrice, elle
+    n'ajoute son objet qu'a son depart, quand il est deja a l'ecran."""
+
+    def __init__(self, m, target, **kw):
+        super().__init__(m, target, introducer=True, **kw)
+
+
+def _unit_format(unite):
+    u = str(unite or "").lower()
+    if "percent" in u or "pct" in u or "%" in u:
+        return "pct"
+    if "eur" in u:
+        return "euro"
+    return "nombre"
+
+
+# --- Comparaison ---------------------------------------------------------------
+
+def Comparaison(seg, cues):
+    """Deux options face a face, qui se remplissent en alternance.
+
+    Parametres du brief :
+      unite          format des valeurs ("EUR", "percent", autre)   OBLIGATOIRE
+      donnees        [[option, valeur], ...] dans l'ordre d'entree ; option 1 a
+                     gauche, 2 a droite. Chaque ligne est une jauge, sur une
+                     echelle commune aux deux options.
+      couleurs       une par option (bleu = ce que vous versez, ambre = ce que
+                     le capital verse)
+      pictogrammes   [{"option": k, "icone": nom, "nombre": n}] : n pictos qui
+                     se remplissent un a un dans la colonne k (n vient du brief)
+      mise_en_avant  {"option": k} : encadre l'option k, estompe l'autre
+      ecart          {"entre": [g1, g2], "valeur": v, "format": f} : repere
+                     entre deux jauges ; `valeur` facultative, sourcee (R3)
+      suite          {"option": k} : bande ouverte au-dessus de la derniere
+                     jauge de k, sans borne ni valeur, ou l'argent monte
+    Parties : value_g, pictos_k, suite (traces), highlight, gap (surgissements).
+    Ancres d'overlay : option_1, option_2 (nom de chaque option).
+    """
+    import nombres
+    from pictos import picto
+    sid = seg.get("id", "?")
+    mb = seg["manim_brief"]
+    if not mb.get("unite"):
+        raise SystemExit(f"{sid} : manim_brief.unite obligatoire pour Comparaison")
+    fmt = _unit_format(mb["unite"])
+    rows = [(int(r[0]), float(r[1])) for r in mb.get("donnees") or []]
+    if not rows or any(o not in (1, 2) for o, _ in rows):
+        raise SystemExit(f"{sid} : Comparaison attend donnees [[option, valeur]], option 1 ou 2")
+    if any(v < 0 for _, v in rows):
+        raise SystemExit(f"{sid} : Comparaison ne trace pas encore de valeur negative")
+    cols = [_PALETTE.get(c, c) for c in mb.get("couleurs", [])]
+    cols += [CONTRIB, INTEREST][len(cols):]
+    pics = mb.get("pictogrammes") or []
+
+    # --- geometrie : deux colonnes, une ligne de base commune ----------------
+    X = {1: -3.3, 2: 3.3}
+    y0 = -2.45 if "bas" in cues.anchors else -2.70
+    y_top = 1.25                    # sommet de la plus haute jauge
+    y_name = 2.30                   # ancre du nom de l'option
+    vmax = max(v for _, v in rows) or 1.0
+    h_max = y_top - y0
+    for k in (1, 2):
+        cues.point(f"option_{k}", (X[k], y_name))
+        cues.anchor_colors[f"option_{k}"] = cols[k - 1]
+        cues.anchor_widths[f"option_{k}"] = 5.2
+
+    base = VGroup(*[Line([X[k] - 2.6, y0, 0], [X[k] + 2.6, y0, 0], stroke_color=RULE,
+                         stroke_width=2.4) for k in (1, 2)])
+    divider = DashedLine([0, y0 - 0.1, 0], [0, y_name + 0.2, 0], dash_length=0.10,
+                         stroke_color=RULE, stroke_width=1.6)
+
+    # Jauges a gauche de leur colonne quand des pictos l'occupent aussi.
+    has_pics = {int(p["option"]) for p in pics}
+    per_opt = {1: [g for g, (o, _) in enumerate(rows) if o == 1],
+               2: [g for g, (o, _) in enumerate(rows) if o == 2]}
+    gauges, order, by_opt = {}, [], {1: VGroup(), 2: VGroup()}
+    bw = 1.0
+    for k in (1, 2):
+        idx = per_opt[k]
+        cx = X[k] - (1.2 if k in has_pics else 0.0)
+        span = 1.4 * (len(idx) - 1)
+        for j, g in enumerate(idx):
+            v = rows[g][1]
+            x = cx - span / 2 + 1.4 * j
+            h = max(h_max * v / vmax, 0.03)
+            rect = Rectangle(width=bw, height=h, fill_color=cols[k - 1], fill_opacity=0.92,
+                             stroke_width=0)
+            rect.move_to([x, y0, 0], aligned_edge=DOWN)
+            lab = txt(nombres.fmt(v, fmt), SZ_BODY, INK, weight=SEMIBOLD)
+            lab.next_to(rect, UP, buff=0.14)
+            key = f"value_{g + 1}"
+            gauges[key] = (rect, lab, k)
+            order.append(key)
+            by_opt[k].add(rect, lab)
+            cues.point(key, rect.get_edge_center(UP))
+
+    pic_groups = {}
+    for i, p in enumerate(pics):
+        k, n = int(p["option"]), int(p["nombre"])
+        if k not in (1, 2) or not 1 <= n <= 40:
+            raise SystemExit(f"{sid} : pictogrammes[{i}] : option 1 ou 2, nombre de 1 a 40")
+        ncol = 4 if n > 6 else max(n, 1) if n <= 4 else 3
+        size, gap = 0.5, 0.22
+        icons = VGroup()
+        for j in range(n):
+            ic = picto(p["icone"], cols[k - 1], hauteur=size)
+            r, c = divmod(j, ncol)
+            ic.move_to([X[k] + 1.05 - (ncol - 1) * (size + gap) / 2 + c * (size + gap),
+                        y0 + 0.15 + size / 2 + r * (size + gap), 0])
+            _set_alpha(ic, 0.0)
+            icons.add(ic)
+        key = f"pictos_{i + 1}"
+        pic_groups[key] = (icons, k)
+        order.append(key)
+        by_opt[k].add(icons)
+        cues.point(key, icons.get_top())
+
+    extras, hl, gap_m, suite = [], None, None, None
+    if mb.get("mise_en_avant"):
+        k = int(mb["mise_en_avant"]["option"])
+        hl = k
+        extras.append("highlight")
+    if mb.get("ecart"):
+        e = mb["ecart"]
+        g1, g2 = (int(x) for x in e["entre"])
+        (r1, _, _), (r2, _, _) = gauges[f"value_{g1}"], gauges[f"value_{g2}"]
+        lo, hi = (r1, r2) if r1.height <= r2.height else (r2, r1)
+        y_lo = lo.get_top()[1]
+        side = LEFT if hi.get_center()[0] > lo.get_center()[0] else RIGHT
+        x_br = hi.get_edge_center(side)[0] + (-0.22 if side is LEFT else 0.22)
+        x_from = lo.get_edge_center(-side)[0]
+        dash = DashedLine([x_from, y_lo, 0], [x_br, y_lo, 0], dash_length=0.10,
+                          stroke_color=INK_SOFT, stroke_width=2.2)
+        tick = 0.14 * (1 if side is LEFT else -1)
+        bracket = VGroup(Line([x_br, y_lo, 0], [x_br, hi.get_top()[1], 0], stroke_color=INK,
+                              stroke_width=3),
+                         Line([x_br, hi.get_top()[1], 0], [x_br + tick, hi.get_top()[1], 0],
+                              stroke_color=INK, stroke_width=3),
+                         Line([x_br, y_lo, 0], [x_br + tick, y_lo, 0], stroke_color=INK,
+                              stroke_width=3))
+        gap_m = VGroup(dash, bracket)
+        if e.get("valeur") is not None:
+            tag = txt(nombres.fmt(float(e["valeur"]), e.get("format", "nombre")), SZ_BODY,
+                      INK, weight=SEMIBOLD)
+            tag.next_to(bracket, side, buff=0.16)
+            gap_m.add(tag)
+        cues.point("gap", bracket.get_center())
+        extras.append("gap")
+    if mb.get("suite"):
+        k = int(mb["suite"]["option"])
+        last = [gauges[key] for key in order if key in gauges and gauges[key][2] == k][-1]
+        r, lab = last[0], last[1]
+        top = y_top + 0.35
+        y_from = lab.get_top()[1] + 0.10       # au-dessus de la valeur, sans la couvrir
+        band = Rectangle(width=bw, height=max(top - y_from, 0.1), stroke_width=0)
+        band.move_to([r.get_center()[0], y_from, 0], aligned_edge=DOWN)
+        band.set_fill([cols[k - 1], BG], opacity=0.55)
+        band.set_sheen_direction(UP)
+        suite = (band, k, r.get_center()[0], y_from, top)
+        order.append("suite")
+        cues.point("suite", band.get_top())
+
+    rev = Reveal(seg, cues, order, extras=extras, t0=1.6, rt=PUNCTUAL_MAX, margin=0.6)
+    tracked = [k for k in order]
+    _warn_unnamed(sid, tracked, rev)
+    times = _named_times(tracked, rev)
+    tracks = {k: [(1.0, times[k])] for k in tracked}
+    frame_end = _frame_end(tracks)
+    _build_frame(cues, VGroup(base, divider), [], [], frame_end)
+    cues.meta["frame_end"] = frame_end
+
+    later = [(t, False) for k, t in rev.times.items() if k in rev.fixed and k not in tracks]
+    runs, first_motion = _plan_runs(sid, tracks, frame_end, later, CONTINUOUS_MAX, cues.dur)
+    cues.meta["first_data"] = first_motion
+    arrive = {}
+    for k in tracked:
+        for kf in runs.get(k) or []:
+            t0, t1 = kf[0][0], kf[-1][0]
+            arrive[k] = (t0, t1)
+            rev.times[k] = t1
+            if k in gauges:
+                rect, lab, _ = gauges[k]
+                cues.at(t0, GrowBar(rect, DOWN), rt=t1 - t0)
+                cues.at(t1, FadeIn(lab, scale=0.6), rt=LABEL_RT)
+            elif k in pic_groups:
+                cues.at(t0, FillPictos(pic_groups[k][0], kf), rt=t1 - t0)
+            elif k == "suite":
+                band, opt, x, y_from, y_to = suite
+                cues.at(t0, GrowBar(band, DOWN), rt=t1 - t0)
+                # L'argent monte dans la bande, en silence, jusqu'a la fin du plan.
+                grow = _schedule([(t0, 0.0), (t1, 1.0)])
+                dots = _particles(7, 0.06, cols[opt - 1])
+                path = lambda p, x=x, a=y_from, b=y_to: np.array([x, a + (b - a) * p, 0.0])
+                cues.at(t0, Courant(dots, path, t0, 0.32, extent=grow),
+                        rt=max(cues.dur - t0, MIN_RT))
+
+    if hl is not None:
+        rev.default("highlight", rev.last + 0.4)
+        t_h = rev.t("highlight")
+        other = 3 - hl
+        shown = [m for key, (m, _l, o) in gauges.items() if o == other
+                 and arrive.get(key, (0, 0))[0] < t_h]
+        shown += [gauges[key][1] for key in gauges if gauges[key][2] == other
+                  and arrive.get(key, (0, 0))[1] < t_h]
+        shown += [g for key, (g, o) in pic_groups.items() if o == other
+                  and arrive.get(key, (0, 0))[1] < t_h]
+        box = SurroundingRectangle(by_opt[hl], color=INK, buff=0.22, stroke_width=2.6,
+                                   corner_radius=0.08)
+        rev.at("highlight", Create(box), *[_dim_to(m, 0.32) for m in shown],
+               rt=PUNCTUAL_MAX)
+    if gap_m is not None:
+        rev.default("gap", rev.last + 0.4)
+        rev.at("gap", Create(gap_m[0]), Create(gap_m[1]),
+               *[FadeIn(m) for m in gap_m[2:]], rt=PUNCTUAL_MAX)
+    return VGroup(*[VGroup(r, l) for r, l, _ in gauges.values()],
+                  *[g for g, _ in pic_groups.values()])
+
+
+# --- Flux ----------------------------------------------------------------------
+
+def Flux(seg, cues):
+    """Des noeuds relies par des fleches, ou l'argent circule.
+
+    Parametres du brief :
+      noeuds         [{"icone": nom, "position": [x, y]}] ; position en unites
+                     de scene, centre (0, 0), x de -5,5 a 5,5, y de -2,4 a 1,8.
+                     Sans position : alignes de gauche a droite.
+      liens          [{"de": i, "vers": j, "couleur": "CONTRIB", "intensite": 1,
+                       "courbure": 0, "montant": v, "format": "euro"}] ;
+                     `intensite` (1 a 3) regle le debit visible des particules,
+                     `montant` (facultatif, source, R3) s'ecrit sur le lien.
+      mise_en_avant  {"liens": [k, ...]} : ces liens s'affirment, les autres
+                     s'estompent.
+    Parties : node_k, link_k, highlight - toutes surgissent (1,5 s) sur leur
+    mot. Un lien se trace de sa source a sa cible, puis l'argent y circule
+    jusqu'a la fin du plan.
+    Ancres d'overlay : noeud_k (sous le noeud), lien_k (le long du lien).
+    """
+    import nombres
+    from pictos import picto
+    sid = seg.get("id", "?")
+    mb = seg["manim_brief"]
+    nodes_spec = mb.get("noeuds") or []
+    links_spec = mb.get("liens") or []
+    if not nodes_spec:
+        raise SystemExit(f"{sid} : Flux attend au moins un noeud")
+    R = 0.62
+    nodes, order = {}, []
+    n = len(nodes_spec)
+    for i, nd in enumerate(nodes_spec):
+        pos = nd.get("position") or [-5.0 + 10.0 * i / max(n - 1, 1), 0.0]
+        x, y = float(pos[0]), float(pos[1])
+        col = _PALETTE.get(nd.get("couleur"), nd.get("couleur")) or INK_SOFT
+        ring = Circle(radius=R, stroke_color=col, stroke_width=3,
+                      fill_color=BG_LIFT, fill_opacity=1).move_to([x, y, 0])
+        icon = picto(nd["icone"], INK, hauteur=0.58).move_to([x, y, 0])
+        key = f"node_{i + 1}"
+        nodes[key] = (VGroup(ring, icon), np.array([x, y, 0.0]))
+        order.append(key)
+        cues.point(f"noeud_{i + 1}", (x, y - R - 0.36))
+        cues.anchor_widths[f"noeud_{i + 1}"] = 3.2
+
+    links = {}
+    for i, ln in enumerate(links_spec):
+        a, b = nodes[f"node_{int(ln['de'])}"][1], nodes[f"node_{int(ln['vers'])}"][1]
+        col = _PALETTE.get(ln.get("couleur", "CONTRIB"), ln.get("couleur", CONTRIB))
+        u = (b - a) / np.linalg.norm(b - a)
+        p0, p1 = a + u * (R + 0.14), b - u * (R + 0.20)
+        bend = float(ln.get("courbure", 0.0))
+        path = ArcBetweenPoints(p0, p1, angle=bend) if abs(bend) > 1e-3 else Line(p0, p1)
+        path.set_stroke(col, width=3.2, opacity=0.6)
+        tip = ArrowTriangleFilledTip(color=col, fill_opacity=0.9, length=0.24, width=0.24)
+        end_dir = path.point_from_proportion(1.0) - path.point_from_proportion(0.97)
+        tip.rotate(np.arctan2(end_dir[1], end_dir[0]) - tip.tip_angle)
+        tip.move_to(path.point_from_proportion(1.0) - tip.get_tip_point() + tip.get_center())
+        k = int(ln.get("intensite", 1))
+        if not 1 <= k <= 3:
+            raise SystemExit(f"{sid} : liens[{i}].intensite de 1 a 3")
+        dots = _particles(3 + 3 * k, 0.05 + 0.02 * k, col)
+        mid = path.point_from_proportion(0.5)
+        normal = np.array([-u[1], u[0], 0.0])
+        if normal[1] < 0:
+            normal = -normal
+        label = None
+        if ln.get("montant") is not None:
+            label = txt(nombres.fmt(float(ln["montant"]), ln.get("format", "euro")), SZ_LABEL,
+                        col, weight=SEMIBOLD).move_to(mid + normal * 0.34)
+        key = f"link_{i + 1}"
+        links[key] = (path, tip, dots, label, k)
+        order.append(key)
+        cues.point(f"lien_{i + 1}", mid + normal * (0.80 if label is not None else 0.42))
+        cues.anchor_colors[f"lien_{i + 1}"] = col
+        cues.anchor_widths[f"lien_{i + 1}"] = 3.0
+
+    extras = ["highlight"] if mb.get("mise_en_avant") else []
+    rev = Reveal(seg, cues, order, extras=extras, t0=1.6, rt=PUNCTUAL_MAX, margin=0.6)
+    _warn_unnamed(sid, order, rev)
+    times = _named_times(order, rev)
+    for k in order:
+        rev.default(k, times[k])
+    cues.meta["frame_end"] = 0.0
+    cues.meta["first_data"] = min(times.values()) if times else None
+
+    t_hl, focus = None, set()
+    if extras:
+        rev.default("highlight", rev.last + 0.4)
+        t_hl = rev.t("highlight")
+        focus = {f"link_{int(k)}" for k in mb["mise_en_avant"]["liens"]}
+
+    for k in order:
+        if k in nodes:
+            rev.at(k, FadeIn(nodes[k][0], scale=0.7), rt=PUNCTUAL_MAX)
+            continue
+        path, tip, dots, label, inten = links[k]
+        rt = rev.run_time(k, PUNCTUAL_MAX)
+        t0 = rev.t(k)
+        rev.at(k, Create(path), FadeIn(tip), rt=PUNCTUAL_MAX)
+        if label is not None:
+            cues.at(t0 + rt, FadeIn(label, scale=0.6), rt=LABEL_RT)
+        level = None
+        if t_hl is not None and k not in focus:
+            level = _schedule([(t_hl, 1.0), (t_hl + PUNCTUAL_MAX, 0.25)])
+        start = t0 + rt
+        if start < cues.dur:
+            fn = lambda p, path=path: path.point_from_proportion(p)
+            length = path.get_arc_length() if hasattr(path, "get_arc_length") else 4.0
+            cues.at(start, Courant(dots, fn, start, 1.5 / max(length, 1.0), level=level),
+                    rt=max(cues.dur - start, MIN_RT))
+
+    if t_hl is not None:
+        anims = []
+        for k, (path, tip, dots, label, inten) in links.items():
+            if rev.t(k) >= t_hl:
+                continue
+            if k in focus:
+                anims.append(Restyle(path, path.copy().set_stroke(width=5.2, opacity=0.95)))
+            else:
+                anims += [_dim_to(path, 0.18), _dim_to(tip, 0.25)]
+        rev.at("highlight", *anims, rt=PUNCTUAL_MAX)
+    return VGroup(*[v[0] for v in nodes.values()], *[VGroup(p, t) for p, t, *_ in links.values()])
+
+
 COMPONENTS = {
     "BarRace": BarRace,
     "StackedBars": StackedBars,
@@ -1821,4 +2274,6 @@ COMPONENTS = {
     "Timeline": Timeline,
     "Bars": Bars,
     "Areas": Areas,
+    "Comparaison": Comparaison,
+    "Flux": Flux,
 }

@@ -1,0 +1,40 @@
+{
+  "_note": "Plan pilote de la famille Flux. Remplace, pour ce seul rendu (video/pilote.py), les champs visuels de S12 (b-roll sans overlay, fige 14,7 s sur 14,8 s, diagnostic du 17/10/2026) ; script.json n'est pas modifie. Analogie du script : la case depart est le versement fixe (bleu), les loyers sont les interets (ambre). Aucun visuel de marque : pictogrammes Lucide generiques, et le nom du jeu n'est ecrit nulle part a l'ecran. t_rel_s : recales sur l'alignement reel par pilote.py.",
+  "episode": "EP001c",
+  "segment": "S12",
+  "remplace": {
+    "type_visuel": "manim",
+    "manim_brief": {
+      "composant": "Flux",
+      "noeuds": [
+        {"icone": "flag", "position": [-4.8, 0.2]},
+        {"icone": "wallet", "position": [0.0, 0.2]},
+        {"icone": "house", "position": [4.6, 1.35]},
+        {"icone": "hotel", "position": [4.6, -1.45]}
+      ],
+      "liens": [
+        {"de": 1, "vers": 2, "couleur": "CONTRIB", "intensite": 1},
+        {"de": 3, "vers": 2, "couleur": "INTEREST", "intensite": 2},
+        {"de": 4, "vers": 2, "couleur": "INTEREST", "intensite": 2}
+      ],
+      "mise_en_avant": {"liens": [2, 3]},
+      "revelations": [
+        {"element": "node_2", "t_rel_s": 1.95, "declencheur": "vous vivez"},
+        {"element": "node_1", "t_rel_s": 3.97, "declencheur": "case départ. Puis"},
+        {"element": "link_1", "t_rel_s": 3.97, "declencheur": "case départ. Puis"},
+        {"element": "node_3", "t_rel_s": 6.11, "declencheur": "maisons"},
+        {"element": "node_4", "t_rel_s": 7.08, "declencheur": "hôtels"},
+        {"element": "link_2", "t_rel_s": 10.0, "declencheur": "loyers"},
+        {"element": "link_3", "t_rel_s": 10.0, "declencheur": "loyers"},
+        {"element": "highlight", "t_rel_s": 11.04, "declencheur": "plus que la case"}
+      ]
+    },
+    "overlay_texte": [
+      {"ancre": "noeud_2", "t_rel_s": 1.95, "texte_fr": "Vous", "declencheur": "vous vivez"},
+      {"ancre": "noeud_1", "t_rel_s": 3.97, "texte_fr": "Case départ", "declencheur": "case départ. Puis"},
+      {"ancre": "noeud_3", "t_rel_s": 6.11, "texte_fr": "Maisons", "declencheur": "maisons"},
+      {"ancre": "noeud_4", "t_rel_s": 7.08, "texte_fr": "Hôtels", "declencheur": "hôtels"},
+      {"ancre": "lien_2", "t_rel_s": 10.0, "texte_fr": "Loyers", "declencheur": "loyers"}
+    ]
+  }
+}

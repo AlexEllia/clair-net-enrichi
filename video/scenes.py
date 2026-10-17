@@ -6,6 +6,7 @@ le montage final se contente de coller les plans bout a bout.
 """
 
 import json
+import re
 import sys
 
 from manim import *
@@ -205,6 +206,27 @@ def add_overlays(seg, cues, visual):
                 _fit(t, FW - 2.4)
             t.move_to([x, y, 0]).set_z_index(Z_OVER)
             cues.at(cues.late(o["t_rel_s"], 0.8), FadeIn(t), rt=0.5)
+            out.add(t)
+
+    # --- ancres nommees des familles pilotes ---------------------------------
+    # Comparaison exporte option_k (le nom de l'option, au-dessus de sa
+    # colonne), Flux exporte noeud_k (sous le noeud) et lien_k (le long du
+    # lien). Le composant n'ecrit aucun mot (R7) : ces noms passent ici.
+    for anchor in sorted(a for a in by if re.fullmatch(r"(option|noeud|lien)_\d+", a)):
+        for o in by[anchor]:
+            if anchor not in cues.points:
+                print(f"[ATTENTION] {seg.get('id')} : le composant n'exporte pas l'ancre "
+                      f"{anchor!r}, libelle {o['texte_fr']!r} non pose", file=sys.stderr,
+                      flush=True)
+                continue
+            x, y, _ = cues.points[anchor]
+            option = anchor.startswith("option")
+            t = txt(o["texte_fr"], SZ_BODY if option else SZ_LABEL,
+                    cues.anchor_colors.get(anchor, INK if option else INK_SOFT),
+                    weight=SEMIBOLD if option else NORMAL)
+            _fit(t, cues.anchor_widths.get(anchor, 4.0))
+            t.move_to([x, y, 0]).set_z_index(Z_OVER)
+            cues.at(cues.late(o["t_rel_s"], 0.8), fade_up(t, 0.2), rt=0.5)
             out.add(t)
 
     # --- bas : sources et mentions ------------------------------------------

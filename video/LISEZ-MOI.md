@@ -159,6 +159,42 @@ Le bleu porte ce que vous versez, l'ambre ce que le capital vous verse : c'est
 l'opposition centrale de la chaîne, et le couple reste lisible en deutéranopie
 et en protanopie.
 
+## L'écran figé, mesuré en pixels
+
+`densite.py` décode une vidéo à 10 images/s en 480×270 et dit, image par image,
+si quelque chose bouge ou apparaît. La dérive du décor (points des fonds animés,
+bandes du b-roll) ne compte pas : elle reste sous le seuil. Deux usages :
+
+- **`make check`, règle R6** : quand un plan manim est déjà rendu
+  (`plans_cales/Sxx.mp4`), ses temps morts entre la première donnée et la
+  dernière révélation sont mesurés sur l'image, et c'est cette mesure qui
+  avertit. Sans rendu, le calendrier prend le relais. La mesure en pixels voit
+  un temps mort ~0,5 s plus long que le calendrier : un fondu adouci ne se voit
+  qu'à ~20 % d'opacité.
+- **Contrôle final du montage** (`make video`, `make draft`) : carte de densité
+  de l'épisode dans `build/densite.png`, `densite.json` et ses CSV, et un
+  avertissement par plage figée de plus de 4 s, tous types de plans confondus.
+  Rien n'est bloqué.
+
+## Les familles pilotes
+
+Une famille nouvelle se rend d'abord sur un plan pilote, hors catalogue, avant
+d'être validée à l'écran. `Comparaison` et `Flux` en sont là : le build refuse
+qu'un `script.json` les demande. Leur brief est écrit dans `video/pilotes/`, et
+il remplace, pour ce seul rendu, les champs visuels du segment, sans toucher au
+script validé :
+
+```bash
+python video/pilote.py video/pilotes/EP001c_S02.json
+```
+
+Le pilote recale chaque déclencheur sur l'alignement réel de la voix, rend le
+plan avec sa voix dans `episodes/EPxxx/video/pilotes/`, et écrit sa carte de
+densité dans `episodes/EPxxx/build/pilotes/`. `--full` rend en 1920×1080.
+
+Leurs pictogrammes viennent de Lucide 1.59.0 (licence ISC), copiés avec leur
+licence dans `video/pictos/lucide/` : voir `PROVENANCE.md` avant d'en ajouter.
+
 ## Deux pièges Manim, si vous modifiez le code
 
 - **`FadeOut` sur un objet pas encore introduit le fait apparaître à la première

@@ -33,7 +33,7 @@ import json
 import sys
 from pathlib import Path
 
-from components import COMPONENTS, CONTINUOUS_MAX, PUNCTUAL_MAX, MIN_RT
+from components import COMPONENTS, CONTINUOUS_MAX, PUNCTUAL_MAX, MIN_RT, PILOTES
 
 GAP = 0.2          # respiration entre deux apparitions successives
 MAX_STILL = 4.0    # au-dela, l'ecran reste fige trop longtemps
@@ -85,6 +85,10 @@ def resolve(seg, dur, log=True):
     mb = seg["manim_brief"]
     name = mb["composant"]
     elements = {}
+    if name in PILOTES and not seg.get("_pilote"):
+        raise SystemExit(f"{sid} : {name} est une famille pilote, en attente de validation a "
+                         f"l'ecran et hors catalogue ; seul video/pilote.py la rend, depuis "
+                         f"un brief de video/pilotes/")
     if name in COMPONENTS:
         fam = name
     else:
