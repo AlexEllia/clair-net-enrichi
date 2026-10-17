@@ -174,7 +174,7 @@ def check_catalogue(ep, script):
     return f"catalogue : AUTRE VERSION ({want[:8]}) - {where}"
 
 
-def check_revelations(segments, durations, plans_dir=None, script_path=None):
+def check_revelations(segments, durations, plans_dir=None, sources=()):
     """Deux defauts distincts des plans manim :
 
     - l'ouverture inerte : le cadre est construit, aucune donnee ne bouge
@@ -184,7 +184,8 @@ def check_revelations(segments, durations, plans_dir=None, script_path=None):
       revelations).
 
     R6 se juge sur ce que voit le spectateur : quand le plan est deja rendu
-    (`plans_dir`/Sxx.mp4), ses temps morts sont mesures en pixels (densite.py)
+    (`plans_dir`/Sxx.mp4) et plus recent que `sources` (script, durees de la
+    voix), ses temps morts sont mesures en pixels (densite.py)
     et ce sont eux qui declenchent l'avertissement. Sinon, ou en complement,
     le calendrier : exact quand le composant se construit (animations
     reellement posees, overlays compris), estime depuis le script sinon. La
@@ -219,10 +220,14 @@ def check_revelations(segments, durations, plans_dir=None, script_path=None):
         pixels, perime = None, False
         plan = plans_dir / f"{s['id']}.mp4" if plans_dir else None
         if plan is not None and plan.exists():
-            times = sorted(float(r["t_rel_s"]) for r in s["manim_brief"]["revelations"])
-            first = op[1] if op and op[1] is not None else times[0]
-            pixels = densite.plages_plan(plan, first, times[-1])
-            perime = bool(script_path) and plan.stat().st_mtime < script_path.stat().st_mtime
+            # Un rendu plus ancien que le script ou que la voix montre un autre
+            # plan : on ne le mesure pas, le calendrier fait foi.
+            perime = any(p.exists() and plan.stat().st_mtime < p.stat().st_mtime
+                         for p in sources)
+            if not perime:
+                times = sorted(float(r["t_rel_s"]) for r in s["manim_brief"]["revelations"])
+                first = op[1] if op and op[1] is not None else times[0]
+                pixels = densite.plages_plan(plan, first, times[-1])
         rows.append((s["id"], op, stills, intervals is None, pixels, perime))
 
     print(f"\n  plans manim : ouverture inerte et temps morts internes (> {MAX_STILL:.0f} s)")
@@ -231,11 +236,12 @@ def check_revelations(segments, durations, plans_dir=None, script_path=None):
     for sid, op, stills, est, pixels, perime in rows:
         f, d, inert, _ = op if op else (0, 0, 0, est)
         internal = "; ".join(f"{l:.2f} s ({a} -> {b})" for a, b, _, l in stills) or "-"
-        if pixels is None:
+        if perime:
+            vu = "rendu perime, non mesure"
+        elif pixels is None:
             vu = "pas de rendu"
         else:
             vu = "; ".join(f"{l:.1f} s a {a:.1f} s" for a, l in pixels) or "-"
-            vu += " (rendu anterieur au script)" if perime else ""
         print(f"  {sid:<4} {f:5.2f}s {d:10.2f}s {inert:9.2f}s  {internal:<34} {vu:<28} "
               f"{'estime' if est else 'exact'}")
         if inert > MAX_STILL:
@@ -247,7 +253,7 @@ def check_revelations(segments, durations, plans_dir=None, script_path=None):
         else:
             for a, b, _, l in stills:
                 print(f"[ATTENTION] {sid} : ecran fige {l:.2f} s entre {a!r} et {b!r} "
-                      f"(R6, calendrier : aucun plan rendu a mesurer)", file=sys.stderr)
+                      f"(R6, calendrier : aucun plan rendu a jour a mesurer)", file=sys.stderr)
     if any(r[3] for r in rows):
         print("  estime = segment pas encore traduit : type de chaque partie devine sur son "
               "nom ; une barre monte jusqu'a 6 s avant son mot, une courbe, une aire ou une "
@@ -264,7 +270,8 @@ def check_density(final, tl, segments, dest):
     Avertit pour chaque plage figee de plus de 4 s, quel que soit le type de
     plan. Ne bloque rien : le montage est deja ecrit."""
     import densite
-    kinds = {s["id"]: s["type_visuel"] for s in segments}
+    kinds = {s["id"]: (s.get("manim_brief") or {}).get("composant", "manim")
+             if s["type_visuel"] == "manim" else s["type_visuel"] for s in segments}
     segs = [{"id": r["id"], "type_visuel": kinds.get(r["id"], "?"),
              "debut_s": r["debut_s"], "fin_s": r["fin_s"]} for r in tl["segments"]]
     res = densite.carte(final, segs, dest)
@@ -314,7 +321,7 @@ def main():
         print_timeline(tl)
         print(f"\n  {cat_line}")
         check_revelations(segments, durations, ep_dir / "video" / "plans_cales",
-                          ep_dir / "script.json")
+                          (ep_dir / "script.json", ep_dir / "audio" / "durations.json"))
         print(f"\n  ecrit : {ep_dir / 'build' / 'timeline.json'}")
         print(f"          {ep_dir / 'build' / 'chapitres.txt'}")
         return

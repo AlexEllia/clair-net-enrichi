@@ -1930,6 +1930,21 @@ class Restyle(Transform):
         super().__init__(m, target, introducer=True, **kw)
 
 
+def _picto_grid(n, width, height, size_max=0.5, gap=0.44):
+    """(colonnes, taille) de la plus grande grille de n pictos qui tienne dans
+    width x height, l'ecart valant `gap` fois la taille. A taille egale, la
+    grille la plus large (moins haute) l'emporte : 12 pictos -> 4 x 3 a 0,5,
+    40 pictos -> 6 x 7 a ~0,35."""
+    best = (0.0, 1)
+    for ncol in range(1, n + 1):
+        rows = -(-n // ncol)
+        s = min(width / (ncol + (ncol - 1) * gap), height / (rows + (rows - 1) * gap),
+                size_max)
+        if s >= best[0] - 1e-9:
+            best = (s, ncol)
+    return best[1], best[0]
+
+
 def _unit_format(unite):
     u = str(unite or "").lower()
     if "percent" in u or "pct" in u or "%" in u:
@@ -2027,13 +2042,14 @@ def Comparaison(seg, cues):
         k, n = int(p["option"]), int(p["nombre"])
         if k not in (1, 2) or not 1 <= n <= 40:
             raise SystemExit(f"{sid} : pictogrammes[{i}] : option 1 ou 2, nombre de 1 a 40")
-        ncol = 4 if n > 6 else max(n, 1) if n <= 4 else 3
-        size, gap = 0.5, 0.22
+        ncol, size = _picto_grid(n, 2.7, y_top + 0.2 - (y0 + 0.15))
+        gap = 0.44 * size
         icons = VGroup()
         for j in range(n):
             ic = picto(p["icone"], cols[k - 1], hauteur=size)
             r, c = divmod(j, ncol)
-            ic.move_to([X[k] + 1.05 - (ncol - 1) * (size + gap) / 2 + c * (size + gap),
+            # Grille alignee a gauche, a 0,5 de la jauge : l'accolade d'un ecart y passe.
+            ic.move_to([X[k] - 0.2 + size / 2 + c * (size + gap),
                         y0 + 0.15 + size / 2 + r * (size + gap), 0])
             _set_alpha(ic, 0.0)
             icons.add(ic)

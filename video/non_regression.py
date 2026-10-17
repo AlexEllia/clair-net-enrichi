@@ -114,25 +114,30 @@ def _segment(ep, sid):
     return next(g for g in s["segments"] if g["id"] == sid), d[sid].audio
 
 
-def _shot(name):
-    """Calendrier d'un plan de reference. Un plan pilote (video/pilotes/<nom>.json)
-    se rend depuis son brief, recale sur la voix comme dans video/pilote.py."""
+def _pilot(name):
+    brief = HERE / "pilotes" / f"{name}.json"
+    return brief if brief.exists() else None
+
+
+def _shot(name, voix_s=None):
+    """Calendrier d'un plan de reference.
+
+    Un plan pilote (video/pilotes/<nom>.json) se rend depuis son brief, avec
+    les temps qui y sont ecrits et la duree de voix figee dans sa reference
+    (`voix_s`) : il a ete valide sur une voix que l'episode peut regenerer
+    depuis. Sa reference ne depend donc ni de audio/ ni de script.json."""
     ep, sid = name.split("_")
     seg, dur = _segment(ep, sid)
-    brief = HERE / "pilotes" / f"{name}.json"
-    if brief.exists():
+    brief = _pilot(name)
+    if brief is not None:
         import copy
-        from pilote import recaler
         b = json.loads(brief.read_text(encoding="utf-8"))
         seg = copy.deepcopy(seg)
         for k in ("type_visuel", "manim_brief", "overlay_texte"):
             seg[k] = copy.deepcopy(b["remplace"][k])
         seg["_pilote"] = True
-        al = json.loads((PROJECT / "episodes" / ep / "audio" / "alignments" / f"{sid}.json")
-                        .read_text(encoding="utf-8"))
-        with contextlib.redirect_stderr(io.StringIO()):
-            recaler(sid, seg["manim_brief"].get("revelations") or [], al, "revelation")
-            recaler(sid, seg["overlay_texte"], al, "overlay")
+        if voix_s is not None:
+            dur = float(voix_s)
     return _calendar(seg, dur)
 
 
@@ -235,6 +240,8 @@ def _check_version(name, version, rows, cues):
         # Valeurs donnees au centieme : demi-centieme + arrondi du calendrier.
         if got is None or abs(got - want) > 0.0051:
             out.append(f"{label} : {got} au lieu de {want}")
+    if "voix_s" in version:
+        return out      # voix figee : le nombre d'images est celui de la voix d'alors
     ep, sid = name.split("_")
     n = frames(ep, sid)
     if n != version["images"]:
@@ -253,7 +260,7 @@ def check_validated(name):
               f"le code est en {rule_now!r}")
         ok = False
     else:
-        issues = _check_version(name, cur, *_shot(name))
+        issues = _check_version(name, cur, *_shot(name, cur.get("voix_s")))
         if issues:
             ok = False
             print(f"ECART   !!! REFERENCE VALIDEE A L'ECRAN !!!  {name} v{cur['version']}")
@@ -269,7 +276,7 @@ def check_validated(name):
             continue
         components.FRAME_RULE = v["regle_cadre"]
         try:
-            issues = _check_version(name, v, *_shot(name))
+            issues = _check_version(name, v, *_shot(name, v.get("voix_s")))
         finally:
             components.FRAME_RULE = rule_now
         if issues:
@@ -290,7 +297,7 @@ def new_version(name, motif, vue):
     path = REF / f"{name}.json"
     doc = json.loads(path.read_text(encoding="utf-8"))
     cur = doc["versions"][doc["courante"] - 1]
-    rows, cues = _shot(name)
+    rows, cues = _shot(name, cur.get("voix_s"))
     if rows == cur["calendrier"]:
         raise SystemExit(f"{name} : calendrier identique a la v{cur['version']}, rien a figer")
     today = datetime.date.today().strftime("%d/%m/%Y")
@@ -303,6 +310,9 @@ def new_version(name, motif, vue):
            "images": frames(ep, sid),
            "clefs": [[LIBELLES[name][k], k, v[k]] for k in LIBELLES[name]],
            "calendrier": rows}
+    if "voix_s" in cur:
+        new["voix_s"] = cur["voix_s"]
+        new["images"] = cur["images"]
     doc["versions"].append(new)
     doc["courante"] = new["version"]
     path.write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
@@ -320,12 +330,30 @@ def first_version(name, motif):
                          f"par --nouvelle-version")
     if name not in LIBELLES:
         raise SystemExit(f"{name} : ajouter d'abord ses valeurs clefs a LIBELLES")
-    rows, cues = _shot(name)
+    ep, sid = name.split("_")
+    voix_s = None
+    if _pilot(name) is not None:
+        # Le brief doit porter les temps de la voix sur laquelle le plan a ete
+        # vu : ce sont eux, et cette duree, que la reference fige.
+        import copy
+        from pilote import recaler
+        b = json.loads(_pilot(name).read_text(encoding="utf-8"))
+        items = copy.deepcopy((b["remplace"]["manim_brief"].get("revelations") or [])
+                              + b["remplace"]["overlay_texte"])
+        al = json.loads((PROJECT / "episodes" / ep / "audio" / "alignments" / f"{sid}.json")
+                        .read_text(encoding="utf-8"))
+        before = [it.get("t_rel_s") for it in items]
+        with contextlib.redirect_stderr(io.StringIO()):
+            recaler(sid, items, al, "brief")
+        if any(a is None or abs(float(a) - it["t_rel_s"]) > 0.05 for a, it in zip(before, items)):
+            raise SystemExit(f"{name} : les t_rel_s du brief ne sont pas ceux de la voix "
+                             f"actuelle ; recaler le brief avant de le figer")
+        voix_s = _segment(ep, sid)[1]
+    rows, cues = _shot(name, voix_s)
     v = _values(name, rows, cues)
     missing = [k for k in LIBELLES[name] if v.get(k) is None]
     if missing:
         raise SystemExit(f"{name} : valeurs clefs introuvables dans le calendrier : {missing}")
-    ep, sid = name.split("_")
     doc = {"statut": "VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une "
                      "modification approuvee ajoute une version, n'en ecrase aucune.",
            "courante": 1,
@@ -335,6 +363,8 @@ def first_version(name, motif):
                          "vue_a_l_ecran": True, "images": frames(ep, sid),
                          "clefs": [[LIBELLES[name][k], k, v[k]] for k in LIBELLES[name]],
                          "calendrier": rows}]}
+    if voix_s is not None:
+        doc["versions"][0]["voix_s"] = voix_s
     path.write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(f"{name} : v1 figee ({motif})")
     for label, key, value in doc["versions"][0]["clefs"]:

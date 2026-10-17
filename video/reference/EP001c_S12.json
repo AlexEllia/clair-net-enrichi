@@ -132,7 +132,9 @@
      1.5,
      "Restyle+Restyle+Restyle+Restyle"
     ]
-   ]
+   ],
+   "voix_s": 14.32,
+   "voix_note": "voix par segment du 17/10/2026, avant la regeneration par blocs : la reference fige ces temps et cette duree"
   }
  ]
 }
