@@ -389,6 +389,14 @@ class SegmentScene(Scene):
         cues.anchors = {o["ancre"] for o in (seg.get("overlay_texte") or [])}
         visual = seg["type_visuel"]
 
+        if visual in ("mention", "ecran_fin"):
+            # Plans de chaine : ni brief ni overlay, le moteur les compose seul.
+            import plans_chaine
+            self.chaine = getattr(plans_chaine, visual)(self, seg, dur, cues)
+            self.add(*cues.static)
+            self.run_cues(cues)
+            return
+
         family = None
         if visual == "manim":
             from briefs import resolve

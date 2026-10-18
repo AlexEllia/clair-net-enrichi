@@ -15,6 +15,7 @@ dossier.
 | Fichier | Usage prévu |
 |---|---|
 | `banknote.svg` | billet, versement |
+| `bell.svg` | cloche de notification (écran de fin), ajoutée le 18/10/2026 |
 | `building-2.svg` | immeuble, entreprise |
 | `calendar.svg` | mois, année |
 | `coins.svg` | pièces, montant |

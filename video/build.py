@@ -174,7 +174,7 @@ def check_catalogue(ep, script):
     return f"catalogue : AUTRE VERSION ({want[:8]}) - {where}"
 
 
-def check_revelations(segments, durations, plans_dir=None, sources=()):
+def check_revelations(segments, durations, plans_dir=None, sources=(), ep_dir=None):
     """Deux defauts distincts des plans manim :
 
     - l'ouverture inerte : le cadre est construit, aucune donnee ne bouge
@@ -193,7 +193,7 @@ def check_revelations(segments, durations, plans_dir=None, sources=()):
     un fondu adouci ne se voit qu'a ~20 % d'opacite."""
     import contextlib
     import io
-    from briefs import resolve, still_times, opening, MAX_STILL
+    from briefs import resolve, still_times, opening, MAX_STILL, with_voice
     from components import COMPONENTS, Cues
     from scenes import add_overlays
     import densite
@@ -203,6 +203,8 @@ def check_revelations(segments, durations, plans_dir=None, sources=()):
         if not (s.get("manim_brief") or {}).get("revelations"):
             continue
         dur = durations[s["id"]].audio
+        if ep_dir is not None:
+            s = with_voice(s, ep_dir)
         intervals, target, meta = None, s, None
         try:
             with contextlib.redirect_stderr(io.StringIO()):
@@ -264,6 +266,23 @@ def check_revelations(segments, durations, plans_dir=None, sources=()):
               "calendrier.")
 
 
+CHAINE = ("mention", "ecran_fin")
+
+
+def check_chaine(segments):
+    """Un plan de chaine (mention, ecran_fin) est compose par le moteur seul :
+    il ne porte ni manim_brief ni overlay_texte. Bloquant, au check comme au
+    build. Renvoie la ligne du rapport."""
+    fautes = [f"{s['id']} ({s['type_visuel']}) porte {k}" for s in segments
+              if s.get("type_visuel") in CHAINE
+              for k in ("manim_brief", "overlay_texte") if s.get(k)]
+    if fautes:
+        raise SystemExit("plans de chaine : " + " ; ".join(fautes)
+                         + " - ni manim_brief ni overlay_texte (video/CATALOGUE.md)")
+    n = sum(1 for s in segments if s.get("type_visuel") in CHAINE)
+    return f"plans de chaine : {n}, sans brief ni overlay" if n else "plans de chaine : aucun"
+
+
 def check_density(final, tl, segments, dest):
     """Controle final : carte de densite de l'episode monte, en pixels.
 
@@ -301,13 +320,16 @@ def main():
     if not ep_dir.exists():
         raise SystemExit(f"episode introuvable : {ep_dir}")
 
-    from timeline import load_durations, build_timeline, write_timeline, print_timeline
+    from timeline import (load_durations, build_timeline, write_timeline, print_timeline,
+                          ajuster, Duree)
     import nombres
     nombres.set_locale(args.locale)
 
     script = json.loads((ep_dir / "script.json").read_text(encoding="utf-8"))
-    durations = load_durations(ep_dir / "audio" / "durations.json")
+    # ecran_fin : prolonge en silence jusqu'a 20 s (timeline.ajuster).
+    durations = ajuster(script, load_durations(ep_dir / "audio" / "durations.json"))
     segments = script["segments"]
+    chaine_line = check_chaine(segments)
 
     # Contre quelle version du catalogue le script a-t-il ete ecrit ? Un ecart
     # est signale a chaque build, sans rien bloquer.
@@ -320,8 +342,10 @@ def main():
     if args.check:
         print_timeline(tl)
         print(f"\n  {cat_line}")
+        print(f"  {chaine_line}")
         check_revelations(segments, durations, ep_dir / "video" / "plans_cales",
-                          (ep_dir / "script.json", ep_dir / "audio" / "durations.json"))
+                          (ep_dir / "script.json", ep_dir / "audio" / "durations.json"),
+                          ep_dir=ep_dir)
         print(f"\n  ecrit : {ep_dir / 'build' / 'timeline.json'}")
         print(f"          {ep_dir / 'build' / 'chapitres.txt'}")
         return
@@ -350,8 +374,13 @@ def main():
                   f" + {d.silence:.2f}s tenus", flush=True)
             # La scene ne dure que le temps de la voix : aucune animation ne
             # peut partir pendant la respiration, qui est ajoutee au calage.
-            render_segment(seg, d.audio, scenes_dir, media_dir, w, h)
-        conform(out, d, conf_dir / f"{sid}.mp4", frames[sid])
+            from briefs import with_voice
+            # Un ecran de fin s'anime toute sa duree, prolongation comprise :
+            # rien n'est tenu fige pendant le silence.
+            vit = d.total if seg["type_visuel"] == "ecran_fin" else d.audio
+            render_segment(with_voice(seg, ep_dir), vit, scenes_dir, media_dir, w, h)
+        cale = Duree(d.total, 0.0, d.total) if seg["type_visuel"] == "ecran_fin" else d
+        conform(out, cale, conf_dir / f"{sid}.mp4", frames[sid])
     print(f"-- plans rendus en {time.time() - t0:.0f}s", flush=True)
 
     if args.only:
@@ -393,6 +422,16 @@ def main():
     for k, m in enumerate(tl["midrolls"], 1):
         print(f"mid-roll {k} : {m['tc']}  (apres {m['apres']})")
     check_density(final, tl, segments, ep_dir / "build")
+    if any(s["type_visuel"] == "ecran_fin" for s in segments):
+        import plans_chaine
+        z = plans_chaine.exporter_zones(ep_dir / "build" / "ecran_fin_zones.png",
+                                        vdir / "_zones")
+        shutil.rmtree(vdir / "_zones", ignore_errors=True)
+        fin = next(r for r in tl["segments"]
+                   if any(s["id"] == r["id"] and s["type_visuel"] == "ecran_fin"
+                          for s in segments))
+        print(f"ecran fin   : {fin['id']}, voix {fin['duree_audio_s']:.2f} s + "
+              f"{fin['silence_apres_s']:.2f} s de prolongation silencieuse ; zones : {z}")
 
 
 if __name__ == "__main__":

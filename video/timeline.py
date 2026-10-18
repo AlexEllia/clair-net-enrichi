@@ -25,6 +25,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 TOL = 0.011     # ecart tolere entre audio + silence et total, en secondes
+ECRAN_FIN_MIN = 20.0    # un ecran de fin dure au moins la duree maximale des elements
+                        # de fin de YouTube : prolonge en silence apres la voix
 
 
 @dataclass
@@ -55,6 +57,17 @@ def load_durations(path):
             warn(f"{sid} : audio {audio:.2f} + silence {silence:.2f} "
                  f"!= total {total:.2f} ; le total fait foi pour la timeline")
         out[sid] = Duree(audio, silence, total)
+    return out
+
+
+def ajuster(script, durations):
+    """Durees de montage : celles de la voix, sauf pour un plan `ecran_fin`,
+    prolonge en silence jusqu'a ECRAN_FIN_MIN. Idempotent."""
+    out = dict(durations)
+    for s in script["segments"]:
+        d = out.get(s["id"])
+        if s.get("type_visuel") == "ecran_fin" and d is not None and d.total < ECRAN_FIN_MIN:
+            out[s["id"]] = Duree(d.audio, ECRAN_FIN_MIN - d.audio, ECRAN_FIN_MIN)
     return out
 
 
@@ -95,6 +108,7 @@ def _titles(script, ep_dir):
 
 def build_timeline(ep, script, durations, ep_dir):
     segments = script["segments"]
+    durations = ajuster(script, durations)
     missing = [s["id"] for s in segments if s["id"] not in durations]
     if missing:
         raise SystemExit(f"durees audio manquantes : {missing}")

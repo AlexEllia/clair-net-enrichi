@@ -41,6 +41,20 @@ DECOR = {"frame"}  # parties posees des la premiere image
 TABLE = Path(__file__).resolve().parent / "traductions.json"
 
 
+def with_voice(seg, ep_dir):
+    """Le segment, avec l'alignement reel de sa voix sous `_voix` quand il
+    existe (audio/alignments/Sxx.json). Ce qui se cale sur la voix elle-meme -
+    les plans de chaine (mention, ecran_fin), les fins de phrase de Bars - le
+    lit la ; sans lui, un instant par defaut ou une estimation depuis les
+    t_rel_s."""
+    p = Path(ep_dir) / "audio" / "alignments" / f"{seg['id']}.json"
+    if not p.exists():
+        return seg
+    seg = dict(seg)
+    seg["_voix"] = json.loads(p.read_text(encoding="utf-8"))
+    return seg
+
+
 def _warn(msg):
     print(f"[ATTENTION] {msg}", file=sys.stderr, flush=True)
 
