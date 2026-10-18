@@ -22,7 +22,7 @@ from manim import *
 import numpy as np
 
 from style import (BG, BG_LIFT, INK, INK_SOFT, MUTED, RULE, RULE_SOFT, CONTRIB, INTEREST,
-                   TEAL, NEG, WHITE_DIM, PLOT_W, PLOT_H, Y_TOP, X_RIGHT,
+                   TEAL, NEG, WHITE_DIM, PLOT_W, PLOT_H, Y_TOP, X_LEFT, X_RIGHT,
                    SZ_TITLE, SZ_BODY, SZ_LABEL, SZ_SOURCE,
                    txt, fade_up, euro, pct)
 from plotting import (Frame, epargne_mensuelle, calibrate, compound_index,
@@ -759,7 +759,23 @@ def _boxes_overlap(a, b, pad=0.05):
                 or a.get_top()[1] + pad < b.get_bottom()[1] or b.get_top()[1] + pad < a.get_bottom()[1])
 
 
-def _place_label(lab, dot, placed, xmin, xmax):
+# Centre le plus a gauche du titre d'axe vertical : bord de l'image (-FW/2),
+# plus la demi-epaisseur du texte pivote et une marge. Le plan valide S09 de
+# l'EP001b pose le sien a -6,68 : il reste en place.
+AXE_Y_MIN = -14.222 / 2 + 0.35
+
+
+def _densify(pts, k=5):
+    """k points par segment d'une polyligne : une courbe raide ne passe pas
+    entre deux echantillons sans etre vue."""
+    out = [pts[0]]
+    for a, b in zip(pts, pts[1:]):
+        out += [a + (b - a) * (j / k) for j in range(1, k + 1)]
+    return np.array(out)
+
+
+def _place_label(lab, dot, placed, xmin, xmax, zone=None, traces=None, own=None,
+                 sources=None, floor=None, ticks=()):
     """Pose l'etiquette d'un point source.
 
     Par defaut en haut a gauche du point - la place validee a l'ecran sur S09.
@@ -767,7 +783,21 @@ def _place_label(lab, dot, placed, xmin, xmax):
     du cadre, ou couvrirait une etiquette deja posee (deux series proches a la
     meme abscisse), elle prend la premiere place libre : en haut a droite, en
     bas a gauche, en bas a droite. Sans place libre, elle garde le defaut.
+
+    Avec `traces` (les courbes de toutes les series, `own` etant la sienne) et
+    `sources` (tous les points sources), l'etiquette evite aussi les courbes et
+    les points : chaque place candidate - les quatre coins, puis a cote du
+    point, puis les coins plus eloignes du point - est notee sur ce qu'elle
+    recouvre (une autre courbe compte double de la sienne) et sur son
+    eloignement. Elle ne sort ni du cadre ni de `zone` (xmin, xmax, ymin,
+    ymax), ne couvre ni etiquette ni point, ne chevauche pas l'axe horizontal
+    (`floor`) ; sous l'axe, elle paie une legere penalite : c'est le dernier
+    recours. La moins mauvaise l'emporte ; a egalite, l'ordre ci-dessus, qui
+    commence par la place validee.
     """
+    if traces is not None:
+        return _place_label_scored(lab, dot, placed, zone, traces, own, sources or [], floor,
+                                   ticks)
     for vdir, hdir in ((UP, LEFT), (UP, RIGHT), (DOWN, LEFT), (DOWN, RIGHT)):
         lab.next_to(dot, vdir, buff=0.14).shift(hdir * (lab.width / 2 + 0.06))
         if lab.get_left()[0] < xmin or lab.get_right()[0] > xmax:
@@ -777,6 +807,67 @@ def _place_label(lab, dot, placed, xmin, xmax):
         return lab
     lab.next_to(dot, UP, buff=0.14).shift(LEFT * (lab.width / 2 + 0.06))
     return lab
+
+
+LABEL_PAD = 0.10  # ecart minimal entre deux etiquettes de valeur
+TICK_PAD = 0.15   # ... entre une etiquette et une graduation de l'axe x
+
+
+def _place_label_scored(lab, dot, placed, zone, traces, own, sources, floor=None, ticks=()):
+    xmin, xmax, ymin, ymax = zone
+    corners = ((UP, LEFT), (UP, RIGHT), (DOWN, LEFT), (DOWN, RIGHT))
+    half = lab.width / 2 + 0.06
+    cands = [("coin", v, h, 0.0) for v, h in corners]
+    cands += [("cote", None, h, 0.0) for h in (RIGHT, LEFT)]
+    # Glissements : au-dessus ou au-dessous du point, decale de -half a +half.
+    cands += [("glisse", v, dx, 0.0) for v in (UP, DOWN)
+              for dx in np.linspace(-half, half, 9)[1:-1]]
+    cands += [("coin", v, h, lift) for lift in (0.22, 0.44, 0.66) for v, h in corners]
+    dense = [_densify(t) for t in traces]
+    c = dot.get_center()
+    best = None
+    for order, (kind, vdir, hdir, lift) in enumerate(cands):
+        _pose(lab, dot, kind, vdir, hdir, lift)
+        l, r = lab.get_left()[0], lab.get_right()[0]
+        b, t = lab.get_bottom()[1], lab.get_top()[1]
+        if l < xmin or r > xmax or b < ymin or t > ymax:
+            continue
+        if any(_boxes_overlap(lab, o, pad=LABEL_PAD) for o in placed):
+            continue
+        if any(_boxes_overlap(lab, o, pad=TICK_PAD) for o in ticks):
+            continue
+        if floor is not None and b - 0.03 < floor < t + 0.03:
+            continue
+        pad = 0.06
+        if any(l - pad <= p[0] <= r + pad and b - pad <= p[1] <= t + pad for p in sources):
+            continue
+        cost = 0.0
+        for k, pts in enumerate(dense):
+            inside = ((pts[:, 0] >= l - pad) & (pts[:, 0] <= r + pad) &
+                      (pts[:, 1] >= b - pad) & (pts[:, 1] <= t + pad)).sum()
+            cost += inside * (0.5 if k == own else 1.0)
+        cost += lift * 6 + {"coin": 0.0, "glisse": 0.5, "cote": 1.0}[kind]
+        if floor is not None and t < floor:
+            cost += 2.0
+        if best is None or cost < best[0] - 1e-9:
+            best = (cost, kind, vdir, hdir, lift)
+    if best is None:
+        lab.next_to(dot, UP, buff=0.14).shift(LEFT * (lab.width / 2 + 0.06))
+        return lab
+    _, kind, vdir, hdir, lift = best
+    _pose(lab, dot, kind, vdir, hdir, lift)
+    return lab
+
+
+def _pose(lab, dot, kind, vdir, hdir, lift):
+    """coin : au-dessus ou au-dessous, decale d'une demi-largeur ; glisse :
+    decale de `hdir` unites ; cote : a droite ou a gauche du point."""
+    if kind == "coin":
+        lab.next_to(dot, vdir, buff=0.14 + lift).shift(hdir * (lab.width / 2 + 0.06))
+    elif kind == "glisse":
+        lab.next_to(dot, vdir, buff=0.14).shift(RIGHT * float(hdir))
+    else:
+        lab.next_to(dot, hdir, buff=0.18)
 
 
 def _ease_inverse(f):
@@ -849,17 +940,29 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
     top = 1.70 if "legende" in cues.anchors else 1.90
     bottom = -2.20 if {"axe_x", "bas"} <= cues.anchors else -2.60
     right = 1.30 if (mb.get("facteur") or mb.get("ecart")) else 0.0
-    fr = Frame(x0, x1, ylo, yhi, w=PLOT_W - right, h=top - bottom,
-               center=[-right / 2, (top + bottom) / 2, 0])
-    cues.legend_colors = cols[:n]
-
-    # Graduations chiffrees : 5 valeurs sur y, des abscisses rondes sur x.
     yvals = np.linspace(ylo, yhi, 5)
-    ygrid = fr.gridlines(yvals, fmt=lambda v: nombres.fmt(v, yfmt, 0))
     step = _nice_step((x1 - x0) / 4)
     xvals = list(np.arange(np.ceil(x0 / step) * step, x1 + 1e-9, step))
-    xticks = fr.xticks(xvals, fmt=lambda v: nombres.num(v, 0))
+
+    def frame(cut):
+        """Cadre, graduations et ancres, l'aire de trace amputee de `cut` a gauche."""
+        f = Frame(x0, x1, ylo, yhi, w=PLOT_W - right - cut, h=top - bottom,
+                  center=[(cut - right) / 2, (top + bottom) / 2, 0])
+        g = f.gridlines(yvals, fmt=lambda v: nombres.fmt(v, yfmt, 0))
+        t = f.xticks(xvals, fmt=lambda v: nombres.num(v, 0))
+        w = max((m.width for m in g if isinstance(m, Text)), default=0.0)
+        return f, g, t, f.px(x0) - (0.22 + w + 0.45)
+
+    # Graduations chiffrees : 5 valeurs sur y, des abscisses rondes sur x.
+    # Le titre d'axe vertical se pose a gauche des graduations : si elles sont
+    # larges (« 20 000 € ») et l'aire deja reduite a droite (ecart, facteur), il
+    # sortirait du cadre. L'aire cede alors a gauche juste ce qu'il faut pour
+    # qu'il reste dans l'image (AXE_Y_MIN). Sans titre d'axe, rien ne change.
+    fr, ygrid, xticks, axe_y_x = frame(0.0)
+    if "axe_y" in cues.anchors and axe_y_x < AXE_Y_MIN:
+        fr, ygrid, xticks, axe_y_x = frame(AXE_Y_MIN - axe_y_x)
     widest = max((m.width for m in ygrid if isinstance(m, Text)), default=0.0)
+    cues.legend_colors = cols[:n]
     cues.frame_anchors(fr, below=0.24 + xticks.height + 0.40, left=0.22 + widest + 0.45)
 
     # Le cadre est du decor : il n'est pas une revelation et ne borne rien,
@@ -873,6 +976,16 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
     areas = {}
     placed = []          # etiquettes deja posees, que les suivantes evitent
     repeats = set()      # points qui repetent la valeur du precedent de leur serie
+    # Ce que les etiquettes evitent aussi : les courbes (echantillonnees) et
+    # les points sources de toutes les series.
+    traces = [np.array([fr.pt(x, y) for x, y in zip(xs, _interp(s, xs, mode, growth))])
+              for s in series]
+    sources = [fr.pt(x, y) for s in series for x, y in s if not (origin and (x, y) == origin)]
+    # Une etiquette peut descendre sous l'axe horizontal, dans la rangee des
+    # graduations, sans en couvrir aucune : c'est la seule place des valeurs
+    # coincees entre l'axe et une autre courbe (55 EUR sous les 2 400 EUR).
+    zone = (fr.px(x0) + 0.05, X_RIGHT, fr.py(ylo) - 0.34 - xticks.height, top + 0.20)
+
     for i, s in enumerate(series):
         ys = _interp(s, xs, mode, growth)
         ln = VMobject(stroke_color=cols[i], stroke_width=5.6 if i == 0 else 4.4)
@@ -888,7 +1001,9 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
             mk = f"{prefix}_{i + 1}_point_{len(marks) + 1}"
             dot = Dot(fr.pt(x, y), radius=0.08, color=cols[i])
             lab = txt(nombres.fmt(y, yfmt), SZ_LABEL, cols[i], weight=SEMIBOLD)
-            _place_label(lab, dot, placed, fr.px(x0) + 0.05, X_RIGHT)
+            _place_label(lab, dot, placed, zone[0], zone[1], zone=zone,
+                         traces=traces, own=i, sources=sources, floor=fr.py(ylo),
+                         ticks=list(xticks))
             # Une valeur identique a celle du point precedent de la meme serie
             # ne se reecrit pas - le point seul apparait -, sauf si la voix
             # l'enonce (partie nommee par le script). Une ligne plate de
