@@ -50,7 +50,7 @@ elle est coupée. C'est pour ça que l'écart image/son du montage final est nul
 script, l'audio et la vidéo. C'est la raison pour laquelle la skill interdit de
 renuméroter les segments après la phase 2.
 
-**Quatre registres visuels**, selon `type_visuel` :
+**Six registres visuels**, selon `type_visuel` :
 
 - `manim` — un graphe, choisi par `manim_brief.composant`. Douze composants sont
   implémentés dans `components.py` : les cinq familles du catalogue (`LineChart`,
@@ -61,6 +61,11 @@ renuméroter les segments après la phase 2.
   la chaîne est faceless et le dossier ne contient aucune banque d'images. Si
   vous achetez des plans de stock un jour, c'est `ambience_horizon()` dans
   `scenes.py` qu'il faudra remplacer.
+- `mention` et `ecran_fin` — les plans de chaîne, composés par
+  `plans_chaine.py` sans brief ni overlay (voir CATALOGUE.md, section 5). Un
+  écran de fin est prolongé en silence jusqu'à 20 s et s'anime jusqu'au bout ;
+  le build exporte `build/ecran_fin_zones.png`. Aperçu sur voix factice :
+  `python video/apercu_fin.py`.
 
 **Les overlays sont joués à l'heure dite.** Un texte posé à `t_rel_s: 3.0`
 apparaît à 3 secondes, même si un balayage de barres court encore. Chaque repère

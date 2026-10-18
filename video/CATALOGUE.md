@@ -831,7 +831,44 @@ s'appelle `Bars`, pas `BarChart`.
 
 ---
 
-## 5. Avant de rendre un `manim_brief`, vérifie
+## 5. Les plans de chaîne : `mention` et `ecran_fin`
+
+Deux valeurs de `type_visuel` qui ne sont pas des familles : le moteur les
+compose seul, à l'identique d'un épisode à l'autre. Seule la durée du segment
+change, et la voix les cale. Un segment de ce type **ne porte ni
+`manim_brief` ni `overlay_texte`** : `make check` et le build refusent
+l'épisode sinon.
+
+| `type_visuel` | Ce que le moteur pose |
+|---|---|
+| `mention` | La mention légale, centrée, en blanc cassé : « Contenu informatif et pédagogique. » puis « Ni conseil en investissement, ni recommandation personnalisée. ». La première ligne apparaît sur le premier mot de la voix, la seconde sur le mot « ni ». Rien d'autre : c'est une respiration. Si le plan dure encore plus de 4 s après la seconde ligne, le texte dérive très lentement (2 % d'échelle) pour que l'écran ne soit pas figé (R6). |
+| `ecran_fin` | L'écran de fin de la chaîne. « Clair net enrichi » s'écrit en haut à gauche sur ces mots de la voix ; sur « abonnez-vous », un bouton d'abonnement dessiné (ni logo ni couleur de YouTube) s'enfonce, puis passe à « Abonné » avec une cloche. En fond, une courbe qui monte sous les zones, parcourue par un point, et des pictogrammes de `Flux` (pièces, pousse, hausse) qui dérivent loin des zones. |
+
+**Durée de l'écran de fin** : celle de la voix, prolongée en silence jusqu'à
+**20 s** au moins - la durée maximale des éléments de fin de YouTube. Le plan
+s'anime pendant toute la prolongation : rien n'y est tenu figé.
+
+**Zones réservées** (pixels 1920×1080, comme dans YouTube Studio), vides de tout
+texte et de toute animation, sauf un contour pointillé pendant les 2 premières
+secondes :
+
+| Zone | Centre | Taille |
+|---|---|---|
+| Vidéo suggérée | (1340, 540) | 830 × 467 px |
+| Abonnement | (480, 600) | cercle de 300 px |
+
+À chaque build complet, `build/ecran_fin_zones.png` montre l'écran de fin dans
+son état final, zones visibles et cotées : c'est le gabarit pour placer les
+éléments dans YouTube Studio.
+
+**Ce que la rédaction écrit** : le texte prononcé seulement. La mention doit
+contenir le mot « ni » ; le texte du CTA, « Clair net enrichi » et
+« abonnez-vous ». Sans ces mots, le moteur pose la ligne, le nom ou le bouton à
+un instant par défaut.
+
+---
+
+## 6. Avant de rendre un `manim_brief`, vérifie
 
 1. `composant` est une famille *disponible*.
 2. Les paramètres obligatoires sont présents : `interpolation` pour
