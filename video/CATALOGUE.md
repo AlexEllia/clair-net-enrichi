@@ -123,6 +123,17 @@ impératives :
 Choisis comme déclencheur le mot qui énonce la valeur elle-même, pas le mot
 qui l'annonce.
 
+### Les chapitres
+
+Un chapitre commence à chaque changement de `role` dans le script. Les rôles de
+fin - `mention`, `ouverture`, `cta` - ne forment qu'un chapitre, qui commence au
+premier d'entre eux. Les titres viennent du bloc « Chapitres » de
+`metadonnees.md`, dans l'ordre (leurs timecodes sont recalculés par le build,
+qui signale tout écart). Le build **bloque** si le nombre de titres diffère du
+nombre de chapitres calculés, ou si un chapitre dure moins de 10 s (règle
+YouTube). Écris donc autant de titres que de groupes de rôles, et donne au
+moins 10 s à chacun.
+
 ### Les règles de durée
 
 - Le segment dure `duree_audio_s`. Aucune révélation après la fin de la
