@@ -547,7 +547,7 @@ voulu. Les valeurs sont positives ou nulles.
 | `suite` | tracé (≤ 6 s) | Exige `suite`. La bande atteint son sommet sur son mot ; les particules continuent ensuite jusqu'à la fin du plan. |
 | `gap` | surgissement (1,5 s) | Exige `ecart`. |
 | `highlight` | surgissement (1,5 s) | Exige `mise_en_avant`. |
-| ~~`frame`~~ | décor | Ne pas écrire (R8). Les deux lignes de base et le séparateur se construisent seuls. |
+| ~~`frame`~~ | décor | Ne pas écrire (R8). Les deux lignes de base et le séparateur se construisent seuls ; si la première donnée tarde, toute la structure (voir ci-dessous). |
 
 **Comment les deux options se partagent le temps** : comme les barres, un
 seul tracé bouge à la fois, et il commence à monter pendant que la voix parle
@@ -557,6 +557,24 @@ oppose. Laisse au moins 0,7 s entre deux valeurs énoncées. Un tracé qui suit 
 monte sur toute sa durée, place son mot au moins 7,7 s après le surgissement
 qui la précède (1,5 s + 0,2 s + 6 s), sinon elle monte plus vite.
 
+Une jauge trop basse pour qu'on la voie monter (moins de 0,3 unité de haut,
+comme 55 € face à 2 400 €) n'anticipe pas : six secondes d'un trait immobile
+à l'œil ne sont pas du mouvement. Elle monte en 0,5 s, juste avant son mot.
+
+**Quand la première donnée tarde** — si le premier mouvement de donnée
+arrive plus de 4 s après le début du plan, la structure de la comparaison se
+construit pendant toute l'attente, sans aucune valeur : colonne par colonne,
+sa ligne de base et un socle clair sous chaque jauge, puis le contour vide de
+la jauge, à la hauteur maximale du plan (le même pour toutes : il ne dit rien
+des valeurs) ; le séparateur vient avec la seconde colonne. Ni chiffre, ni
+jauge remplie, ni pictogramme : le nombre de pictogrammes est une
+information, il attend son mot. Les étapes s'étalent à pas régulier sur
+toute l'attente ; au-delà de 3 s entre deux étapes, le build avertit que la
+première donnée arrive trop tard pour que la structure seule tienne l'écran.
+Un nom d'option sans `declencheur` apparaît avec sa colonne ; avec un
+`declencheur`, sur son mot. Rien à écrire pour cela : c'est le moteur qui
+décide. Cela ne dispense pas de R5 : une première valeur tôt reste la règle.
+
 **Pictogrammes disponibles** (Lucide, licence ISC, `video/pictos/lucide/`) :
 `banknote`, `building-2`, `calendar`, `coins`, `flag`, `hand-coins`, `hotel`,
 `hourglass`, `house`, `landmark`, `percent`, `piggy-bank`, `sprout`,
@@ -564,11 +582,12 @@ qui la précède (1,5 s + 0,2 s + 6 s), sinon elle monte plus vite.
 est refusé.
 
 **Exemple réel** — le plan pilote S02 de l'EP001c, validé à l'écran le
-17/10/2026. Il est vrai mais **pas exemplaire** : la première valeur n'est
-lisible qu'à 8,14 s, contre R5, parce que les deux phrases d'ouverture
+17/10/2026, puis dans sa version 2 le 18/10/2026 (structure construite
+pendant l'attente). Il est vrai mais **pas exemplaire** : la première valeur
+n'est lisible qu'à 8,14 s, contre R5, parce que les deux phrases d'ouverture
 (« Sauf que tout commence mal. Les intérêts, c'est ce que votre épargne vous
-rapporte. ») ne portent aucun chiffre. Les overlays d'option et de titre
-occupent l'attente.
+rapporte. ») ne portent aucun chiffre. La structure et les overlays d'option
+et de titre occupent l'attente.
 
 ```json
 {
@@ -600,13 +619,18 @@ occupent l'attente.
 }
 ```
 
-Ce que ça donne : le cadre se pose en 1,94 s ; « 55 € » s'écrit sur
-« cinquante-cinq » au sommet d'une jauge réduite à un trait ; la jauge de
+Ce que ça donne : la première donnée tarde, la structure se construit de 0 à
+7,44 s en quatre étapes à 1,86 s d'intervalle (base et socle des intérêts,
+contour vide, base et socle des versements avec le séparateur, contour vide),
+entre lesquelles « Intérêts » et « Année 1 » arrivent sur leur mot ; la jauge
+de 55 €, un trait, monte en 0,5 s et « 55 € » s'écrit sur « cinquante-cinq » ;
+la jauge de
 2 400 € monte en 1,3 s ; les douze calendriers apparaissent un à un de 9,82 s
 à « douze mois » ; l'écart surgit sur « ça ne vaut pas la peine », la mise en
 avant sur « l'effet paraît nul » ; la bande monte de 25,4 s à « cache la
-suite », et l'argent y monte jusqu'à la fin du plan. Plus longue immobilité,
-mesurée en pixels : 3,0 s (27,9 s figées avant, en fond animé).
+suite », et l'argent y monte jusqu'à la fin du plan. Sur la voix par blocs de
+l'EP001c, aucune immobilité de plus de 2 s avant la première donnée, 2,9 s au
+plus sur le plan (27,9 s figées au diagnostic, en fond animé).
 
 **Exemple exemplaire** — le même propos, écrit pour respecter toutes les
 règles. **C'est celui-ci qu'il faut imiter.** La première phrase porte la
