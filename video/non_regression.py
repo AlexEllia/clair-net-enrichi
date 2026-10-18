@@ -23,7 +23,8 @@ Par ordre d'importance :
    modification signalee, previsualisee et approuvee en justifie une.
    Le test verifie la version courante, puis que chaque version archivee
    reste reproductible avec sa propre regle : c'est ce qui garantit le retour
-   en arriere. Pour revenir a une version archivee : FRAME_RULE dans
+   en arriere. Pour revenir a une version archivee : ses regles (FRAME_RULE,
+   COMPARAISON_RULE) dans
    components.py, et "courante" dans le fichier de reference.
 2. Les 12 plans manim de l'EP001.
 3. L'exemple a deux courbes.
@@ -249,15 +250,40 @@ def _check_version(name, version, rows, cues):
     return out
 
 
+# Regles du moteur qu'une version de reference enregistre : (cle dans la
+# version, attribut de components.py, valeur pour une version qui ne la porte
+# pas - anterieure a l'existence de la regle).
+REGLES = (("regle_cadre", "FRAME_RULE", None),
+          ("regle_comparaison", "COMPARAISON_RULE", "v1"))
+
+
+def _regles(v):
+    return {attr: v.get(key, default) for key, attr, default in REGLES
+            if v.get(key, default) is not None}
+
+
+def _regles_txt(v):
+    return ", ".join(f"{a} = {r!r}" for a, r in _regles(v).items())
+
+
+def _regles_actuelles():
+    import components
+    return {key: getattr(components, attr) for key, attr, _ in REGLES}
+
+
 def check_validated(name):
     import components
     doc = json.loads((REF / f"{name}.json").read_text(encoding="utf-8"))
     ok = True
-    rule_now = components.FRAME_RULE
+    now = {attr: getattr(components, attr) for _, attr, _ in REGLES}
     cur = doc["versions"][doc["courante"] - 1]
-    if cur["regle_cadre"] != rule_now:
-        print(f"ECART   !!! {name} v{cur['version']} attend FRAME_RULE = {cur['regle_cadre']!r}, "
-              f"le code est en {rule_now!r}")
+    # La version courante est jugee avec les regles du code ; celles qu'elle
+    # enregistre doivent y correspondre.
+    wrong = [f"{attr} = {cur[key]!r}" for key, attr, _ in REGLES
+             if key in cur and cur[key] != now[attr]]
+    if wrong:
+        print(f"ECART   !!! {name} v{cur['version']} attend {', '.join(wrong)} ; "
+              f"le code est en {', '.join(f'{a} = {r!r}' for a, r in now.items())}")
         ok = False
     else:
         issues = _check_version(name, cur, *_shot(name, cur.get("voix_s")))
@@ -270,24 +296,26 @@ def check_validated(name):
             vu = "" if cur.get("vue_a_l_ecran", True) else "  (pas encore vue a l'ecran)"
             print(f"ok      {name} v{cur['version']} : calendrier, {len(cur['clefs'])} valeurs "
                   f"clefs, {cur['images']} images{vu}")
-    # Chaque version archivee doit rester reproductible avec sa regle.
+    # Chaque version archivee doit rester reproductible avec ses regles.
     for v in doc["versions"]:
         if v is cur:
             continue
-        components.FRAME_RULE = v["regle_cadre"]
+        for attr, r in _regles(v).items():
+            setattr(components, attr, r)
         try:
             issues = _check_version(name, v, *_shot(name, v.get("voix_s")))
         finally:
-            components.FRAME_RULE = rule_now
+            for attr, r in now.items():
+                setattr(components, attr, r)
         if issues:
             ok = False
             print(f"ECART   {name} v{v['version']} (archive) n'est plus reproductible "
-                  f"avec FRAME_RULE = {v['regle_cadre']!r} :")
+                  f"avec {_regles_txt(v)} :")
             for i in issues:
                 print(f"          {i}")
         else:
             print(f"ok      {name} v{v['version']} (archive du {v.get('archivee_le')}) : "
-                  f"reproductible avec FRAME_RULE = {v['regle_cadre']!r}")
+                  f"reproductible avec {_regles_txt(v)}")
     return ok
 
 
@@ -306,7 +334,7 @@ def new_version(name, motif, vue):
     v = _values(name, rows, cues)
     ep, sid = name.split("_")
     new = {"version": len(doc["versions"]) + 1, "validee_le": today, "motif": motif,
-           "regle_cadre": components.FRAME_RULE, "vue_a_l_ecran": vue,
+           **_regles_actuelles(), "vue_a_l_ecran": vue,
            "images": frames(ep, sid),
            "clefs": [[LIBELLES[name][k], k, v[k]] for k in LIBELLES[name]],
            "calendrier": rows}
@@ -359,7 +387,7 @@ def first_version(name, motif):
            "courante": 1,
            "versions": [{"version": 1,
                          "validee_le": datetime.date.today().strftime("%d/%m/%Y"),
-                         "motif": motif, "regle_cadre": components.FRAME_RULE,
+                         "motif": motif, **_regles_actuelles(),
                          "vue_a_l_ecran": True, "images": frames(ep, sid),
                          "clefs": [[LIBELLES[name][k], k, v[k]] for k in LIBELLES[name]],
                          "calendrier": rows}]}

@@ -226,7 +226,12 @@ def add_overlays(seg, cues, visual):
                     weight=SEMIBOLD if option else NORMAL)
             _fit(t, cues.anchor_widths.get(anchor, 4.0))
             t.move_to([x, y, 0]).set_z_index(Z_OVER)
-            cues.at(cues.late(o["t_rel_s"], 0.8), fade_up(t, 0.2), rt=0.5)
+            # Un nom sans declencheur arrive avec ce qu'il nomme, quand le
+            # composant le dit (colonne d'une Comparaison construite d'avance).
+            at = o["t_rel_s"]
+            if not o.get("declencheur") and anchor in cues.anchor_times:
+                at = cues.anchor_times[anchor]
+            cues.at(cues.late(at, 0.8), fade_up(t, 0.2), rt=0.5)
             out.add(t)
 
     # --- bas : sources et mentions ------------------------------------------

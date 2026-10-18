@@ -49,6 +49,8 @@ class Cues:
         # couleur et largeur maximale du libelle que l'overlay y pose.
         self.anchor_colors = {}
         self.anchor_widths = {}
+        # ... et l'instant ou l'ancre apparait, pour un nom sans declencheur.
+        self.anchor_times = {}
 
     def add(self, *m):
         self.static.extend(m)
@@ -95,6 +97,8 @@ LABEL_RT = 0.3          # une etiquette chiffree : apparition ponctuelle
 FRAME_MAX = 4.0         # le cadre se construit en 4 s au plus
 FRAME_MIN = 1.0         # ... et cede jusqu'a 1 s devant le premier trace (regle v2)
 FRAME_RULE = "v2"       # "v1" : le cadre d'abord (23/09/2026), archivee ; voir _frame_end
+COMPARAISON_RULE = "v2" # "v1" : cadre habituel meme si la premiere donnee tarde, et toute
+                        # jauge anticipe (17/10/2026), archivee ; voir Comparaison
 MIN_LEAD = 0.5          # temps minimal d'un trace pour rejoindre son premier point
 GAP = 0.2               # respiration entre deux animations successives
 
@@ -1930,6 +1934,70 @@ class Restyle(Transform):
         super().__init__(m, target, introducer=True, **kw)
 
 
+VISIBLE_H = 0.3          # sous cette hauteur, une jauge qui monte ne se voit pas monter
+STRUCTURE_STEP_MAX = 3.0  # ecart maximal entre deux etapes de la structure (3,5 s en pixels)
+
+
+def _comparison_structure(sid, cues, gauges, pic_groups, base, divider, X, y0, y_top, bw,
+                          wait):
+    """La structure d'une Comparaison se construit pendant l'attente de la
+    premiere donnee, sans aucune valeur.
+
+    Colonne par colonne : sa ligne de base et, sous chaque jauge, un socle
+    clair ; puis le contour vide de la jauge, a la hauteur maximale du plan -
+    le meme pour toutes, il ne dit rien des valeurs. Le separateur vient avec
+    la seconde colonne. Pas de pictogramme : leur nombre est l'information.
+    Les etapes s'etalent sur toute l'attente, a pas regulier ; le nom d'une
+    option sans declencheur arrive avec sa colonne (cues.anchor_times).
+    Renvoie la fin de la construction.
+    """
+    steps, col_start = [], {}
+    for k in (1, 2):
+        mine = [key for key, (_r, _l, o) in gauges.items() if o == k]
+        first = True
+        for key in mine:
+            r = gauges[key][0]
+            x = r.get_center()[0]
+            socle = Line([x - bw / 2 - 0.2, y0, 0], [x + bw / 2 + 0.2, y0, 0],
+                         stroke_color=INK_SOFT, stroke_width=4)
+            contour = DashedVMobject(
+                Rectangle(width=bw + 0.16, height=y_top - y0, stroke_color=INK_SOFT,
+                          stroke_width=2.2, stroke_opacity=0.5)
+                .move_to([x, y0, 0], aligned_edge=DOWN), num_dashes=44)
+            head = [FadeIn(socle)]
+            if first:
+                col_start[k] = len(steps)
+                head.insert(0, Create(base[k - 1]))
+                if k == 2:
+                    head.append(Create(divider))
+                first = False
+            steps.append(head)
+            steps.append([Create(contour)])
+        if first:
+            # Colonne sans jauge (pictogrammes seuls) : sa base et un socle sous
+            # l'emplacement de la grille, vide.
+            grids = [g for g, o in pic_groups.values() if o == k]
+            x0 = grids[0].get_left()[0] if grids else X[k] - 1.3
+            x1 = grids[0].get_right()[0] if grids else X[k] + 1.3
+            head = [Create(base[k - 1]),
+                    FadeIn(Line([x0, y0, 0], [x1, y0, 0], stroke_color=INK_SOFT, stroke_width=4))]
+            if k == 2:
+                head.append(Create(divider))
+            col_start[k] = len(steps)
+            steps.append(head)
+    step = wait / len(steps)
+    if step > STRUCTURE_STEP_MAX:
+        print(f"[ATTENTION] {sid} : attente de {wait:.1f} s pour {len(steps)} etapes de structure "
+              f"({step:.1f} s entre deux) : la premiere donnee arrive trop tard pour que la "
+              f"structure seule tienne l'ecran", file=sys.stderr, flush=True)
+    rt = min(max(step - GAP, MIN_RT), 1.0)
+    for i, anims in enumerate(steps):
+        cues.at(i * step, *anims, rt=rt)
+    for k, i in col_start.items():
+        cues.anchor_times[f"option_{k}"] = i * step
+    return wait
+
+
 def _picto_grid(n, width, height, size_max=0.5, gap=0.44):
     """(colonnes, taille) de la plus grande grille de n pictos qui tienne dans
     width x height, l'ecart valant `gap` fois la taille. A taille egale, la
@@ -2110,8 +2178,6 @@ def Comparaison(seg, cues):
     times = _named_times(tracked, rev)
     tracks = {k: [(1.0, times[k])] for k in tracked}
     frame_end = _frame_end(tracks)
-    _build_frame(cues, VGroup(base, divider), [], [], frame_end)
-    cues.meta["frame_end"] = frame_end
 
     later = [(t, False) for k, t in rev.times.items() if k in rev.fixed and k not in tracks]
     runs, first_motion = _plan_runs(sid, tracks, frame_end, later, CONTINUOUS_MAX, cues.dur)
@@ -2128,6 +2194,30 @@ def Comparaison(seg, cues):
                     t0 = max(t0, min(b + GAP, t1 - MIN_LEAD))
             if t0 > kf[0][0]:
                 kf[0] = (t0, kf[0][1])
+    # Une jauge trop basse pour qu'on la voie monter (55 EUR face a 2 400 EUR)
+    # n'anticipe pas : six secondes d'un trait qui ne bouge pas a l'oeil ne
+    # sont pas du mouvement. Elle monte en MIN_LEAD, juste avant son mot.
+    for k in tracked:
+        if COMPARAISON_RULE == "v1":
+            break
+        if k in gauges and gauges[k][0].height < VISIBLE_H:
+            for kf in runs.get(k) or []:
+                if len(kf) == 2 and kf[0][0] < kf[1][0] - MIN_LEAD:
+                    kf[0] = (kf[1][0] - MIN_LEAD, kf[0][1])
+    starts = [kf[0][0] for k in tracked for kf in runs.get(k) or []] + [a for a, _ in surg]
+    first_motion = min(starts) if starts else None
+
+    # Premiere donnee tardive : au-dela de ce que le cadre occupe (FRAME_MAX),
+    # la structure de la comparaison se construit pendant toute l'attente,
+    # sans aucune valeur. Sinon, le cadre habituel.
+    wait = (first_motion - GAP) if first_motion is not None else 0.0
+    if wait > FRAME_MAX and COMPARAISON_RULE != "v1":
+        frame_end = _comparison_structure(sid, cues, gauges, pic_groups, base, divider,
+                                          X, y0, y_top, bw, wait)
+    else:
+        _build_frame(cues, VGroup(base, divider), [], [], frame_end)
+    cues.meta["frame_end"] = frame_end
+    cues.meta["first_data"] = first_motion
     arrive = {}
     for k in tracked:
         for kf in runs.get(k) or []:

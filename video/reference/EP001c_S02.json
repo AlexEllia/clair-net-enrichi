@@ -1,6 +1,6 @@
 {
  "statut": "VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
- "courante": 1,
+ "courante": 2,
  "versions": [
   {
    "version": 1,
@@ -139,7 +139,163 @@
     ]
    ],
    "voix_s": 32.24,
-   "voix_note": "voix par segment du 17/10/2026, avant la regeneration par blocs : la reference fige ces temps et cette duree"
+   "voix_note": "voix par segment du 17/10/2026, avant la regeneration par blocs : la reference fige ces temps et cette duree",
+   "archivee_le": "18/10/2026",
+   "archivee_pour": "structure construite pendant l'attente de la premiere donnee ; jauge de 55 EUR sans anticipation (trop basse pour se voir monter), validee a l'ecran le 18/10/2026"
+  },
+  {
+   "version": 2,
+   "validee_le": "18/10/2026",
+   "motif": "structure construite pendant l'attente de la premiere donnee ; jauge de 55 EUR sans anticipation (trop basse pour se voir monter), validee a l'ecran le 18/10/2026",
+   "regle_cadre": "v2",
+   "vue_a_l_ecran": true,
+   "images": 998,
+   "clefs": [
+    [
+     "construction du cadre, fin",
+     "frame_end",
+     7.44
+    ],
+    [
+     "jauge 55 EUR : depart",
+     "jauge_1_debut",
+     7.64
+    ],
+    [
+     "55 EUR ecrit",
+     "jauge_1_fin",
+     8.14
+    ],
+    [
+     "jauge 2 400 EUR : depart",
+     "jauge_2_debut",
+     8.34
+    ],
+    [
+     "2 400 EUR ecrit",
+     "jauge_2_fin",
+     9.62
+    ],
+    [
+     "12 mois : premier picto",
+     "pictos_debut",
+     9.82
+    ],
+    [
+     "12 mois : dernier picto",
+     "pictos_fin",
+     13.48
+    ],
+    [
+     "ecart",
+     "ecart",
+     16.27
+    ],
+    [
+     "mise en avant des interets",
+     "mise_en_avant",
+     18.96
+    ],
+    [
+     "suite : depart",
+     "suite_debut",
+     25.4
+    ],
+    [
+     "suite : arrivee",
+     "suite_fin",
+     31.4
+    ]
+   ],
+   "calendrier": [
+    [
+     0.0,
+     1.0,
+     "Create+FadeIn"
+    ],
+    [
+     1.86,
+     1.0,
+     "Create"
+    ],
+    [
+     2.22,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     3.72,
+     1.0,
+     "Create+FadeIn+Create"
+    ],
+    [
+     5.56,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     5.58,
+     1.0,
+     "Create"
+    ],
+    [
+     7.64,
+     0.5,
+     "GrowBar"
+    ],
+    [
+     8.14,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     8.34,
+     1.28,
+     "GrowBar"
+    ],
+    [
+     9.62,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     9.82,
+     3.66,
+     "FillPictos"
+    ],
+    [
+     10.53,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     16.27,
+     1.5,
+     "Create+Create"
+    ],
+    [
+     18.96,
+     1.5,
+     "Create+Restyle+Restyle+Restyle"
+    ],
+    [
+     23.0,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     25.4,
+     6.0,
+     "GrowBar"
+    ],
+    [
+     25.4,
+     6.84,
+     "Courant"
+    ]
+   ],
+   "voix_s": 32.24,
+   "regle_comparaison": "v2"
   }
  ]
 }
