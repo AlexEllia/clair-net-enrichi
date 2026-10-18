@@ -234,8 +234,38 @@ def add_overlays(seg, cues, visual):
             cues.at(cues.late(at, 0.8), fade_up(t, 0.2), rt=0.5)
             out.add(t)
 
+    # --- source_g : la source de chaque barre, sous sa categorie (Bars) ------
+    # Elle apparait a la fin de la croissance de la barre (cues.anchor_times),
+    # en fondu de 0,4 s, et reste jusqu'a la fin du plan. Une source deja
+    # posee sous une barre precedente ne se repete pas. Ces sources remplacent
+    # la source globale (« bas »).
+    seen, posees = set(), []
+    src = sorted((a for a in by if re.fullmatch(r"source_\d+", a)), key=lambda a: int(a[7:]))
+    for anchor in src:
+        for o in by[anchor]:
+            s = o["texte_fr"].strip()
+            if s in seen:
+                continue
+            if anchor not in cues.points:
+                print(f"[ATTENTION] {seg.get('id')} : le composant n'exporte pas l'ancre "
+                      f"{anchor!r}, source {s!r} non posee", file=sys.stderr, flush=True)
+                continue
+            seen.add(s)
+            t = VGroup(*[txt(l, SZ_SOURCE, MUTED) for l in _wrap(s, 22).splitlines()])
+            t.arrange(DOWN, buff=0.07)          # lignes centrees l'une sous l'autre
+            posees.append((anchor, o, t))
+    # Une seule taille pour toutes les sources du plan : la plus contrainte.
+    k = min([1.0] + [cues.anchor_widths.get(a, 2.4) / t.width for a, _, t in posees])
+    for anchor, o, t in posees:
+        t.scale(k)
+        x, y, _ = cues.points[anchor]
+        t.move_to([x, y, 0], aligned_edge=UP).set_z_index(Z_OVER)
+        at = cues.anchor_times.get(anchor, o["t_rel_s"])
+        cues.at(cues.late(at, 0.5), FadeIn(t), rt=0.4)
+        out.add(t)
+
     # --- bas : sources et mentions ------------------------------------------
-    for o in by.get("bas", []):
+    for o in ([] if seen else by.get("bas", [])):
         t = _fit(txt(o["texte_fr"], SZ_SOURCE, MUTED), FW - 1.8)
         t.move_to([0, Y_BOTTOM - 0.44, 0]).set_z_index(Z_OVER)
         cues.at(cues.late(o["t_rel_s"], 0.8), FadeIn(t), rt=0.5)

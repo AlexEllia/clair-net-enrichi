@@ -1,6 +1,6 @@
 {
  "statut": "VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
- "courante": 2,
+ "courante": 3,
  "versions": [
   {
    "version": 1,
@@ -169,7 +169,8 @@
     ]
    ],
    "archivee_le": "25/09/2026",
-   "archivee_pour": "regle le cadre cede"
+   "archivee_pour": "regle le cadre cede",
+   "regle_barres": "v2-anticipation"
   },
   {
    "version": 2,
@@ -329,6 +330,188 @@
     [
      21.93,
      2.67,
+     "GrowBar"
+    ],
+    [
+     24.6,
+     0.3,
+     "FadeIn"
+    ]
+   ],
+   "archivee_le": "18/10/2026",
+   "archivee_pour": "barres v3-phrase : la barre suivante monte au debut de la phrase de son propre mot ; la barre commentee est mise en avant au milieu d'une attente de plus de 4 s ; validee a l'ecran le 18/10/2026",
+   "regle_barres": "v2-anticipation"
+  },
+  {
+   "version": 3,
+   "validee_le": "18/10/2026",
+   "motif": "barres v3-phrase : la barre suivante monte au debut de la phrase de son propre mot ; la barre commentee est mise en avant au milieu d'une attente de plus de 4 s ; validee a l'ecran le 18/10/2026",
+   "regle_cadre": "v2",
+   "regle_comparaison": "v2",
+   "regle_barres": "v3-phrase",
+   "vue_a_l_ecran": true,
+   "images": 769,
+   "clefs": [
+    [
+     "construction du cadre, fin",
+     "frame_end",
+     3.62
+    ],
+    [
+     "barre 1 : depart",
+     "barre_1_debut",
+     3.82
+    ],
+    [
+     "barre 1 atteint 42",
+     "barre_1_fin",
+     9.82
+    ],
+    [
+     "barre 2 : depart",
+     "barre_2_debut",
+     11.28
+    ],
+    [
+     "barre 2 atteint 28",
+     "barre_2_fin",
+     13.16
+    ],
+    [
+     "barre 3 : depart",
+     "barre_3_debut",
+     20.08
+    ],
+    [
+     "barre 3 atteint 15",
+     "barre_3_fin",
+     21.73
+    ],
+    [
+     "barre 4 : depart",
+     "barre_4_debut",
+     22.96
+    ],
+    [
+     "barre 4 atteint 9",
+     "barre_4_fin",
+     24.6
+    ]
+   ],
+   "calendrier": [
+    [
+     0.0,
+     0.527,
+     "Create"
+    ],
+    [
+     0.329,
+     0.527,
+     "AnimationGroup"
+    ],
+    [
+     0.6,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     0.6,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     0.6,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     0.658,
+     0.527,
+     "AnimationGroup"
+    ],
+    [
+     0.987,
+     0.527,
+     "AnimationGroup"
+    ],
+    [
+     1.316,
+     0.527,
+     "AnimationGroup"
+    ],
+    [
+     1.645,
+     0.527,
+     "AnimationGroup"
+    ],
+    [
+     1.975,
+     0.527,
+     "AnimationGroup"
+    ],
+    [
+     2.304,
+     0.527,
+     "FadeIn"
+    ],
+    [
+     2.633,
+     0.527,
+     "FadeIn"
+    ],
+    [
+     2.962,
+     0.527,
+     "FadeIn"
+    ],
+    [
+     3.291,
+     0.329,
+     "FadeIn"
+    ],
+    [
+     3.82,
+     6.0,
+     "GrowBar"
+    ],
+    [
+     9.82,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     11.28,
+     1.88,
+     "GrowBar"
+    ],
+    [
+     13.16,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     16.76,
+     1.5,
+     "Create+Restyle+Restyle"
+    ],
+    [
+     20.08,
+     0.4,
+     "FadeOut+Restyle+Restyle"
+    ],
+    [
+     20.08,
+     1.65,
+     "GrowBar"
+    ],
+    [
+     21.73,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     22.96,
+     1.64,
      "GrowBar"
     ],
     [

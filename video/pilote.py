@@ -63,6 +63,8 @@ def main():
     for k in ("type_visuel", "manim_brief", "overlay_texte"):
         seg[k] = copy.deepcopy(brief["remplace"][k])
     seg["_pilote"] = True
+    from briefs import with_voice
+    seg = with_voice(seg, ep_dir)
 
     align = json.loads((ep_dir / "audio" / "alignments" / f"{sid}.json").read_text(encoding="utf-8"))
     recaler(sid, seg["manim_brief"].get("revelations") or [], align, "revelation")

@@ -11,6 +11,10 @@
     python video/non_regression.py --valider EP001c_S02 --motif "..."
                                                    fige la premiere version d'un plan
                                                    qui vient d'etre valide a l'ecran
+    ... [--derogation-r6 "motif"]                  l'une ou l'autre refuse un plan dont
+                                                   l'ecran reste fige plus de 4 s
+                                                   (R6, au calendrier), sauf derogation
+                                                   ecrite, gardee dans la version
 
 Par ordre d'importance :
 
@@ -97,6 +101,7 @@ def _calendar(seg, dur):
         cues.anchors = {o["ancre"] for o in seg.get("overlay_texte") or []}
         COMPONENTS[fam](target, cues)
         add_overlays(seg, cues, seg["type_visuel"])
+    cues.cible, cues.duree = target, dur       # pour le controle R6 a la validation
     rows = sorted([round(t, 3), round(min(rt, dur - t), 3),
                    "+".join(type(a).__name__ for a in anims)]
                   for t, anims, rt in cues.items if t < dur)
@@ -111,8 +116,9 @@ def _load(ep):
 
 
 def _segment(ep, sid):
-    s, d, _ = _load(ep)
-    return next(g for g in s["segments"] if g["id"] == sid), d[sid].audio
+    from briefs import with_voice
+    s, d, ep_dir = _load(ep)
+    return with_voice(next(g for g in s["segments"] if g["id"] == sid), ep_dir), d[sid].audio
 
 
 def _pilot(name):
@@ -138,7 +144,9 @@ def _shot(name, voix_s=None):
             seg[k] = copy.deepcopy(b["remplace"][k])
         seg["_pilote"] = True
         if voix_s is not None:
+            # Voix figee : l'alignement actuel n'est pas celui du plan valide.
             dur = float(voix_s)
+            seg.pop("_voix", None)
     return _calendar(seg, dur)
 
 
@@ -254,7 +262,8 @@ def _check_version(name, version, rows, cues):
 # version, attribut de components.py, valeur pour une version qui ne la porte
 # pas - anterieure a l'existence de la regle).
 REGLES = (("regle_cadre", "FRAME_RULE", None),
-          ("regle_comparaison", "COMPARAISON_RULE", "v1"))
+          ("regle_comparaison", "COMPARAISON_RULE", "v1"),
+          ("regle_barres", "BARS_RULE", "v2-anticipation"))
 
 
 def _regles(v):
@@ -319,7 +328,22 @@ def check_validated(name):
     return ok
 
 
-def new_version(name, motif, vue):
+def _r6(name, cues, derogation=None):
+    """R6 au moment de figer une version : aucun temps mort de plus de 4 s
+    entre la premiere donnee et la derniere revelation, au calendrier (le
+    plan n'est pas rendu ici). Bloquant, sauf derogation ecrite."""
+    from briefs import still_times, MAX_STILL
+    morts = still_times(cues.cible, cues.duree, [(t, t + rt) for t, _, rt in cues.items])
+    if not morts:
+        return
+    txt = "; ".join(f"{l:.2f} s a {t:.2f} s ({a} -> {b})" for a, b, t, l in morts)
+    if not derogation:
+        raise SystemExit(f"{name} : R6, ecran fige plus de {MAX_STILL:.0f} s - {txt}. "
+                         f"Corriger le plan, ou figer avec --derogation-r6 \"motif\".")
+    print(f"{name} : R6 depasse ({txt}), derogation ecrite : {derogation}")
+
+
+def new_version(name, motif, vue, derogation=None):
     """Archive la version courante et fige le calendrier actuel comme suivante."""
     import components
     path = REF / f"{name}.json"
@@ -328,6 +352,7 @@ def new_version(name, motif, vue):
     rows, cues = _shot(name, cur.get("voix_s"))
     if rows == cur["calendrier"]:
         raise SystemExit(f"{name} : calendrier identique a la v{cur['version']}, rien a figer")
+    _r6(name, cues, derogation)
     today = datetime.date.today().strftime("%d/%m/%Y")
     cur["archivee_le"] = today
     cur["archivee_pour"] = motif
@@ -341,6 +366,8 @@ def new_version(name, motif, vue):
     if "voix_s" in cur:
         new["voix_s"] = cur["voix_s"]
         new["images"] = cur["images"]
+    if derogation:
+        new["derogation_r6"] = {"motif": derogation, "accordee_le": today}
     doc["versions"].append(new)
     doc["courante"] = new["version"]
     path.write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
@@ -349,7 +376,7 @@ def new_version(name, motif, vue):
         print(f"          {label:<34} {value}")
 
 
-def first_version(name, motif):
+def first_version(name, motif, derogation=None):
     """Fige la premiere version d'un plan qui vient d'etre valide a l'ecran."""
     import components
     path = REF / f"{name}.json"
@@ -378,6 +405,7 @@ def first_version(name, motif):
                              f"actuelle ; recaler le brief avant de le figer")
         voix_s = _segment(ep, sid)[1]
     rows, cues = _shot(name, voix_s)
+    _r6(name, cues, derogation)
     v = _values(name, rows, cues)
     missing = [k for k in LIBELLES[name] if v.get(k) is None]
     if missing:
@@ -393,6 +421,9 @@ def first_version(name, motif):
                          "calendrier": rows}]}
     if voix_s is not None:
         doc["versions"][0]["voix_s"] = voix_s
+    if derogation:
+        doc["versions"][0]["derogation_r6"] = {
+            "motif": derogation, "accordee_le": datetime.date.today().strftime("%d/%m/%Y")}
     path.write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(f"{name} : v1 figee ({motif})")
     for label, key, value in doc["versions"][0]["clefs"]:
@@ -417,14 +448,18 @@ def main():
         motif = args[args.index("--motif") + 1] if "--motif" in args else ""
         if not motif:
             raise SystemExit("--motif obligatoire : pourquoi cette nouvelle version ?")
-        new_version(name, motif, vue="--pas-vue" not in args)
+        derog = (args[args.index("--derogation-r6") + 1]
+                 if "--derogation-r6" in args else None)
+        new_version(name, motif, vue="--pas-vue" not in args, derogation=derog)
         return
     if "--valider" in args:
         name = args[args.index("--valider") + 1]
         motif = args[args.index("--motif") + 1] if "--motif" in args else ""
         if not motif:
             raise SystemExit("--motif obligatoire : qu'est-ce qui a ete valide a l'ecran ?")
-        first_version(name, motif)
+        derog = (args[args.index("--derogation-r6") + 1]
+                 if "--derogation-r6" in args else None)
+        first_version(name, motif, derogation=derog)
         return
     fige = "--fige" in args
     REF.mkdir(exist_ok=True)

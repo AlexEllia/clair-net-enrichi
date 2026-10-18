@@ -16,6 +16,7 @@ qui sont sourcees. Le modele d'epargne ne sert qu'a dessiner la silhouette
 entre ces points.
 """
 
+import re
 import sys
 
 from manim import *
@@ -97,6 +98,14 @@ LABEL_RT = 0.3          # une etiquette chiffree : apparition ponctuelle
 FRAME_MAX = 4.0         # le cadre se construit en 4 s au plus
 FRAME_MIN = 1.0         # ... et cede jusqu'a 1 s devant le premier trace (regle v2)
 FRAME_RULE = "v2"       # "v1" : le cadre d'abord (23/09/2026), archivee ; voir _frame_end
+BARS_RULE = "v3-phrase" # barre suivante : "v2-anticipation" monte jusqu'a 6 s avant son mot,
+                        # meme pendant que la voix parle encore de la precedente (25/09/2026),
+                        # archivee ; "v3-phrase" attend le debut de la phrase qui porte son
+                        # propre mot ; si l'ecran resterait fige plus de 4 s d'ici la, la
+                        # barre precedente est mise en avant au milieu de l'attente
+                        # (retenue le 18/10/2026) ; "v3", la fin de la phrase qui porte le
+                        # mot de la precedente (essayee, non retenue). Voir Bars.
+BAR_MIN_GROW = 0.6      # croissance plus courte : la barre surgit, comme une etiquette
 COMPARAISON_RULE = "v2" # "v1" : cadre habituel meme si la premiere donnee tarde, et toute
                         # jauge anticipe (17/10/2026), archivee ; voir Comparaison
 MIN_LEAD = 0.5          # temps minimal d'un trace pour rejoindre son premier point
@@ -1623,6 +1632,12 @@ def Bars(seg, cues):
 
     top = 1.70 if "legende" in cues.anchors else 1.90
     bottom = -2.20 if {"axe_x", "bas"} <= cues.anchors else -2.60
+    # Sources par barre (ancres source_g) : une ligne sous chaque categorie,
+    # entre son libelle et le titre d'axe. La source globale (« bas ») cede
+    # sa place : l'aire remonte d'autant.
+    sources = sorted(a for a in cues.anchors if re.fullmatch(r"source_\d+", a))
+    if sources:
+        bottom = -1.95
     right = 1.30 if mb.get("annotation") else 0.0
     fr = Frame(0.4, n_g + 0.6, ylo, yhi, w=PLOT_W - right, h=top - bottom,
                center=[-right / 2, (top + bottom) / 2, 0])
@@ -1635,7 +1650,13 @@ def Bars(seg, cues):
         lab.move_to(fr.pt(g + 1, ylo)).shift(DOWN * (0.24 + lab.height / 2))
     widest = max((m.width for m in ygrid if isinstance(m, Text)), default=0.0)
     xh = max(m.height for m in xlabels)
-    cues.frame_anchors(fr, below=0.24 + xh + 0.40, left=0.22 + widest + 0.45)
+    cues.frame_anchors(fr, below=0.24 + xh + 0.40 + (0.62 if sources else 0.0),
+                       left=0.22 + widest + 0.45)
+    for g, lab in enumerate(xlabels):
+        # Ancre par le haut : une source sur deux lignes descend, sans remonter
+        # sur le libelle de la categorie.
+        cues.point(f"source_{g + 1}", (fr.px(g + 1), lab.get_bottom()[1] - 0.10))
+        cues.anchor_widths[f"source_{g + 1}"] = fr.wx(0.95)
     axes = VGroup(Line(fr.pt(fr.x0, 0), fr.pt(fr.x1, 0), stroke_color=RULE, stroke_width=2.4),
                   Line(fr.pt(fr.x0, ylo), fr.pt(fr.x0, yhi), stroke_color=RULE, stroke_width=2.4))
     grid_pairs = [VGroup(ygrid[k], ygrid[k + 1]) for k in range(0, len(ygrid) - 1, 2)]
@@ -1712,11 +1733,13 @@ def Bars(seg, cues):
 
     rev = Reveal(seg, cues, order, extras=extras, t0=1.6, rt=PUNCTUAL_MAX, margin=0.6)
 
-    # --- croissance planifiee a rebours --------------------------------------
-    # Une barre est une piste a un seul rendez-vous : toute sa hauteur a
-    # l'instant du mot. Sa croissance est un trace, jusqu'a CONTINUOUS_MAX : la
-    # barre suivante commence a monter pendant que la voix parle encore de la
-    # precedente. Le mouvement anticipe, l'information attend.
+    # --- croissance -----------------------------------------------------------
+    # Une barre atteint toute sa hauteur a l'instant de son mot, et sa valeur
+    # s'ecrit alors. La premiere monte des que le cadre est pose (6 s au plus).
+    # Les suivantes, selon BARS_RULE : en v2-anticipation, jusqu'a 6 s avant
+    # leur mot, meme si la voix parle encore de la precedente ; en v3, pas
+    # avant la fin de la phrase qui porte le mot de la precedente (voir
+    # _bar_release). Sous BAR_MIN_GROW de croissance, la barre surgit.
     _warn_unnamed(sid, order, rev)
     times = _named_times(order, rev)
     tracks = {k: [(1.0, times[k])] for k in order}
@@ -1725,15 +1748,59 @@ def Bars(seg, cues):
     cues.meta["frame_end"] = frame_end
 
     later = [(t, False) for k, t in rev.times.items() if k in rev.fixed and k not in bars]
-    runs, first_motion = _plan_runs(sid, tracks, frame_end, later, CONTINUOUS_MAX, cues.dur)
+    surges = set()
+    if BARS_RULE == "v2-anticipation":
+        runs, first_motion = _plan_runs(sid, tracks, frame_end, later, CONTINUOUS_MAX, cues.dur)
+    else:
+        elements = seg.get("_elements") or {}
+        decl = {elements.get(r["element"], r["element"]): r.get("declencheur")
+                for r in mb.get("revelations") or []}
+        runs, first_motion, surges = _bars_after_voice(sid, seg.get("_voix"), order, times,
+                                                       frame_end, decl)
     cues.meta["first_data"] = first_motion
+    grown = {}
     for k in order:
         rect, lab, edge = bars[k]
         for kf in runs.get(k) or []:
             t0, t1 = kf[0][0], kf[-1][0]
             cues.at(t0, GrowBar(rect, edge), rt=t1 - t0)
-            rev.times[k] = t1
-            cues.at(t1, FadeIn(lab, scale=0.6), rt=LABEL_RT)
+            arrive = t0 if k in surges else t1
+            rev.times[k] = arrive
+            cues.at(arrive, FadeIn(lab, scale=0.6), rt=LABEL_RT)
+            grown[k] = t1
+    # La source d'une categorie apparait a la fin de la croissance de sa
+    # premiere barre (scenes.add_overlays, ancres source_g).
+    for k, t1 in grown.items():
+        g = int(k.split("_")[1])
+        cues.anchor_times[f"source_{g}"] = min(t1, cues.anchor_times.get(f"source_{g}", t1))
+
+    # Attente entre deux barres : de la fin de la barre g - son etiquette, et
+    # le fondu de sa source quand elle en a une - au debut de croissance de
+    # g+1. Au-dela de MAX_STILL, la voix parle encore de la barre g : elle
+    # passe en mise en avant (encadree, les barres deja montees estompees) au
+    # milieu de l'attente, calee sur le debut du mot le plus proche, et revient
+    # a l'etat normal quand g+1 commence a monter. En deca, rien.
+    mises = []
+    if BARS_RULE != "v2-anticipation":
+        for prev, k in zip(order, order[1:]):
+            s_k = runs[k][0][0][0]
+            g = int(prev.split("_")[1])
+            fin = rev.times[prev] + max(LABEL_RT, SOURCE_RT if f"source_{g}" in cues.anchors
+                                        else 0.0)
+            if s_k - fin <= MAX_STILL_BARS:
+                continue
+            c = _mot_proche(seg.get("_voix"), (fin + s_k) / 2, fin + GAP, s_k - MIN_RT - GAP)
+            rect, lab, _ = bars[prev]
+            box = SurroundingRectangle(VGroup(rect, lab), color=INK, buff=0.08,
+                                       stroke_width=2.6, corner_radius=0.05)
+            autres = [bars[o][0] for o in order if o != prev and runs[o][0][0][0] < c]
+            autres += [bars[o][1] for o in order if o != prev and rev.times[o] < c]
+            retour = [Restyle(m, m.copy()) for m in autres]     # etat plein, d'avance
+            cues.at(c, Create(box), *[_dim_to(m, 0.32) for m in autres],
+                    rt=min(PUNCTUAL_MAX, s_k - c - GAP))
+            cues.at(s_k, FadeOut(box), *retour, rt=0.4)
+            mises.append((prev, round(c, 2), round(s_k, 2)))
+    cues.meta["mises_en_avant"] = mises
 
     if hl is not None:
         box, others = hl
@@ -1906,6 +1973,93 @@ def _bands(seg, cues):
             cues.at(t1, FadeIn(marks, scale=0.8), rt=LABEL_RT)
 
     return VGroup(*[VGroup(bands[k][0], bands[k][1]) for k in order])
+
+
+def _bar_release(align, prev_decl, decl, rule):
+    """Instant a partir duquel la barre suivante peut monter, ou None.
+
+    v3 : fin de la phrase qui porte le declencheur de la barre precedente -
+    le dernier caractere avant le premier « . », « ? » ou « ! » qui le suit
+    dans l'alignement reel, s'il en vient un avant le declencheur suivant ;
+    sinon 0,2 s apres la fin du mot declencheur precedent.
+    v3-phrase : debut de la phrase qui porte le declencheur de la barre
+    elle-meme (premiere lettre apres la derniere ponctuation qui le precede),
+    avec le meme repli.
+    None sans alignement, ou si un declencheur n'y figure pas exactement une
+    fois."""
+    if not align or not prev_decl:
+        return None
+    T = "".join(align["characters"])
+    st, en = align["character_start_times_seconds"], align["character_end_times_seconds"]
+    if T.count(prev_decl) != 1:
+        return None
+    i = T.index(prev_decl)
+    j = i + len(prev_decl) - 1
+    nxt = T.index(decl) if decl and T.count(decl) == 1 and T.index(decl) > j else len(T)
+    if rule == "v3-phrase":
+        k = max(T.rfind(c, j + 1, nxt) for c in ".?!")
+        if k >= 0:
+            m = next((m for m in range(k + 1, nxt) if T[m].isalpha()), None)
+            if m is not None:
+                return st[m]
+        return en[j] + GAP
+    p = next((k for k in range(j + 1, nxt) if T[k] in ".?!"), None)
+    return en[p - 1] if p is not None else en[j] + GAP
+
+
+MAX_STILL_BARS = 4.0    # attente au-dela de laquelle la barre commentee est mise en avant
+SOURCE_RT = 0.4         # fondu de la source d'une barre (scenes.add_overlays)
+
+
+def _mot_proche(align, t, lo, hi):
+    """Debut du mot le plus proche de `t` dans la voix, borne a [lo, hi] ;
+    `t` lui-meme sans alignement ou sans mot dans l'intervalle."""
+    if not align:
+        return min(max(t, lo), hi)
+    T = "".join(align["characters"])
+    st = align["character_start_times_seconds"]
+    debuts, dans = [], False
+    for i, ch in enumerate(T):
+        if ch == "[":
+            dans = True
+        elif ch == "]":
+            dans = False
+        elif not dans and ch.isalnum() and (i == 0 or not (T[i - 1].isalnum()
+                                                           or T[i - 1] in "'-")):
+            debuts.append(st[i])
+    debuts = [d for d in debuts if lo <= d <= hi]
+    if not debuts:
+        return min(max(t, lo), hi)
+    return min(debuts, key=lambda d: abs(d - t))
+
+
+def _bars_after_voice(sid, align, order, times, frame_end, decl):
+    """Calendrier des barres selon BARS_RULE v3 : ({barre: [keyframes]},
+    premier mouvement, barres qui surgissent)."""
+    runs, surges, first, prev = {}, set(), None, None
+    if align is None and len(order) > 1:
+        print(f"[ATTENTION] {sid} : pas d'alignement de la voix ; chaque barre attend "
+              f"l'etiquette de la precedente (BARS_RULE {BARS_RULE}, depart estime)",
+              file=sys.stderr, flush=True)
+    for k in order:
+        t = times[k]
+        if prev is None:
+            start = max(frame_end + GAP, t - CONTINUOUS_MAX)
+            if t - start < MIN_LEAD:
+                start = max(0.0, t - MIN_LEAD)
+        else:
+            rel = _bar_release(align, decl.get(prev), decl.get(k), BARS_RULE)
+            if rel is None:
+                rel = times[prev] + LABEL_RT + GAP
+            start = max(rel, times[prev] + LABEL_RT, t - CONTINUOUS_MAX)
+            if t - start < BAR_MIN_GROW:
+                surges.add(k)
+                start = t
+        end = t + LABEL_RT if k in surges else t
+        runs[k] = [[(start, 0.0), (end, 1.0)]]
+        first = start if first is None else min(first, start)
+        prev = k
+    return runs, first, surges
 
 
 class GrowBar(Animation):
