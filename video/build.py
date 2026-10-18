@@ -337,7 +337,15 @@ def main():
 
     # La timeline est la seule source des timecodes : ecrite avant tout rendu,
     # elle sert aussi aux sous-titres et au controle final.
-    tl = build_timeline(args.ep, script, durations, ep_dir)
+    tl = build_timeline(args.ep, script, durations, ep_dir, strict=True)
+    # Les timecodes ecrits dans metadonnees.md doivent etre ceux du montage.
+    from timeline import _titres_meta
+    ecarts = [(m[0], c["tc"], c["titre"]) for m, c in zip(_titres_meta(ep_dir), tl["chapitres"])
+              if m[0] != c["tc"]]
+    if ecarts:
+        from timeline import warn
+        warn(f"{args.ep} : metadonnees.md ne porte pas les timecodes du montage : "
+             + "; ".join(f"{a} au lieu de {b} ({t})" for a, b, t in ecarts))
     write_timeline(tl, ep_dir / "build")
     if args.check:
         print_timeline(tl)

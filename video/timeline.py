@@ -82,15 +82,45 @@ def fmt_tc(t):
 
 
 # --- Chapitres ---------------------------------------------------------------
-# Un chapitre commence a chaque changement de `role` dans le script. Les titres
-# viennent du bloc "Chapitres" de la description YouTube (script.json), sinon
-# de audio/timecodes.json ; leurs timecodes sont ignores, on ne garde que
-# l'ordre.
+# Un chapitre commence a chaque changement de `role` dans le script ; les
+# roles de fin - mention, ouverture, cta - ne forment qu'un chapitre, qui
+# commence au premier d'entre eux. Les titres viennent de metadonnees.md (bloc
+# "Chapitres"), sinon du bloc "Chapitres" de la description YouTube
+# (script.json), sinon de audio/timecodes.json ; leurs timecodes sont ignores,
+# on ne garde que l'ordre. En build (strict) : un nombre de titres different
+# du nombre de chapitres, ou un chapitre de moins de CHAPITRE_MIN, bloque.
 
 _TC_LINE = re.compile(r"^\s*-?\s*(\d{1,2}:)?\d{1,2}:\d{2}\s+(.+?)\s*$")
+ROLES_FIN = ("mention", "ouverture", "cta")
+CHAPITRE_MIN = 10.0     # regle YouTube : un chapitre dure au moins 10 s
+
+
+def _chapitre(role):
+    return "fin" if role in ROLES_FIN else role
+
+
+def _titres_meta(ep_dir):
+    """[(timecode, titre)] du premier bloc « Chapitres » de metadonnees.md."""
+    p = ep_dir / "metadonnees.md"
+    if not p.exists():
+        return []
+    out, dans = [], False
+    for l in p.read_text(encoding="utf-8").splitlines():
+        if not dans:
+            dans = l.strip().lstrip("#").strip().startswith("Chapitres")
+            continue
+        m = _TC_LINE.match(l)
+        if m:
+            out.append((l.strip().split()[0], m.group(2)))
+        elif out and not l.strip():
+            break
+    return out
 
 
 def _titles(script, ep_dir):
+    meta = _titres_meta(ep_dir)
+    if meta:
+        return [t for _, t in meta], "metadonnees.md"
     desc = (script.get("meta") or {}).get("description_youtube") or ""
     if "Chapitres" in desc:
         block = desc.split("Chapitres", 1)[1].strip().split("\n\n", 1)[0]
@@ -106,7 +136,7 @@ def _titles(script, ep_dir):
     return [], None
 
 
-def build_timeline(ep, script, durations, ep_dir):
+def build_timeline(ep, script, durations, ep_dir, strict=False):
     segments = script["segments"]
     durations = ajuster(script, durations)
     missing = [s["id"] for s in segments if s["id"] not in durations]
@@ -135,12 +165,23 @@ def build_timeline(ep, script, durations, ep_dir):
     if len(midrolls) != 3:
         warn(f"{ep} : {len(midrolls)} mid-roll(s) marque(s) dans le script, 3 attendus")
 
-    starts = [r for i, r in enumerate(rows) if i == 0 or r["role"] != rows[i - 1]["role"]]
+    starts = [r for i, r in enumerate(rows)
+              if i == 0 or _chapitre(r["role"]) != _chapitre(rows[i - 1]["role"])]
     titles, src = _titles(script, ep_dir)
     if titles and len(titles) != len(starts):
-        warn(f"{ep} : {len(titles)} titres de chapitre ({src}) pour {len(starts)} "
-             f"changements de role ; titres remplaces par les roles")
+        msg = (f"{ep} : {len(titles)} titres de chapitre ({src}) pour {len(starts)} "
+               f"chapitres calcules")
+        if strict:
+            raise SystemExit(msg + " - corriger les titres ou les roles avant le build")
+        warn(msg + " ; titres remplaces par les roles")
         titles = []
+    if strict:
+        bornes = [r["debut_s"] for r in starts] + [acc]
+        courts = [(r["id"], round(b - a, 2)) for r, a, b in zip(starts, bornes, bornes[1:])
+                  if b - a < CHAPITRE_MIN]
+        if courts:
+            raise SystemExit(f"{ep} : chapitre(s) de moins de {CHAPITRE_MIN:.0f} s "
+                             f"(regle YouTube) : {courts}")
     if not titles:
         titles = [r["role"] or r["id"] for r in starts]
     chapters = [{"debut_s": r["debut_s"], "tc": fmt_tc(r["debut_s"]), "segment": r["id"],
