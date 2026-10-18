@@ -161,6 +161,7 @@ unique quand leur instant dépend de la voix.
 | `option_1`, `option_2` | au-dessus de chaque colonne de `Comparaison` | nom de l'option, dans sa couleur |
 | `noeud_k` | sous le k-ième nœud de `Flux` | nom du nœud |
 | `lien_k` | le long du k-ième lien de `Flux` | nom du flux, dans sa couleur |
+| `source_g` | sous la catégorie g de `Bars` | source de la barre g, en gris ; remplace `bas` |
 
 - `axe_x`, `axe_y` et `titre_haut` : poser à ~0,6 s.
 - Une légende : poser juste après la première révélation de sa série.
@@ -168,6 +169,9 @@ unique quand leur instant dépend de la voix.
 - `option_k`, `noeud_k`, `lien_k` : poser sur le mot qui nomme l'option, le
   nœud ou le flux, avec un `declencheur`. Ces ancres n'existent que sur leur
   famille.
+- `source_g` : son instant est celui de la fin de croissance de la barre g,
+  quel que soit le `t_rel_s` écrit. Une source identique à celle d'une barre
+  précédente ne se répète pas.
 
 ---
 
@@ -335,21 +339,40 @@ ligne = barres simples. Les valeurs négatives descendent sous zéro.
 | `annotation` | surgissement (1,5 s) | Exige `annotation`. |
 | ~~`frame`~~ | décor | Ne pas écrire (R8). |
 
-**Une barre qui monte est un tracé** : sa croissance dure jusqu'à 6 s et se
-planifie à rebours depuis son mot. La barre suivante commence donc à monter
-pendant que la voix parle encore de la précédente — c'est ce qui donne son
-rythme au plan. Tu n'as rien à prévoir pour cela : cale chaque barre sur le
-mot qui énonce sa valeur.
+**Source par barre** — pas un élément de `revelations`, un overlay : une
+entrée `{"ancre": "source_g", "texte_fr": "…"}` par barre qui a sa source.
+Elle s'écrit en gris sous la catégorie g, en fondu de 0,4 s, à la fin de la
+croissance de sa barre, et reste jusqu'à la fin du plan. Une même source
+partagée par plusieurs barres ne s'écrit qu'une fois, sous la première. Dès
+qu'une source par barre existe, elle remplace la source globale `bas`.
+
+**Quand une barre monte (règle v3-phrase)** — la barre 1 monte dès que le
+cadre est posé, 6 s au plus, et atteint sa hauteur sur son mot. Chaque barre
+suivante ne commence à monter qu'**au début de la phrase qui contient son
+propre déclencheur** (dans l'alignement réel de la voix : la première lettre
+après le « . », « ? » ou « ! » qui précède ce déclencheur), et atteint sa
+hauteur sur ce déclencheur : elle monte pendant que la voix l'annonce, jamais
+pendant que la voix parle encore de la précédente. Sa croissance dure 6 s au
+plus ; sous 0,6 s, la barre surgit avec sa valeur, comme une étiquette.
+
+**Mise en avant pendant l'attente** — si, entre l'arrivée de la barre g (son
+étiquette, et le fondu de sa source quand elle en a une) et le début de
+croissance de la barre g+1, l'écran resterait figé plus de 4 s, la barre g
+passe en mise en avant (encadrée, les barres déjà montées estompées) au milieu
+de cette attente, calée sur le début du mot le plus proche ; elle revient à
+l'état normal quand g+1 commence à monter. C'est le moteur qui le décide :
+rien à écrire. La voix parle encore de la barre g, l'image la désigne.
 
 Une seule barre monte à la fois. Entre deux valeurs énoncées, laisse au
-moins 0,7 s. Mise en avant, repère et annotation, eux, surgissent en 1,5 s
-sur leur mot. Une catégorie que la voix ne mentionne pas n'a pas sa place
-dans `donnees` (R9).
+moins 0,7 s. Mise en avant, repère et annotation écrits par le brief, eux,
+surgissent en 1,5 s sur leur mot. Une catégorie que la voix ne mentionne pas
+n'a pas sa place dans `donnees` (R9).
 
-**Exemple réel** — le plan S17 de l'EP001b, validé à l'écran, réécrit dans ce
-format. Il est vrai mais **pas exemplaire** : la première valeur n'est
-lisible qu'à 9,82 s, contre R5, parce que la phrase d'ouverture (« Une seule
-chose déplace la bascule : le rendement. ») ne porte aucun chiffre.
+**Exemple réel** — le plan S17 de l'EP001b, validé à l'écran (version 3, du
+18/10/2026), réécrit dans ce format. Il est vrai mais **pas exemplaire** : la
+première valeur n'est lisible qu'à 9,82 s, contre R5, parce que la phrase
+d'ouverture (« Une seule chose déplace la bascule : le rendement. ») ne porte
+aucun chiffre.
 
 ```json
 {
@@ -371,21 +394,24 @@ chose déplace la bascule : le rendement. ») ne porte aucun chiffre.
 ```
 
 Ce que ça donne : la barre 1 monte de 3,82 s à 9,82 s et « 42 » apparaît sur
-« quarante-deuxième » ; la barre 3 commence à monter à 15,73 s, pendant que
-la voix parle encore des fonds en euros, et atteint 15 sur « quinzième ».
-Les 8,57 s entre `bar_2` et `bar_3` restent vivantes parce que la barre 3
-les comble (R6).
+« quarante-deuxième » ; la barre 2 monte de 11,28 s, au début de sa phrase
+(« À deux virgule six »), à 13,16 s, sur « vingt-huitième ». La voix commente
+alors les fonds en euros jusqu'à 20,08 s : l'attente dépasserait 4 s, la
+barre 2 passe donc en mise en avant à 16,76 s, et revient à l'état normal
+quand la barre 3 commence à monter, à 20,08 s, sur « À cinq pour cent ». Elle
+atteint 15 sur « quinzième » à 21,73 s ; la barre 4 monte de 22,96 s à
+24,60 s. Plus longue immobilité mesurée en pixels : 3,3 s.
 
 **Exemple exemplaire** — le même propos, écrit pour respecter toutes les
 règles. **C'est celui-ci qu'il faut imiter.** La première phrase porte la
 première valeur ; chaque année de bascule a sa révélation sur le mot qui
-l'énonce ; la définition des fonds en euros précède leur valeur, si bien que
-la barre suivante monte pendant qu'on l'explique. Les `t_rel_s` sont des
-estimations (165 mots/min) que le recalage remplacera.
+l'énonce ; la définition des fonds en euros précède leur valeur, dans la
+même phrase, si bien que la barre 2 monte pendant qu'on l'explique. Les
+`t_rel_s` sont des estimations (3,94 syllabes/s) que le recalage remplacera.
 
 ```json
 {
-  "vo_fr": "Au Livret A, la bascule n'arrive que la quarante-deuxième année, à un virgule sept pour cent. Aux fonds en euros, la partie garantie de l'assurance-vie, c'est la vingt-huitième, à deux virgule six pour cent en 2025. À cinq pour cent, la quinzième. À huit virgule huit, la neuvième. Une seule chose déplace la bascule : le rendement.",
+  "vo_fr": "Au Livret A, la bascule n'arrive que la quarante-deuxième année, à un virgule sept pour cent. Aux fonds en euros, la partie garantie de l'assurance-vie, c'est la vingt-huitième, à deux virgule six pour cent en deux mille vingt-cinq. À cinq pour cent, la quinzième. À huit virgule huit, la neuvième. Une seule chose déplace la bascule : le rendement.",
   "type_visuel": "manim",
   "manim_brief": {
     "composant": "Bars",
@@ -394,10 +420,10 @@ estimations (165 mots/min) que le recalage remplacera.
     "axes": {"unite_x": "percent_per_year", "unite_y": "years"},
     "couleurs": ["INTEREST"],
     "revelations": [
-      {"element": "bar_1", "t_rel_s": 2.91, "declencheur": "quarante-deuxième"},
-      {"element": "bar_2", "t_rel_s": 9.82, "declencheur": "vingt-huitième"},
-      {"element": "bar_3", "t_rel_s": 14.91, "declencheur": "quinzième"},
-      {"element": "bar_4", "t_rel_s": 17.09, "declencheur": "neuvième"}
+      {"element": "bar_1", "t_rel_s": 2.79, "declencheur": "quarante-deuxième"},
+      {"element": "bar_2", "t_rel_s": 10.91, "declencheur": "vingt-huitième"},
+      {"element": "bar_3", "t_rel_s": 15.99, "declencheur": "quinzième"},
+      {"element": "bar_4", "t_rel_s": 18.02, "declencheur": "neuvième"}
     ]
   },
   "overlay_texte": [
@@ -408,11 +434,13 @@ estimations (165 mots/min) que le recalage remplacera.
 }
 ```
 
-Ce que ça donne : le cadre se pose en 1 s ; la barre 1 monte de 1,2 s à
-2,91 s et « 42 » apparaît sur « quarante-deuxième » ; la barre 2 monte
-pendant « Aux fonds en euros, la partie garantie de l'assurance-vie » et
-atteint 28 sur « vingt-huitième » ; les barres 3 et 4 suivent. L'écran n'est
-jamais figé plus de 0,6 s entre deux barres.
+Ce que ça donne (estimations) : le cadre se pose en 1 s ; la barre 1 monte
+de 1,2 s à 2,79 s et « 42 » apparaît sur « quarante-deuxième » ; la barre 2
+monte du début de sa phrase, 6,09 s, à « vingt-huitième », 10,91 s, pendant
+« Aux fonds en euros, la partie garantie de l'assurance-vie » ; la barre 3
+monte de 14,72 s à 15,99 s, la barre 4 de 16,50 s à 18,02 s, chacune pendant
+sa propre phrase. Aucune attente ne dépasse 4 s (3,5 s au plus, entre « 28 »
+et la phrase des 5 %) : pas de mise en avant.
 
 #### `Areas` — bandes de dispersion
 
