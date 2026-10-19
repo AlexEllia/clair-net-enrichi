@@ -91,3 +91,10 @@ jamais sortir une famille de `PILOTES` sans validation à l'écran.
   sur le même commit que `main`. Dépôt distant :
   `https://github.com/AlexEllia/clair-net-enrichi`. Les médias, builds et
   secrets ne sont pas sur GitHub : ils se sauvegardent autrement.
+- Après chaque épisode publié : lancer outils/sauvegarde_medias.bat.
+  (Copie additive de `episodes\` vers
+  `%OneDrive%\Sauvegardes\clair-net-enrichi\episodes\`, journal horodaté dans
+  `...\clair-net-enrichi\journaux\`. `config/secrets.env` n'y est pas : il se
+  garde dans un gestionnaire de mots de passe.)
+- Les outils de contrôle réutilisables vivent dans `video/outils/` (épisode en
+  argument, aucun chemin en dur), jamais dans un `build/` ignoré par git.
