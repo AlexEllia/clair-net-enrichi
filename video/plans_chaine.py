@@ -25,6 +25,7 @@ MENTION = ("Contenu informatif et pédagogique.",
            "Ni conseil en investissement, ni recommandation personnalisée.")
 NOM_CHAINE = "Clair net enrichi"
 from timeline import ECRAN_FIN_MIN     # duree minimale du plan, prolongation comprise
+from components import Restyle
 ZONE_VIDEO = (1340, 540, 830, 467)      # centre x, centre y, largeur, hauteur (px)
 ZONE_ABONNEMENT = (480, 600, 300)       # centre x, centre y, diametre (px)
 ZONES_VISIBLES = 2.0       # contour des zones : les 2 premieres secondes seulement
@@ -241,14 +242,21 @@ def ecran_fin(scene, seg, dur, cues, zones_seules=False):
 
     t_abo = mot(al, r"abonnez", 3.0)
     t_abo = min(t_abo, dur - 3.0)
+    # Le bouton est un seul objet, de son apparition a la fin : il surgit sur
+    # « abonnez-vous », s'enfonce (echelle aller-retour), puis passe a l'etat
+    # abonne par transformation - le fond change de couleur, le texte devient
+    # la cloche et « Abonne » - sans jamais etre retire. Toutes ces animations
+    # sont introductrices : un FadeOut ou un Transform ordinaire poserait le
+    # bouton des la premiere image du plan (LISEZ-MOI, pieges), defaut vu a
+    # l'ecran sur l'EP001c (bouton visible, puis qui disparait et revient).
+    fond, lab = b1[0], b1[1]
+    fond_abonne = b2[0].copy().move_to(fond)
+    lab_abonne = b2[1].copy().move_to(lab.get_center() + (b2[1].get_center() - b2[0].get_center()))
     cues.at(t_abo, FadeIn(b1, scale=0.9), rt=0.5)
-    # Clic : le bouton s'enfonce, puis passe a l'etat abonne.
     cues.at(t_abo + 0.9, ScaleInPlace(b1, 0.92, rate_func=there_and_back, introducer=True),
             rt=0.35)
-    cues.at(t_abo + 1.35, FadeOut(b1), FadeIn(b2, scale=0.96), rt=0.45)
-    cloche = b2[1][0]
-    cues.at(t_abo + 1.9, Wiggle(cloche, scale_value=1.15, rotation_angle=0.12 * TAU,
-                                introducer=True), rt=0.8)
+    cues.at(t_abo + 1.35, Restyle(fond, fond_abonne), Transform(lab, lab_abonne, introducer=True),
+            rt=0.45)
     return {"nom": round(t_nom, 2), "abonnez": round(t_abo, 2)}
 
 

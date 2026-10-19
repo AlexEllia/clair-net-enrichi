@@ -24,8 +24,8 @@ PROJECT = ROOT.parent
 TEXTES = {
     "mention": "Ce contenu est informatif et pédagogique. Il ne constitue ni un conseil en "
                "investissement, ni une recommandation personnalisée.",
-    "ecran_fin": "Abonnez-vous à Clair net enrichi pour ne rien manquer. Et dites-moi en "
-                 "commentaire quel chiffre vous a surpris.",
+    "ecran_fin": "Merci d'avoir suivi Clair net enrichi jusqu'au bout. Si ces chiffres vous "
+                 "ont servi, abonnez-vous. Et dites-moi quel chiffre vous a surpris.",
 }
 
 
