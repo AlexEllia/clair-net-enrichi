@@ -188,6 +188,15 @@ unique quand leur instant dépend de la voix.
 
 ## 4. Les familles
 
+**Règle de méthode — un changement de règle se voit sur tout l'épisode.** Tout
+changement de règle d'une famille donne lieu à un aperçu de **tous** les plans
+de cette famille dans l'épisode à publier, avec leur audio réel - pas seulement
+du plan de référence. La non-régression garantit les calendriers ; seul
+l'aperçu de chaque plan montre ce que la règle fait aux autres données (un
+cadre de mise en avant visible avant son heure sur S17 et S22 de l'EP001c, que
+la référence S17 de l'EP001b ne montrait pas). Pour `Bars` :
+`python video/apercu.py EPxxx Sxx`, plan par plan.
+
 ### Disponibles
 
 #### `LineChart` — courbes

@@ -218,7 +218,12 @@ avant d'en ajouter.
 
 - **`FadeOut` sur un objet pas encore introduit le fait apparaître à la première
   image.** Manim ajoute à la scène les objets des animations qui ne sont pas des
-  « introducers ». Posez l'objet à l'avance avec une opacité nulle.
+  « introducers ». Posez l'objet à l'avance avec une opacité nulle, ou déclarez
+  l'animation introductrice (`FadeOut(m, introducer=True)`, `Restyle` dans
+  `components.py`). Le défaut a été vu deux fois à l'écran sur l'EP001c : le
+  cadre de mise en avant des barres, visible dès le début de S17 et S22, et le
+  bouton de l'écran de fin, qui disparaissait puis revenait. Contrôle du bouton :
+  `python video/presence_bouton.py <video> [debut] [fin]`.
 - **Deux `.animate` sur le même objet se partagent l'attribut `target`** : le
   second écrase la cible du premier, et le premier ne fait plus rien. Utilisez
   `Transform(m, m.copy().set_...)`, comme `_opacity()` dans `scenes.py`.
