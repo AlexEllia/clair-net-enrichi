@@ -1,0 +1,352 @@
+{
+ "A": [
+  {
+   "id": "S18",
+   "lufs": -16.8,
+   "f0": 202.4,
+   "debit": 4.684,
+   "articulation": 5.374,
+   "centroide_voise": 2656,
+   "duree_fichier": 20.32,
+   "silence_tete": 0.17,
+   "silence_queue": 0.08
+  },
+  {
+   "id": "S19",
+   "lufs": -16.6,
+   "f0": 200.0,
+   "debit": 3.173,
+   "articulation": 4.532,
+   "centroide_voise": 2626,
+   "duree_fichier": 20.56,
+   "silence_tete": 0.31,
+   "silence_queue": 0.08
+  },
+  {
+   "id": "S20",
+   "lufs": -17.3,
+   "f0": 205.0,
+   "debit": 3.145,
+   "articulation": 3.906,
+   "centroide_voise": 2193,
+   "duree_fichier": 20.56,
+   "silence_tete": 0.13,
+   "silence_queue": 0.08
+  },
+  {
+   "id": "S21",
+   "lufs": -16.2,
+   "f0": 208.2,
+   "debit": 4.116,
+   "articulation": 4.983,
+   "centroide_voise": 2175,
+   "duree_fichier": 23.28,
+   "silence_tete": 0.12,
+   "silence_queue": 0.08
+  },
+  {
+   "id": "S22",
+   "lufs": -16.3,
+   "f0": 208.1,
+   "debit": 3.647,
+   "articulation": 4.797,
+   "centroide_voise": 2296,
+   "duree_fichier": 17.76,
+   "silence_tete": 0.13,
+   "silence_queue": 0.08
+  },
+  {
+   "id": "S23",
+   "lufs": -16.6,
+   "f0": 205.5,
+   "debit": 3.93,
+   "articulation": 4.694,
+   "centroide_voise": 2355,
+   "duree_fichier": 16.0,
+   "silence_tete": 0.07,
+   "silence_queue": 0.16
+  },
+  {
+   "id": "S24",
+   "lufs": -17.0,
+   "f0": 197.0,
+   "debit": 3.781,
+   "articulation": 4.593,
+   "centroide_voise": 2174,
+   "duree_fichier": 18.32,
+   "silence_tete": 0.26,
+   "silence_queue": 0.08
+  },
+  {
+   "id": "S25",
+   "lufs": -16.8,
+   "f0": 190.9,
+   "debit": 3.927,
+   "articulation": 4.839,
+   "centroide_voise": 2597,
+   "duree_fichier": 13.2,
+   "silence_tete": 0.13,
+   "silence_queue": 0.08
+  },
+  {
+   "id": "S26",
+   "lufs": -15.7,
+   "f0": 214.5,
+   "debit": 4.688,
+   "articulation": 6.571,
+   "centroide_voise": 3103,
+   "duree_fichier": 10.0,
+   "silence_tete": 0.11,
+   "silence_queue": 0.08
+  }
+ ],
+ "B": [
+  {
+   "id": "S18",
+   "lufs": -16.1,
+   "f0": 222.8,
+   "debit": 4.486,
+   "articulation": 5.196,
+   "centroide_voise": 2439,
+   "duree_fichier": 21.84,
+   "silence_tete": 0.17,
+   "silence_queue": 0.71
+  },
+  {
+   "id": "S19",
+   "lufs": -15.6,
+   "f0": 221.4,
+   "debit": 3.537,
+   "articulation": 4.352,
+   "centroide_voise": 2435,
+   "duree_fichier": 19.35,
+   "silence_tete": 0.71,
+   "silence_queue": 0.54
+  },
+  {
+   "id": "S20",
+   "lufs": -16.3,
+   "f0": 219.4,
+   "debit": 3.368,
+   "articulation": 4.105,
+   "centroide_voise": 2517,
+   "duree_fichier": 20.13,
+   "silence_tete": 0.54,
+   "silence_queue": 0.59
+  },
+  {
+   "id": "S21",
+   "lufs": -15.7,
+   "f0": 223.9,
+   "debit": 4.01,
+   "articulation": 4.807,
+   "centroide_voise": 2450,
+   "duree_fichier": 24.84,
+   "silence_tete": 0.59,
+   "silence_queue": 0.55
+  },
+  {
+   "id": "S22",
+   "lufs": -15.8,
+   "f0": 224.2,
+   "debit": 4.118,
+   "articulation": 5.379,
+   "centroide_voise": 2327,
+   "duree_fichier": 16.8,
+   "silence_tete": 0.55,
+   "silence_queue": 0.71
+  },
+  {
+   "id": "S23",
+   "lufs": -16.0,
+   "f0": 217.9,
+   "debit": 3.832,
+   "articulation": 4.491,
+   "centroide_voise": 2508,
+   "duree_fichier": 17.66,
+   "silence_tete": 0.71,
+   "silence_queue": 0.77
+  },
+  {
+   "id": "S24",
+   "lufs": -16.3,
+   "f0": 209.2,
+   "debit": 3.683,
+   "articulation": 4.259,
+   "centroide_voise": 2566,
+   "duree_fichier": 19.97,
+   "silence_tete": 0.77,
+   "silence_queue": 0.74
+  },
+  {
+   "id": "S25",
+   "lufs": -16.2,
+   "f0": 205.1,
+   "debit": 4.237,
+   "articulation": 5.154,
+   "centroide_voise": 2574,
+   "duree_fichier": 13.42,
+   "silence_tete": 0.74,
+   "silence_queue": 0.65
+  },
+  {
+   "id": "S26",
+   "lufs": -15.6,
+   "f0": 216.9,
+   "debit": 3.97,
+   "articulation": 5.058,
+   "centroide_voise": 2752,
+   "duree_fichier": 12.39,
+   "silence_tete": 0.65,
+   "silence_queue": 0.15
+  }
+ ],
+ "jonctions_A": [
+  {
+   "jonction": "S18>S19",
+   "d_volume_lu": 0.2,
+   "d_hauteur_dt": -0.21,
+   "d_debit_pct": -32.3,
+   "d_timbre_pct": -1.1,
+   "score": 3.24,
+   "dominante": "debit"
+  },
+  {
+   "jonction": "S19>S20",
+   "d_volume_lu": -0.7,
+   "d_hauteur_dt": 0.43,
+   "d_debit_pct": -0.9,
+   "d_timbre_pct": -16.5,
+   "score": 1.77,
+   "dominante": "timbre"
+  },
+  {
+   "jonction": "S20>S21",
+   "d_volume_lu": 1.1,
+   "d_hauteur_dt": 0.27,
+   "d_debit_pct": 30.9,
+   "d_timbre_pct": -0.8,
+   "score": 3.19,
+   "dominante": "debit"
+  },
+  {
+   "jonction": "S21>S22",
+   "d_volume_lu": -0.1,
+   "d_hauteur_dt": -0.01,
+   "d_debit_pct": -11.4,
+   "d_timbre_pct": 5.6,
+   "score": 1.27,
+   "dominante": "debit"
+  },
+  {
+   "jonction": "S22>S23",
+   "d_volume_lu": -0.3,
+   "d_hauteur_dt": -0.22,
+   "d_debit_pct": 7.8,
+   "d_timbre_pct": 2.6,
+   "score": 0.87,
+   "dominante": "debit"
+  },
+  {
+   "jonction": "S23>S24",
+   "d_volume_lu": -0.4,
+   "d_hauteur_dt": -0.73,
+   "d_debit_pct": -3.8,
+   "d_timbre_pct": -7.7,
+   "score": 1.16,
+   "dominante": "timbre"
+  },
+  {
+   "jonction": "S24>S25",
+   "d_volume_lu": 0.2,
+   "d_hauteur_dt": -0.54,
+   "d_debit_pct": 3.9,
+   "d_timbre_pct": 19.5,
+   "score": 2.06,
+   "dominante": "timbre"
+  },
+  {
+   "jonction": "S25>S26",
+   "d_volume_lu": 1.1,
+   "d_hauteur_dt": 2.02,
+   "d_debit_pct": 19.4,
+   "d_timbre_pct": 19.5,
+   "score": 3.49,
+   "dominante": "hauteur"
+  }
+ ],
+ "jonctions_B": [
+  {
+   "jonction": "S18>S19",
+   "d_volume_lu": 0.5,
+   "d_hauteur_dt": -0.11,
+   "d_debit_pct": -21.2,
+   "d_timbre_pct": -0.2,
+   "score": 2.14,
+   "dominante": "debit"
+  },
+  {
+   "jonction": "S19>S20",
+   "d_volume_lu": -0.7,
+   "d_hauteur_dt": -0.16,
+   "d_debit_pct": -4.8,
+   "d_timbre_pct": 3.4,
+   "score": 0.76,
+   "dominante": "debit"
+  },
+  {
+   "jonction": "S20>S21",
+   "d_volume_lu": 0.6,
+   "d_hauteur_dt": 0.35,
+   "d_debit_pct": 19.1,
+   "d_timbre_pct": -2.7,
+   "score": 2.0,
+   "dominante": "debit"
+  },
+  {
+   "jonction": "S21>S22",
+   "d_volume_lu": -0.1,
+   "d_hauteur_dt": 0.02,
+   "d_debit_pct": 2.7,
+   "d_timbre_pct": -5.0,
+   "score": 0.57,
+   "dominante": "timbre"
+  },
+  {
+   "jonction": "S22>S23",
+   "d_volume_lu": -0.2,
+   "d_hauteur_dt": -0.49,
+   "d_debit_pct": -6.9,
+   "d_timbre_pct": 7.8,
+   "score": 1.16,
+   "dominante": "timbre"
+  },
+  {
+   "jonction": "S23>S24",
+   "d_volume_lu": -0.3,
+   "d_hauteur_dt": -0.71,
+   "d_debit_pct": -3.9,
+   "d_timbre_pct": 2.3,
+   "score": 0.86,
+   "dominante": "hauteur"
+  },
+  {
+   "jonction": "S24>S25",
+   "d_volume_lu": 0.1,
+   "d_hauteur_dt": -0.34,
+   "d_debit_pct": 15.0,
+   "d_timbre_pct": 0.3,
+   "score": 1.54,
+   "dominante": "debit"
+  },
+  {
+   "jonction": "S25>S26",
+   "d_volume_lu": 0.6,
+   "d_hauteur_dt": 0.97,
+   "d_debit_pct": -6.3,
+   "d_timbre_pct": 6.9,
+   "score": 1.4,
+   "dominante": "hauteur"
+  }
+ ]
+}

@@ -1,0 +1,38 @@
+{
+ "bloc": "B4",
+ "duree_bloc_s": 34.64,
+ "segments": [
+  {
+   "id": "S28",
+   "debut_parole": 0.0,
+   "fin_parole": 6.8,
+   "pause_apres_s": 0.938,
+   "coupe_debut_s": 0.0,
+   "coupe_fin_s": 7.269,
+   "duree_fichier_s": 7.269,
+   "tete_s": 0.0,
+   "queue_s": 0.469
+  },
+  {
+   "id": "S29",
+   "debut_parole": 7.738,
+   "fin_parole": 24.245,
+   "pause_apres_s": 1.173,
+   "coupe_debut_s": 7.269,
+   "coupe_fin_s": 24.8315,
+   "duree_fichier_s": 17.5625,
+   "tete_s": 0.469,
+   "queue_s": 0.586
+  },
+  {
+   "id": "S30",
+   "debut_parole": 25.418,
+   "fin_parole": 34.565,
+   "coupe_debut_s": 24.8315,
+   "coupe_fin_s": 34.64,
+   "duree_fichier_s": 9.8085,
+   "tete_s": 0.587,
+   "queue_s": 0.075
+  }
+ ]
+}

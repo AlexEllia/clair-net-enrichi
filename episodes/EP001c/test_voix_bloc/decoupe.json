@@ -1,0 +1,111 @@
+{
+ "segments_B": [
+  {
+   "id": "S18",
+   "debut_parole": 0.173,
+   "fin_parole": 21.126,
+   "pause_apres_s": 1.427,
+   "coupe_debut_s": 0.0,
+   "coupe_fin_s": 21.84,
+   "duree_fichier_s": 21.84
+  },
+  {
+   "id": "S19",
+   "debut_parole": 22.553,
+   "fin_parole": 40.646,
+   "pause_apres_s": 1.08,
+   "coupe_debut_s": 21.84,
+   "coupe_fin_s": 41.186,
+   "duree_fichier_s": 19.346
+  },
+  {
+   "id": "S20",
+   "debut_parole": 41.726,
+   "fin_parole": 60.726,
+   "pause_apres_s": 1.187,
+   "coupe_debut_s": 41.186,
+   "coupe_fin_s": 61.319,
+   "duree_fichier_s": 20.133
+  },
+  {
+   "id": "S21",
+   "debut_parole": 61.913,
+   "fin_parole": 85.606,
+   "pause_apres_s": 1.1,
+   "coupe_debut_s": 61.319,
+   "coupe_fin_s": 86.156,
+   "duree_fichier_s": 24.837
+  },
+  {
+   "id": "S22",
+   "debut_parole": 86.706,
+   "fin_parole": 102.246,
+   "pause_apres_s": 1.422,
+   "coupe_debut_s": 86.156,
+   "coupe_fin_s": 102.957,
+   "duree_fichier_s": 16.801
+  },
+  {
+   "id": "S23",
+   "debut_parole": 103.668,
+   "fin_parole": 119.848,
+   "pause_apres_s": 1.536,
+   "coupe_debut_s": 102.957,
+   "coupe_fin_s": 120.616,
+   "duree_fichier_s": 17.659
+  },
+  {
+   "id": "S24",
+   "debut_parole": 121.384,
+   "fin_parole": 139.848,
+   "pause_apres_s": 1.484,
+   "coupe_debut_s": 120.616,
+   "coupe_fin_s": 140.59,
+   "duree_fichier_s": 19.974
+  },
+  {
+   "id": "S25",
+   "debut_parole": 141.332,
+   "fin_parole": 153.368,
+   "pause_apres_s": 1.293,
+   "coupe_debut_s": 140.59,
+   "coupe_fin_s": 154.014,
+   "duree_fichier_s": 13.424
+  },
+  {
+   "id": "S26",
+   "debut_parole": 154.661,
+   "fin_parole": 166.248,
+   "coupe_debut_s": 154.014,
+   "coupe_fin_s": 166.4,
+   "duree_fichier_s": 12.386
+  }
+ ],
+ "duree_B_s": 166.4,
+ "voix_A_s": 160.0,
+ "silences_A": {
+  "S18": 1.0,
+  "S19": 0.45,
+  "S20": 0.45,
+  "S21": 0.45,
+  "S22": 0.45,
+  "S23": 0.45,
+  "S24": 0.45,
+  "S25": 1.2
+ },
+ "duree_A_avec_silences_s": 164.9,
+ "normalisation": {
+  "A_actuel": {
+   "lufs_avant": -16.6,
+   "gain_db": -0.4,
+   "lufs_apres": -17.0,
+   "crete_vraie_apres_dbtp": -1.0
+  },
+  "B_bloc": {
+   "lufs_avant": -16.0,
+   "gain_db": -1.0,
+   "lufs_apres": -17.0,
+   "crete_vraie_apres_dbtp": -1.3
+  }
+ }
+}
