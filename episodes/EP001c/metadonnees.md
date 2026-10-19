@@ -27,7 +27,7 @@ Chapitres
 03:31 La bascule, et pourquoi le montant n'y change rien
 06:11 Les quatre angles morts du calcul
 08:28 La réponse : ce que font les années
-09:01 Mention légale
+09:02 Quel risque pour gagner 27 ans ?
 
 Sources principales : AMF (décembre 2021), Banque de France (2023, 2026), Euronext (31/03/2026), ACPR (30/06/2026), France Assureurs (27/01/2026), INSEE (2024), Service Public.
 
@@ -43,7 +43,7 @@ Clair net enrichi
 03:31 La bascule, et pourquoi le montant n'y change rien
 06:11 Les quatre angles morts du calcul
 08:28 La réponse : ce que font les années
-09:01 Mention légale
+09:02 Quel risque pour gagner 27 ans ?
 
 ## Mid-rolls
 
@@ -74,6 +74,7 @@ Audio actuel : voix régénérée le 17/10/2026 en trois blocs (B1 S01–S10, B2
 | Écart | **+9,1 %** |
 | Silences ajoutés aux deux jonctions de blocs (pause effective portée à 1,4 s) | 1,14 s après S10, 1,02 s après S18 |
 | Durée totale de l'épisode (`build/timeline.json`) | **559,28 s (9 min 19 s)**, au-dessus du plancher de 8 min 05 s |
+| Fin en quatre temps (18/10/2026) : S28 mention 7,23 s, S29 ouverture 17,31 s, S30 CTA 9,78 s, bloc B4 ; jonction S27 → S28 portée à 1,4 s (0,81 s ajoutée) | **576,93 s (9 min 37 s)** au total, mid-rolls inchangés (03:31, 06:11, 08:28) |
 | Nouveau `syllabes_par_seconde` (méthode A sur EP001c, `mode_calibrage` bloc) | **3,610** (précédent 3,940, écart −8,4 %) |
 
 Point de contrôle après le premier bloc : B1 à +9,9 % (210,56 s pour 191,56 s estimés), projection à environ 9 min 21 s. Écart supérieur à 5 % mais projection au-dessus du plancher : génération poursuivie, calibrage refait en fin d'épisode. Une partie de l'écart vient des pauses naturelles entre les phrases, absentes du calibrage précédent, mesuré segment par segment sur la voix seule ; le reste, d'une prise globalement plus lente. Volume indicatif pour 8 min 30 s au nouveau débit : environ 1 270 mots.
@@ -91,10 +92,11 @@ Caractères envoyés à l'API, balises comprises, relevés dans les fichiers de 
 | 27/09/2026 | Génération segment par segment, avant le contrôle de recalcul (`audio_segments_v1/_obsolete_avant_6b/`) | 19 segments | 6 092 | Perdu : jeté après correction des chiffres |
 | 17/10/2026 | Génération segment par segment de la version validée (`audio_segments_v1/`, `tts_manifest_segments_v1.json`) | 28 segments | 8 564 | Remplacé : archivé, absent de l'épisode final |
 | 17/10/2026 | Test de génération par bloc, S18 à S26 (`test_voix_bloc/`) | 1 bloc | 2 670 | Test, absent de l'épisode final |
-| 17/10/2026 | Génération finale par blocs (`audio/`, `tts_manifest.json`) | 3 blocs | 8 589 | **Dans l'épisode final** |
+| 17/10/2026 | Génération finale par blocs (`audio/`, `tts_manifest.json`) | 3 blocs | 8 589 | **Dans l'épisode final**, sauf l'ancien S28 (296 caractères, fin de B3), remplacé le 18/10 |
+| 18/10/2026 | Nouvelle fin, S28 à S30 (`audio/blocs/B4`) | 1 bloc | 581 | **Dans l'épisode final** |
 
 | | Caractères |
 |---|---|
-| Dans l'épisode final | 8 589 |
-| Perdus, remplacés ou consommés par des tests | 17 326 |
-| **Total consommé pour l'EP001c** | **25 915** |
+| Envoyés pour l'audio final (B1 à B4) | 9 170, dont 296 de l'ancien S28 non utilisés au montage |
+| Perdus, remplacés ou consommés par des tests (hors B1 à B4) | 17 326 |
+| **Total consommé pour l'EP001c** | **26 496** |

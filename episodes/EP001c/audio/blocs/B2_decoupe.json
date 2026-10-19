@@ -1,0 +1,93 @@
+{
+ "bloc": "B2",
+ "duree_bloc_s": 158.48,
+ "segments": [
+  {
+   "id": "S11",
+   "debut_parole": 0.196,
+   "fin_parole": 12.72,
+   "pause_apres_s": 1.107,
+   "coupe_debut_s": 0.0,
+   "coupe_fin_s": 13.2735,
+   "duree_fichier_s": 13.2735,
+   "tete_s": 0.196,
+   "queue_s": 0.553
+  },
+  {
+   "id": "S12",
+   "debut_parole": 13.827,
+   "fin_parole": 27.52,
+   "pause_apres_s": 1.006,
+   "coupe_debut_s": 13.2735,
+   "coupe_fin_s": 28.023,
+   "duree_fichier_s": 14.7495,
+   "tete_s": 0.553,
+   "queue_s": 0.503
+  },
+  {
+   "id": "S13",
+   "debut_parole": 28.526,
+   "fin_parole": 48.646,
+   "pause_apres_s": 1.19,
+   "coupe_debut_s": 28.023,
+   "coupe_fin_s": 49.241,
+   "duree_fichier_s": 21.218,
+   "tete_s": 0.503,
+   "queue_s": 0.595
+  },
+  {
+   "id": "S14",
+   "debut_parole": 49.836,
+   "fin_parole": 68.886,
+   "pause_apres_s": 1.107,
+   "coupe_debut_s": 49.241,
+   "coupe_fin_s": 69.4395,
+   "duree_fichier_s": 20.1985,
+   "tete_s": 0.595,
+   "queue_s": 0.553
+  },
+  {
+   "id": "S15",
+   "debut_parole": 69.993,
+   "fin_parole": 84.886,
+   "pause_apres_s": 1.326,
+   "coupe_debut_s": 69.4395,
+   "coupe_fin_s": 85.549,
+   "duree_fichier_s": 16.1095,
+   "tete_s": 0.553,
+   "queue_s": 0.663
+  },
+  {
+   "id": "S16",
+   "debut_parole": 86.212,
+   "fin_parole": 106.412,
+   "pause_apres_s": 1.307,
+   "coupe_debut_s": 85.549,
+   "coupe_fin_s": 107.0655,
+   "duree_fichier_s": 21.5165,
+   "tete_s": 0.663,
+   "queue_s": 0.653
+  },
+  {
+   "id": "S17",
+   "debut_parole": 107.719,
+   "fin_parole": 134.812,
+   "pause_apres_s": 1.333,
+   "coupe_debut_s": 107.0655,
+   "coupe_fin_s": 135.4785,
+   "duree_fichier_s": 28.413,
+   "tete_s": 0.653,
+   "queue_s": 0.666
+  },
+  {
+   "id": "S18",
+   "debut_parole": 136.145,
+   "fin_parole": 158.412,
+   "coupe_debut_s": 135.4785,
+   "coupe_fin_s": 158.48,
+   "duree_fichier_s": 23.0015,
+   "tete_s": 0.667,
+   "queue_s": 0.068
+  }
+ ]
+}

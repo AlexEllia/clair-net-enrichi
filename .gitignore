@@ -12,9 +12,12 @@ episodes/*/STOP
 *.wav
 *.mp3
 *.mp4
+# Images de build des episodes (rendus, gabarits) : regenerables.
+episodes/**/*.png
 
 # Sorties regenerables (media/ : cache de textes de Manim, cree la ou on le lance)
 episodes/*/build/
+build/
 episodes/*/video/
 media/
 video/media_exemple/

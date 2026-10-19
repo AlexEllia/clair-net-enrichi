@@ -8,7 +8,7 @@
       "L'année où vos intérêts dépassent vos versements"
     ],
     "texte_miniature": "L'année de bascule",
-    "description_youtube": "Deux mille quatre cents euros versés dans l'année, quatorze mille euros d'intérêts la même année. Hypothèse de calcul : 200 € par mois, 5 % par an, 40 ans. Presque six fois plus d'intérêts que de versements, et cet écart ne doit rien au montant que vous versez chaque mois.\n\nAu programme : la capitalisation expliquée avec un Livret A, les chiffres de l'AMF sur l'effet de la durée, l'année exacte où les intérêts d'une année dépassent les versements de cette année-là, et pourquoi elle est la même à 50 € ou à 500 € par mois. Puis quatre angles morts, tous sourcés : la durée réelle des contrats, la dispersion des performances, la capacité d'épargne des ménages et le crédit à la consommation.\n\nNiveau : débutant. Aucune notion préalable nécessaire.\n\nChapitres\n00:00 2 400 € versés, 14 000 € d'intérêts : la même année\n00:19 Pourquoi la première année déçoit\n00:54 Capitalisation et intérêts composés, sans formule\n03:31 La bascule, et pourquoi le montant n'y change rien\n06:11 Les quatre angles morts du calcul\n08:28 La réponse : ce que font les années\n09:01 Mention légale\n\nSources principales : AMF (décembre 2021), Banque de France (2023, 2026), Euronext (31/03/2026), ACPR (30/06/2026), France Assureurs (27/01/2026), INSEE (2024), Service Public.\n\nCe contenu est informatif et pédagogique. Il ne constitue ni un conseil en investissement ni une recommandation personnalisée. Les performances passées ne sont pas un indicateur fiable des résultats futurs. Les simulations sont des hypothèses de calcul.\n\nClair net enrichi",
+    "description_youtube": "Deux mille quatre cents euros versés dans l'année, quatorze mille euros d'intérêts la même année. Hypothèse de calcul : 200 € par mois, 5 % par an, 40 ans. Presque six fois plus d'intérêts que de versements, et cet écart ne doit rien au montant que vous versez chaque mois.\n\nAu programme : la capitalisation expliquée avec un Livret A, les chiffres de l'AMF sur l'effet de la durée, l'année exacte où les intérêts d'une année dépassent les versements de cette année-là, et pourquoi elle est la même à 50 € ou à 500 € par mois. Puis quatre angles morts, tous sourcés : la durée réelle des contrats, la dispersion des performances, la capacité d'épargne des ménages et le crédit à la consommation.\n\nNiveau : débutant. Aucune notion préalable nécessaire.\n\nChapitres\n00:00 2 400 € versés, 14 000 € d'intérêts : la même année\n00:19 Pourquoi la première année déçoit\n00:54 Capitalisation et intérêts composés, sans formule\n03:31 La bascule, et pourquoi le montant n'y change rien\n06:11 Les quatre angles morts du calcul\n08:28 La réponse : ce que font les années\n09:02 Quel risque pour gagner 27 ans ?\n\nSources principales : AMF (décembre 2021), Banque de France (2023, 2026), Euronext (31/03/2026), ACPR (30/06/2026), France Assureurs (27/01/2026), INSEE (2024), Service Public.\n\nCe contenu est informatif et pédagogique. Il ne constitue ni un conseil en investissement ni une recommandation personnalisée. Les performances passées ne sont pas un indicateur fiable des résultats futurs. Les simulations sont des hypothèses de calcul.\n\nClair net enrichi",
     "tags": [
       "intérêts composés",
       "capitalisation",
@@ -31,18 +31,18 @@
     "voix": "Victoria - Content Creator",
     "syllabes_par_seconde": 3.976,
     "calibre_sur": "EP001b",
-    "catalogue_md5": "3cf5806c49878ec47bc36fb808aa7f73",
-    "catalogue_lu": "video/CATALOGUE.md du dossier du projet, commit 678b086 (familles Comparaison et Flux), fins de ligne CRLF sur le disque (md5 du contenu en LF : 0c709d957855178ffee017294b2ac03d). La copie de repli de la skill (references/CATALOGUE.md) est l'ancienne version aa00733 : video/CATALOGUE.md prime.",
+    "catalogue_md5": "59f83ba07dc16c19bd68ccfc202398d2",
+    "catalogue_lu": "video/CATALOGUE.md du dossier du projet, commit 7ccd316 (regle des chapitres, plans mention et ecran_fin, Bars v3-phrase), md5 du fichier sur le disque 59f83ba07dc16c19bd68ccfc202398d2, mis a jour le 19/10/2026. Briefs ecrits contre 678b086, verifies contre cette version (champs et elements des familles utilisees inchanges).",
     "reprise_de": "EP001b (sujet, angle, thèse, recherche) ; script et visuels réécrits contre video/CATALOGUE.md",
     "midrolls_timecodes": [
       "03:31",
       "06:11",
       "08:28"
     ],
-    "duree_audio_reelle_s": 557.12,
-    "duree_totale_reelle_s": 559.277,
+    "duree_audio_reelle_s": 574.279,
+    "duree_totale_reelle_s": 577.245,
     "calage_visuels": "revelations et overlay_texte a declencheur recales le 17/10/2026 sur l'alignement reel de la generation par blocs (audio/alignments re-bases par segment, premier caractere du declencheur, balises ignorees) ; estimation syllabique conservee dans t_rel_s_estime (pour S02 et S12 : valeurs du brief pilote) ; legendes = premiere revelation de leur serie + 0,4 s ; overlays sans declencheur au prorata de la duree reelle",
-    "audio": "voix regeneree par blocs le 17/10/2026 (B1 S01-S10, B2 S11-S18, B3 S19-S28) ; audio par segment precedent archive dans audio_segments_v1/"
+    "audio": "voix regeneree par blocs le 17/10/2026 (B1 S01-S10, B2 S11-S18, B3 S19-S27) ; fin S28-S30 generee le 18/10/2026 (bloc B4) ; audio par segment precedent et ancien S28 archives dans audio_segments_v1/ ; S28-S30 : prise 3 de B4, retenue le 19/10/2026"
   },
   "segments": [
     {
@@ -2947,54 +2947,143 @@
     },
     {
       "id": "S28",
-      "role": "cta",
-      "vo_fr": "Ce contenu est informatif et pédagogique. Il ne constitue ni un conseil en investissement ni une recommandation personnalisée. Les performances passées ne sont pas un indicateur fiable des résultats futurs. Abonnez-vous à Clair net enrichi. Dites-moi quel chiffre vous a surpris.",
-      "mots": 41,
-      "duree_estimee_s": 20.6,
-      "intention_visuelle": "Reste en typographie (au lieu d'un fond animé, figé 74 % du temps sur l'EP001c) : mention légale et appel à l'abonnement, à lire tels quels ; aucun chiffre, aucun mécanisme. Aucune famille ne porte un texte réglementaire, et aucune n'aurait dû le porter. Nom de la chaîne prononcé ici et nulle part avant.",
-      "type_visuel": "typo_cinetique",
+      "role": "mention",
+      "vo_fr": "Ce contenu est informatif et pédagogique. Il ne constitue ni un conseil en investissement ni une recommandation personnalisée.",
+      "mots": 18,
+      "duree_estimee_s": 11.4,
+      "intention_visuelle": "MENTION : la mention légale seule, mot pour mot telle que la donne la skill (prompt-script.md, Conformité), ton neutre. Clôt la partie pédagogique. Carte sobre et fixe fournie par le moteur (type_visuel mention).",
+      "type_visuel": "mention",
       "manim_brief": null,
+      "overlay_texte": [],
+      "sources": [
+        "R37 — AMF, Position DOC-2008-23 (recommandation générale destinée au public)"
+      ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S29",
+      "role": "ouverture",
+      "vo_fr": "Au Livret A, votre bascule n'arrive que la quarante-deuxième année. À cinq pour cent, la quinzième. Seul le rendement l'avance. Mais un rendement plus haut a toujours un prix. Alors la vraie question devient la vôtre : quel risque êtes-vous prêt à prendre pour gagner vingt-sept ans ?",
+      "mots": 46,
+      "duree_estimee_s": 18.8,
+      "intention_visuelle": "OUVERTURE (second hook) : l'épisode a montré que seul le rendement déplace la bascule ; la question qui suit pose le prix de ce rendement (le risque), sans laisser entendre qu'on obtient du rendement sans risque, et sans promesse de gain. Aucun épisode nommé : aucun sujet planifié dans sujets-traites.md. Famille Comparaison : bascule du Livret A (42e année) contre celle à 5 % (15e), chaque jauge sur son mot ; la colonne à 5 % est mise en avant sur « Mais un rendement » ; vingt-sept sabliers apparaissent un à un à côté d'elle et le dernier arrive, avec l'accolade d'écart « 27 » entre les deux jauges, sur « vingt-sept ans ». 27 = 42 − 15, calculé dans recherche.md (T3 bis), écrit dans le brief et non calculé par le moteur.",
+      "type_visuel": "manim",
+      "manim_brief": {
+        "composant": "Comparaison",
+        "unite": "years",
+        "donnees": [
+          [
+            1,
+            42
+          ],
+          [
+            2,
+            15
+          ]
+        ],
+        "couleurs": [
+          "WHITE_DIM",
+          "INTEREST"
+        ],
+        "pictogrammes": [
+          {
+            "option": 2,
+            "icone": "hourglass",
+            "nombre": 27
+          }
+        ],
+        "ecart": {
+          "entre": [
+            1,
+            2
+          ],
+          "valeur": 27,
+          "format": "nombre"
+        },
+        "mise_en_avant": {
+          "option": 2
+        },
+        "revelations": [
+          {
+            "element": "value_1",
+            "t_rel_s": 2.94,
+            "declencheur": "quarante-deuxième",
+            "t_rel_s_estime": 3.05
+          },
+          {
+            "element": "value_2",
+            "t_rel_s": 5.51,
+            "declencheur": "la quinzième",
+            "t_rel_s_estime": 5.82
+          },
+          {
+            "element": "highlight",
+            "t_rel_s": 8.4,
+            "declencheur": "Mais un rendement",
+            "t_rel_s_estime": 8.59
+          },
+          {
+            "element": "pictos_1",
+            "t_rel_s": 16.3,
+            "declencheur": "vingt-sept ans",
+            "t_rel_s_estime": 18.01
+          },
+          {
+            "element": "gap",
+            "t_rel_s": 16.3,
+            "declencheur": "vingt-sept ans",
+            "t_rel_s_estime": 18.01
+          }
+        ]
+      },
       "overlay_texte": [
         {
-          "ancre": "titre_haut",
-          "t_rel_s": 0.59,
-          "texte_fr": "Ce contenu est informatif et pédagogique",
-          "declencheur": "Ce contenu",
+          "ancre": "option_1",
+          "t_rel_s": 0.47,
+          "texte_fr": "Livret A, 1,7 %",
+          "declencheur": "Au Livret A",
           "t_rel_s_estime": 0.0
         },
         {
-          "ancre": "centre",
-          "t_rel_s": 3.94,
-          "texte_fr": "Ni conseil en investissement",
-          "declencheur": "ni un conseil",
-          "t_rel_s_estime": 5.08
+          "ancre": "titre_haut",
+          "t_rel_s": 1.24,
+          "texte_fr": "Année de bascule",
+          "declencheur": "votre bascule",
+          "t_rel_s_estime": 1.11
         },
         {
-          "ancre": "centre",
-          "t_rel_s": 5.62,
-          "texte_fr": "Ni recommandation personnalisée",
-          "declencheur": "ni une recommandation",
-          "t_rel_s_estime": 7.61
+          "ancre": "option_2",
+          "t_rel_s": 4.46,
+          "texte_fr": "À 5 % par an",
+          "declencheur": "À cinq pour cent",
+          "t_rel_s_estime": 4.71
         },
         {
           "ancre": "bas",
-          "t_rel_s": 9.76,
-          "texte_fr": "Les performances passées ne sont pas un indicateur fiable des résultats futurs",
-          "declencheur": "ne sont pas un indicateur",
-          "t_rel_s_estime": 12.18
-        },
-        {
-          "ancre": "centre",
-          "t_rel_s": 13.61,
-          "texte_fr": "Abonnez-vous à Clair net enrichi",
-          "declencheur": "Abonnez-vous",
-          "t_rel_s_estime": 15.99
+          "t_rel_s": 6.95,
+          "texte_fr": "Hypothèse de calcul : 200 € par mois · Livret A au 1er août 2026",
+          "declencheur": "Seul le rendement",
+          "t_rel_s_estime": 6.65
         }
       ],
       "sources": [
-        "R35 — Règlement délégué (UE) 2017/565, art. 44.4 d) (libellé réglementaire)",
-        "R37 — AMF, Position DOC-2008-23 (recommandation générale destinée au public)"
+        "R15 — Livret A à 1,70 % du 01/08/2026 au 31/01/2027 (arrêté du 28/07/2026)",
+        "T3 (§9A, bloc Python) — bascule 42e (1,70 %), 15e (5 %)",
+        "T3 bis (§9A, bloc Python) — 42 − 15 = 27 ans gagnés, même scénario"
       ],
+      "midroll_apres": false
+    },
+    {
+      "id": "S30",
+      "role": "cta",
+      "vo_fr": "La réponse dépend de chaque placement : ce qu'il rapporte, ce qu'il coûte, ce qu'il risque. Clair net enrichi les décortique, chiffres à l'appui. Abonnez-vous.",
+      "mots": 24,
+      "duree_estimee_s": 12.2,
+      "intention_visuelle": "CTA : découle de l'ouverture (la réponse dépend de chaque placement, la chaîne les décortique), nomme Clair net enrichi, finit sur l'appel à s'abonner, seule demande. Écran de fin fourni par le moteur (type_visuel ecran_fin).",
+      "type_visuel": "ecran_fin",
+      "manim_brief": null,
+      "overlay_texte": [],
+      "sources": [],
       "midroll_apres": false
     }
   ]

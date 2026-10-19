@@ -1,0 +1,115 @@
+{
+ "bloc": "B1",
+ "duree_bloc_s": 210.56,
+ "segments": [
+  {
+   "id": "S01",
+   "debut_parole": 0.067,
+   "fin_parole": 19.04,
+   "pause_apres_s": 1.187,
+   "coupe_debut_s": 0.0,
+   "coupe_fin_s": 19.6335,
+   "duree_fichier_s": 19.6335,
+   "tete_s": 0.067,
+   "queue_s": 0.593
+  },
+  {
+   "id": "S02",
+   "debut_parole": 20.227,
+   "fin_parole": 53.92,
+   "pause_apres_s": 1.333,
+   "coupe_debut_s": 19.6335,
+   "coupe_fin_s": 54.5865,
+   "duree_fichier_s": 34.953,
+   "tete_s": 0.594,
+   "queue_s": 0.666
+  },
+  {
+   "id": "S03",
+   "debut_parole": 55.253,
+   "fin_parole": 73.52,
+   "pause_apres_s": 1.267,
+   "coupe_debut_s": 54.5865,
+   "coupe_fin_s": 74.1535,
+   "duree_fichier_s": 19.567,
+   "tete_s": 0.666,
+   "queue_s": 0.634
+  },
+  {
+   "id": "S04",
+   "debut_parole": 74.787,
+   "fin_parole": 94.24,
+   "pause_apres_s": 1.347,
+   "coupe_debut_s": 74.1535,
+   "coupe_fin_s": 94.9135,
+   "duree_fichier_s": 20.76,
+   "tete_s": 0.633,
+   "queue_s": 0.674
+  },
+  {
+   "id": "S05",
+   "debut_parole": 95.587,
+   "fin_parole": 116.64,
+   "pause_apres_s": 1.261,
+   "coupe_debut_s": 94.9135,
+   "coupe_fin_s": 117.2705,
+   "duree_fichier_s": 22.357,
+   "tete_s": 0.674,
+   "queue_s": 0.63
+  },
+  {
+   "id": "S06",
+   "debut_parole": 117.901,
+   "fin_parole": 130.648,
+   "pause_apres_s": 1.35,
+   "coupe_debut_s": 117.2705,
+   "coupe_fin_s": 131.323,
+   "duree_fichier_s": 14.0525,
+   "tete_s": 0.63,
+   "queue_s": 0.675
+  },
+  {
+   "id": "S07",
+   "debut_parole": 131.998,
+   "fin_parole": 150.648,
+   "pause_apres_s": 1.573,
+   "coupe_debut_s": 131.323,
+   "coupe_fin_s": 151.4345,
+   "duree_fichier_s": 20.1115,
+   "tete_s": 0.675,
+   "queue_s": 0.787
+  },
+  {
+   "id": "S08",
+   "debut_parole": 152.221,
+   "fin_parole": 168.728,
+   "pause_apres_s": 1.245,
+   "coupe_debut_s": 151.4345,
+   "coupe_fin_s": 169.3505,
+   "duree_fichier_s": 17.916,
+   "tete_s": 0.786,
+   "queue_s": 0.623
+  },
+  {
+   "id": "S09",
+   "debut_parole": 169.973,
+   "fin_parole": 192.653,
+   "pause_apres_s": 1.107,
+   "coupe_debut_s": 169.3505,
+   "coupe_fin_s": 193.2065,
+   "duree_fichier_s": 23.856,
+   "tete_s": 0.623,
+   "queue_s": 0.554
+  },
+  {
+   "id": "S10",
+   "debut_parole": 193.76,
+   "fin_parole": 210.493,
+   "coupe_debut_s": 193.2065,
+   "coupe_fin_s": 210.56,
+   "duree_fichier_s": 17.3535,
+   "tete_s": 0.553,
+   "queue_s": 0.067
+  }
+ ]
+}

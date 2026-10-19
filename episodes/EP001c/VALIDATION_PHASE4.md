@@ -1,12 +1,19 @@
 # EP001c — Validation de la phase 4
 
+## Validation en vigueur : fin en quatre temps (18/10/2026)
+
+- **Date et heure** : 18 octobre 2026, 13 h 29 (heure de Paris)
+- **Mots exacts de l'utilisatrice** : « Je valide la version 1 de S29, avec une correction de la question finale, et S27, S28, S30 tels quels. »
+- **Texte de S29 imposé par l'utilisatrice** : « Au Livret A, votre bascule n'arrive que la quarante-deuxième année. À cinq pour cent, la quinzième. Seul le rendement l'avance. Mais un rendement plus haut a toujours un prix. Alors la vraie question devient la vôtre : quel risque êtes-vous prêt à prendre pour gagner vingt-sept ans ? »
+- **Condition posée** : poursuivre sans nouvelle validation si seuls ces points changent ; s'arrêter si un contrôle échoue ou si le calcul 42 − 15 ne donne pas 27. Calcul ajouté à `recherche.md` (§9A, T3 bis) : 27, à 50, 200 et 500 €/mois.
+- **Objet validé** : S01 à S27 inchangés (texte validé le 17/10/2026 à 17 h 28, voir plus bas) ; S28 mention, S29 ouverture et S30 CTA nouveaux.
+- **Empreinte des `vo_fr`, S01 à S30** : `cb607ccadab5ce466ff52654231dce47` (md5 de `json.dumps([(id, vo_fr), …], ensure_ascii=False)`, dans l'ordre des segments).
+- **Empreinte des `texte_tts`, S01 à S30** : `d26d4e085e7ccf33d46f02293421f977` (même méthode). Balises : aucune pour S28 et S30, `[curious]` en ouverture de S29.
+
+Les scripts de génération vérifient, avant chaque appel à l'API, que ce fichier existe, que `STOP` est absent et que les textes prononcés ont exactement ces deux empreintes. Toute modification d'un `vo_fr` ou d'un `texte_tts` annule cette validation.
+
+## Historique — validation du 17/10/2026
+
 - **Date et heure** : 17 octobre 2026, 17 h 28 (heure de Paris)
 - **Mots exacts de l'utilisatrice** : « Je valide cette version corrigée. »
-- **Objet validé** : la version corrigée après le point de contrôle des trois segments (coupe d'environ 9 s dans S15, S24, S25, S26 et S28, présentée le 17/10/2026 à 17 h 26), le reste du script étant inchangé par rapport à la version validée à 17 h 22.
-- **Version validée** : `episodes/EP001c/script.json`, md5 `4015ede3115242d799accc71b1bb5303`, relu sur le disque le 17/10/2026 avant écriture de ce fichier.
-- **Recherche associée** : `episodes/EP001c/recherche.md`, md5 `6adefc568ceb018756450c5b34f976ad`.
-- **Catalogue** : `video/CATALOGUE.md`, md5 `0a2aef70fcd31aaf2f245a0cc49a5a00` (égal à `meta.catalogue_md5`).
-- **Calibrage** : 3,976 syllabes/s (EP001b), voix Victoria - Content Creator.
-- **Audio conservé** : S01, S02 et S03, générés juste après la validation de 17 h 22, sous celle-ci ; leur texte est identique dans la version validée ici.
-
-Toute modification de `script.json` après cette validation l'annule : ce fichier doit alors être supprimé et le point d'arrêt de la phase 4 repris. Les scripts de génération vérifient, avant chaque appel à l'API, que ce fichier existe, que `STOP` est absent et que l'empreinte de `script.json` est toujours celle ci-dessus.
+- **Version validée** : `script.json` md5 `4015ede3115242d799accc71b1bb5303` ; textes prononcés S01–S28 : `vo_fr` `0ee694e1ddac0a6b6ead92e449d12d7b`, `texte_tts` `0363d77d8d50648a8c418aca7bb7bdc9`. S01 à S27 de cette version sont repris à l'identique.

@@ -368,6 +368,33 @@ for taux in (0.017, 0.026, 0.0263, 0.05, 0.088, 0.0881):
 print(RESULTATS)
 ```
 
+**T3 bis — Années gagnées entre le Livret A et 5 %** (S29, « gagner vingt-sept ans ») : 42 − 15 = **27 ans**. Même scénario que T3 et que S17 : même fonction `bascule`, versement mensuel en fin de mois, taux mensuel équivalent, versements poursuivis jusqu'à la bascule (horizon ouvert jusqu'à 100 ans : la bascule du Livret A tombe après l'horizon de 40 ans de T1 et T2, comme dans S17). Taux 1,70 % (Livret A, R15) et 5 % (hypothèse AMF, R4). Écart identique à 50, 200 et 500 €/mois.
+
+```python
+# T3 bis — parametres : versements 50 / 200 / 500 EUR/mois ; taux 1,70 et 5 %/an
+# convention : versement fin de mois, taux mensuel equivalent (identique a T3)
+def bascule(mensuel, taux):
+    i = (1 + taux) ** (1 / 12) - 1
+    C = 0.0
+    for annee in range(1, 101):
+        I = 0.0
+        for _ in range(12):
+            it = C * i
+            C += it
+            I += it
+            C += mensuel
+        if I > 12 * mensuel:
+            return annee
+RESULTATS = {}
+for mensuel in (50, 200, 500):
+    a, b = bascule(mensuel, 0.017), bascule(mensuel, 0.05)
+    RESULTATS[f"T3bis_bascule_1.70_{mensuel}"] = a
+    RESULTATS[f"T3bis_bascule_5_{mensuel}"] = b
+    RESULTATS[f"T3bis_annees_gagnees_{mensuel}"] = a - b
+assert {RESULTATS[f"T3bis_annees_gagnees_{m}"] for m in (50, 200, 500)} == {27}
+print(RESULTATS)
+```
+
 **T4 — Même calcul à 50 €/mois, 40 ans, 5 %/an** : 24 000 € versés → **74 126 €**. Rapport des capitaux 200 €/50 € : **4,00** (296 505 / 74 126). Multiplier les versements par 10 multiplie le capital par 10,00.
 
 ```python

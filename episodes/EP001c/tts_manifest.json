@@ -9,7 +9,7 @@
     "use_speaker_boost": true,
     "speed": 1.0
   },
-  "_notes": "EP001c, voix regeneree par blocs le 17/10/2026 (phase 5, generation par blocs). texte_tts strictement identiques a tts_manifest_segments_v1.json (script valide le 17/10/2026 a 17 h 28, VALIDATION_PHASE4.md). Trois blocs et non deux : avec 4 500 caracteres au plus par bloc et des coupes sur les seules frontieres midroll_apres (S10, S18, S25), aucune coupe unique ne tient (S01-S10 + S11-S28 = 3 193 + 5 397 ; S01-S18 + S19-S28 = 5 689 + 2 901 ; S01-S25 = 7 774). silence_apres_s : 0 a l'interieur des blocs, pause de jonction portee a 1,4 s apres S10 et S18.",
+  "_notes": "EP001c, voix regeneree par blocs le 17/10/2026 (phase 5, generation par blocs). texte_tts strictement identiques a tts_manifest_segments_v1.json (script valide le 17/10/2026 a 17 h 28, VALIDATION_PHASE4.md). Trois blocs et non deux : avec 4 500 caracteres au plus par bloc et des coupes sur les seules frontieres midroll_apres (S10, S18, S25), aucune coupe unique ne tient (S01-S10 + S11-S28 = 3 193 + 5 397 ; S01-S18 + S19-S28 = 5 689 + 2 901 ; S01-S25 = 7 774). silence_apres_s : 0 a l'interieur des blocs, pause de jonction portee a 1,4 s apres S10 et S18. 18/10/2026 : fin en quatre temps (skill). Ancien S28 remplace par S28 mention, S29 ouverture, S30 cta, generes en un bloc B4 ; B1, B2, B3 non regeneres. Balises : aucune pour S28 et S30, [curious] pour S29. 19/10/2026 : B4 regenere deux fois (prises 2 et 3) apres un rate de prononciation ; prise 3 retenue.",
   "blocs": [
     {
       "id": "B1",
@@ -52,10 +52,21 @@
         "S24",
         "S25",
         "S26",
-        "S27",
-        "S28"
+        "S27"
       ],
-      "caracteres": 2901
+      "caracteres_envoyes": 2901,
+      "note": "Fichier continu audio/blocs/B3_brut.wav inchange : il contient encore l'ancien S28 (mention + CTA), remplace au montage par B4. B3 ne doit pas etre regenere."
+    },
+    {
+      "id": "B4",
+      "segments": [
+        "S28",
+        "S29",
+        "S30"
+      ],
+      "caracteres": 581,
+      "prise_retenue": 3,
+      "note": "Prise 3 retenue le 19/10/2026 a l'ecoute (prise 1 : « quarante-deuxieme anté » au lieu de « annee » dans S29, archivee dans audio_segments_v1/B4_prise1/ ; prises 2 et 3 dans audio/blocs/B4_prise2/ et B4_prise3/). Meme texte et memes parametres pour les trois prises."
     }
   ],
   "segments": [
@@ -219,13 +230,25 @@
       "id": "S27",
       "texte_tts": "[warm] Jusqu'au bout, vos versements restent à deux mille quatre cents euros par an, et vos intérêts partent de cinquante-cinq. À cinq pour cent, la quarantième année, ils atteignent quatorze mille cinquante-sept euros : cinq virgule neuf fois plus. Voilà l'écart du début : les années l'ont creusé, pas le montant.",
       "fichier_sortie": "audio/S27.wav",
-      "silence_apres_s": 0.0
+      "silence_apres_s": 0.809
     },
     {
       "id": "S28",
-      "texte_tts": "[serious] Ce contenu est informatif et pédagogique. Il ne constitue ni un conseil en investissement ni une recommandation personnalisée. Les performances passées ne sont pas un indicateur fiable des résultats futurs. [warm] Abonnez-vous à Clair net enrichi. Dites-moi quel chiffre vous a surpris.",
+      "texte_tts": "Ce contenu est informatif et pédagogique. Il ne constitue ni un conseil en investissement ni une recommandation personnalisée.",
       "fichier_sortie": "audio/S28.wav",
-      "silence_apres_s": 0.0
+      "silence_apres_s": 0
+    },
+    {
+      "id": "S29",
+      "texte_tts": "[curious] Au Livret A, votre bascule n'arrive que la quarante-deuxième année. À cinq pour cent, la quinzième. Seul le rendement l'avance. Mais un rendement plus haut a toujours un prix. Alors la vraie question devient la vôtre : quel risque êtes-vous prêt à prendre pour gagner vingt-sept ans ?",
+      "fichier_sortie": "audio/S29.wav",
+      "silence_apres_s": 0
+    },
+    {
+      "id": "S30",
+      "texte_tts": "La réponse dépend de chaque placement : ce qu'il rapporte, ce qu'il coûte, ce qu'il risque. Clair net enrichi les décortique, chiffres à l'appui. Abonnez-vous.",
+      "fichier_sortie": "audio/S30.wav",
+      "silence_apres_s": 0
     }
   ]
 }

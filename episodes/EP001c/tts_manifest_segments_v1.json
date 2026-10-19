@@ -1,0 +1,183 @@
+{
+  "voice_id": "O31r762Gb3WFygrEOGh0",
+  "model_id": "eleven_v3",
+  "output_format": "mp3_44100_192",
+  "voice_settings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "style": 0.35,
+    "use_speaker_boost": true,
+    "speed": 1.0
+  },
+  "_notes": "EP001c, script valide le 17/10/2026 a 17 h 28 (script.json md5 4015ede3115242d799accc71b1bb5303). texte_tts = vo_fr (deja integralement en toutes lettres ; AMF prononce comme un mot) precede d'une balise d'intention. Aucune normalisation n'a modifie le texte : les declencheurs se retrouvent tels quels. [excited] sur S09 et S14 uniquement (revelations chiffrees, non consecutifs).",
+  "segments": [
+    {
+      "id": "S01",
+      "texte_tts": "[serious] Deux mille quatre cents euros versés dans l'année. Quatorze mille euros d'intérêts, la même année. Hypothèse de calcul : deux cents euros par mois, placés à cinq pour cent par an, pendant quarante ans. Presque six fois plus d'intérêts que de versements. Et cet écart ne doit rien au montant que vous versez chaque mois.",
+      "fichier_sortie": "audio/S01.mp3",
+      "silence_apres_s": 1.0
+    },
+    {
+      "id": "S02",
+      "texte_tts": "[thoughtful] Sauf que tout commence mal. Les intérêts, c'est ce que votre épargne vous rapporte. La première année, à cinq pour cent, ils s'élèvent à cinquante-cinq euros, pour deux mille quatre cents euros versés. Cinquante-cinq euros, pour douze mois d'efforts. De quoi se dire que ça ne vaut pas la peine. Vu comme ça, l'effet paraît nul. L'AMF, le gendarme de la Bourse, l'a écrit. Les épargnants raisonnent année par année, sans voir ce que le temps fabrique en silence. Et c'est ce réflexe qui leur cache la suite.",
+      "fichier_sortie": "audio/S02.mp3",
+      "silence_apres_s": 1.0
+    },
+    {
+      "id": "S03",
+      "texte_tts": "[thoughtful] On garde cet exemple jusqu'au bout : deux cents euros par mois, placés à cinq pour cent par an. Ce cinq pour cent, c'est le rendement : ce que votre argent rapporte chaque année. L'AMF prend ce même taux dans ses propres exemples. Ce n'est pas une promesse, c'est une hypothèse de calcul.",
+      "fichier_sortie": "audio/S03.mp3",
+      "silence_apres_s": 0.45
+    },
+    {
+      "id": "S04",
+      "texte_tts": "[thoughtful] Le mécanisme, vous l'avez déjà sur un Livret A. Au trente et un décembre, les intérêts de l'année s'ajoutent à votre capital, la somme que vous avez placée. L'année suivante, ils rapportent à leur tour des intérêts. C'est ça, la capitalisation : les intérêts restent dans le pot, et le pot grossit.",
+      "fichier_sortie": "audio/S04.mp3",
+      "silence_apres_s": 0.45
+    },
+    {
+      "id": "S05",
+      "texte_tts": "[thoughtful] Si vous retiriez vos intérêts chaque année, ils ne rapporteraient jamais rien à leur tour. On parlerait alors d'intérêts simples. Quand ils restent dans le pot, ce sont des intérêts composés. D'après la Banque de France, les Français maîtrisent mal la différence. Leur note moyenne en culture financière : douze virgule huit sur vingt.",
+      "fichier_sortie": "audio/S05.mp3",
+      "silence_apres_s": 0.45
+    },
+    {
+      "id": "S06",
+      "texte_tts": "[thoughtful] Alors pourquoi un début si lent ? Parce que les intérêts se calculent sur ce qu'il y a dans le pot. Et la première année, le pot est presque vide. Vous ne faites pas encore tourner la machine. Vous la construisez.",
+      "fichier_sortie": "audio/S06.mp3",
+      "silence_apres_s": 0.45
+    },
+    {
+      "id": "S07",
+      "texte_tts": "[thoughtful] À cinq pour cent, après cinq ans, onze et demi pour cent de votre capital vient des intérêts. Après dix ans, vingt-deux pour cent. Après vingt ans, quarante et un. Et après trente ans, cinquante-six : plus de la moitié du pot n'est jamais sortie de votre poche.",
+      "fichier_sortie": "audio/S07.mp3",
+      "silence_apres_s": 0.45
+    },
+    {
+      "id": "S08",
+      "texte_tts": "[thoughtful] Si ces chiffres vous surprennent, c'est normal. Des économistes l'ont mesuré : environ un tiers des gens imaginent leur épargne grossir en ligne droite. Et cette erreur résiste même quand on leur montre un graphique. Regardons donc les courbes de l'AMF.",
+      "fichier_sortie": "audio/S08.mp3",
+      "silence_apres_s": 0.45
+    },
+    {
+      "id": "S09",
+      "texte_tts": "[excited] À cinq pour cent par an, un capital gagne cent soixante-cinq pour cent en vingt ans. À un pour cent, il gagne seulement vingt-deux pour cent. Sur trente ans, l'écart se creuse : trois cent trente-deux pour cent contre trente-quatre virgule huit. Soit un capital multiplié par quatre virgule trois. C'est le calcul de l'AMF.",
+      "fichier_sortie": "audio/S09.mp3",
+      "silence_apres_s": 0.45
+    },
+    {
+      "id": "S10",
+      "texte_tts": "[curious] Quatre points de rendement en plus, et deux mondes à l'arrivée. Le temps compte, le rendement compte. Et le montant que vous versez chaque mois ? Il compte beaucoup moins qu'on ne le croit. La preuve tient dans une seule année, et cette année porte un numéro précis.",
+      "fichier_sortie": "audio/S10.mp3",
+      "silence_apres_s": 1.0
+    },
+    {
+      "id": "S11",
+      "texte_tts": "[curious] Cette année, la voici. C'est la première où les intérêts gagnés dans l'année dépassent ce que vous versez dans l'année. Pas depuis le début : sur cette seule année. Appelons ce moment la bascule.",
+      "fichier_sortie": "audio/S11.mp3",
+      "silence_apres_s": 0.45
+    },
+    {
+      "id": "S12",
+      "texte_tts": "[curious] Au Monopoly, au début, vous vivez de l'argent touché en passant par la case départ. Puis vous posez des maisons, puis des hôtels. Arrive le tour où vos loyers rapportent plus que la case départ. Vous ne jouez plus la même partie.",
+      "fichier_sortie": "audio/S12.mp3",
+      "silence_apres_s": 0.45
+    },
+    {
+      "id": "S13",
+      "texte_tts": "[curious] Vos versements, eux, ne bougent pas : deux mille quatre cents euros par an. Les intérêts de l'année partent de cinquante-cinq euros. La dixième année, ils atteignent mille quatre cent huit euros. La vingtième, trois mille huit cent deux. Entre les deux, les courbes se sont croisées : c'est la quinzième année, à cinq pour cent.",
+      "fichier_sortie": "audio/S13.mp3",
+      "silence_apres_s": 0.45
+    },
+    {
+      "id": "S14",
+      "texte_tts": "[excited] À cinquante euros par mois, la bascule arrive la quinzième année. À deux cents euros ? La quinzième, encore. À cinq cents euros ? La quinzième, toujours. À cinq pour cent, le calcul donne la même année pour les trois. Le montant change ce que vous aurez à l'arrivée, pas la date.",
+      "fichier_sortie": "audio/S14.mp3",
+      "silence_apres_s": 0.45
+    },
+    {
+      "id": "S15",
+      "texte_tts": "[curious] La raison est presque bête. Multipliez vos versements par dix : vos intérêts sont multipliés par dix aussi, chaque année. Les deux courbes grandissent ensemble, au même rythme. Leur point de croisement, lui, ne bouge pas d'un pouce.",
+      "fichier_sortie": "audio/S15.mp3",
+      "silence_apres_s": 0.45
+    },
+    {
+      "id": "S16",
+      "texte_tts": "[curious] Sur quarante ans, cinquante euros par mois font vingt-quatre mille euros versés. À cinq pour cent, vous avez soixante-quatorze mille euros à l'arrivée. À deux cents euros par mois, c'est quatre-vingt-seize mille euros versés, et deux cent quatre-vingt-seize mille cinq cents à l'arrivée. Quatre fois plus obtenu, pour quatre fois plus versé.",
+      "fichier_sortie": "audio/S16.mp3",
+      "silence_apres_s": 0.45
+    },
+    {
+      "id": "S17",
+      "texte_tts": "[curious] Au Livret A, la bascule n'arrive que la quarante-deuxième année, à un virgule sept pour cent. Aux fonds en euros, qui rapportaient en moyenne deux virgule six pour cent en deux mille vingt-cinq, c'est la vingt-huitième. Les fonds en euros, c'est la partie garantie de l'assurance-vie, un placement d'épargne courant. À cinq pour cent, la quinzième. À huit virgule huit, la neuvième. Une seule chose déplace la bascule : le rendement.",
+      "fichier_sortie": "audio/S17.mp3",
+      "silence_apres_s": 0.45
+    },
+    {
+      "id": "S18",
+      "texte_tts": "[curious] Ce huit virgule huit pour cent, c'est la performance du CAC quarante depuis mille neuf cent quatre-vingt-sept, dividendes réinvestis. Le CAC quarante suit les quarante plus grandes entreprises de la Bourse de Paris. Un dividende, c'est la part du bénéfice qu'une entreprise reverse à ses actionnaires. C'est du passé, pas une promesse. Et ce calcul a quatre angles morts.",
+      "fichier_sortie": "audio/S18.mp3",
+      "silence_apres_s": 1.0
+    },
+    {
+      "id": "S19",
+      "texte_tts": "[serious] Premier angle mort : le temps réel. En France, les contrats d'assurance-vie ont une durée moyenne de douze virgule huit ans. Or à cinq pour cent, la bascule arrive la quinzième année. En moyenne, on est donc encore avant. Deuxième angle mort : le rendement n'a rien de régulier.",
+      "fichier_sortie": "audio/S19.mp3",
+      "silence_apres_s": 0.45
+    },
+    {
+      "id": "S20",
+      "texte_tts": "[serious] Sur cinq ans de Bourse, un cas sur cent tombe sous moins treize pour cent par an. Sur dix ans, moins quatre virgule huit. Sur vingt ans, moins trois. Et sur trente ans, quatre-vingt-dix-neuf cas sur cent dépassent deux virgule quatre pour cent par an. C'est la mesure de l'AMF, hausse des prix déduite.",
+      "fichier_sortie": "audio/S20.mp3",
+      "silence_apres_s": 0.45
+    },
+    {
+      "id": "S21",
+      "texte_tts": "[serious] L'AMF pose elle-même une limite. Sur les actions françaises, ces parts d'entreprises, vingt ans ne suffisent pas à supprimer le risque. Sur cent soixante-huit placements de vingt ans lancés depuis mille neuf cent quatre-vingt-huit, tous finissent gagnants, hausse des prix déduite. Mais six d'entre eux font moins bien que le Livret A. Troisième angle mort : commencer tôt n'est pas toujours un choix.",
+      "fichier_sortie": "audio/S21.mp3",
+      "silence_apres_s": 0.45
+    },
+    {
+      "id": "S22",
+      "texte_tts": "[serious] Chez les vingt pour cent les plus modestes, le taux d'épargne tombe à moins vingt-neuf pour cent. Autrement dit, ils dépensent plus qu'ils ne gagnent. Chez les vingt pour cent les plus aisés, il monte à vingt-sept pour cent. Pour les premiers, la question n'est pas l'année de bascule.",
+      "fichier_sortie": "audio/S22.mp3",
+      "silence_apres_s": 0.45
+    },
+    {
+      "id": "S23",
+      "texte_tts": "[serious] Quatrième angle mort : le crédit à la consommation. Un prêt de moins de trois mille euros coûtait en moyenne près de dix-huit pour cent par an. C'était au deuxième trimestre deux mille vingt-six. Le rembourser, c'est gagner ce taux à coup sûr, sans aucun risque.",
+      "fichier_sortie": "audio/S23.mp3",
+      "silence_apres_s": 0.45
+    },
+    {
+      "id": "S24",
+      "texte_tts": "[serious] Reste une peur courante : commencer, puis devoir s'arrêter. Toujours à cinq pour cent, une pause de trois ans après cinq années de versements coûte douze pour cent du capital final. Commencer trois ans plus tard en coûte seize. S'arrêter en route coûte moins cher que partir en retard.",
+      "fichier_sortie": "audio/S24.mp3",
+      "silence_apres_s": 0.45
+    },
+    {
+      "id": "S25",
+      "texte_tts": "[serious] Alors, où est le vrai levier ? Pas dans le montant, on vient de le voir. Il reste le nombre d'années pendant lesquelles les intérêts restent dans le pot. Et ce nombre a une conséquence qu'on peut chiffrer.",
+      "fichier_sortie": "audio/S25.mp3",
+      "silence_apres_s": 1.2
+    },
+    {
+      "id": "S26",
+      "texte_tts": "[warm] Cette année où vos intérêts dépassent vos versements ? À cinq pour cent, c'est la quinzième. À cinquante euros comme à cinq cents. Le montant décide de ce que vous aurez, pas de la date.",
+      "fichier_sortie": "audio/S26.mp3",
+      "silence_apres_s": 0.45
+    },
+    {
+      "id": "S27",
+      "texte_tts": "[warm] Jusqu'au bout, vos versements restent à deux mille quatre cents euros par an, et vos intérêts partent de cinquante-cinq. À cinq pour cent, la quarantième année, ils atteignent quatorze mille cinquante-sept euros : cinq virgule neuf fois plus. Voilà l'écart du début : les années l'ont creusé, pas le montant.",
+      "fichier_sortie": "audio/S27.mp3",
+      "silence_apres_s": 1.0
+    },
+    {
+      "id": "S28",
+      "texte_tts": "[serious] Ce contenu est informatif et pédagogique. Il ne constitue ni un conseil en investissement ni une recommandation personnalisée. Les performances passées ne sont pas un indicateur fiable des résultats futurs. [warm] Abonnez-vous à Clair net enrichi. Dites-moi quel chiffre vous a surpris.",
+      "fichier_sortie": "audio/S28.mp3",
+      "silence_apres_s": 0.0
+    }
+  ]
+}

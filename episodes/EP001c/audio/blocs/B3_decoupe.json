@@ -1,0 +1,115 @@
+{
+ "bloc": "B3",
+ "duree_bloc_s": 188.08,
+ "segments": [
+  {
+   "id": "S19",
+   "debut_parole": 0.312,
+   "fin_parole": 20.64,
+   "pause_apres_s": 1.066,
+   "coupe_debut_s": 0.0,
+   "coupe_fin_s": 21.173,
+   "duree_fichier_s": 21.173,
+   "tete_s": 0.312,
+   "queue_s": 0.533
+  },
+  {
+   "id": "S20",
+   "debut_parole": 21.706,
+   "fin_parole": 42.006,
+   "pause_apres_s": 1.187,
+   "coupe_debut_s": 21.173,
+   "coupe_fin_s": 42.5995,
+   "duree_fichier_s": 21.4265,
+   "tete_s": 0.533,
+   "queue_s": 0.593
+  },
+  {
+   "id": "S21",
+   "debut_parole": 43.193,
+   "fin_parole": 67.286,
+   "pause_apres_s": 1.34,
+   "coupe_debut_s": 42.5995,
+   "coupe_fin_s": 67.956,
+   "duree_fichier_s": 25.3565,
+   "tete_s": 0.593,
+   "queue_s": 0.67
+  },
+  {
+   "id": "S22",
+   "debut_parole": 68.626,
+   "fin_parole": 85.206,
+   "pause_apres_s": 1.102,
+   "coupe_debut_s": 67.956,
+   "coupe_fin_s": 85.757,
+   "duree_fichier_s": 17.801,
+   "tete_s": 0.67,
+   "queue_s": 0.551
+  },
+  {
+   "id": "S23",
+   "debut_parole": 86.308,
+   "fin_parole": 102.646,
+   "pause_apres_s": 1.296,
+   "coupe_debut_s": 85.757,
+   "coupe_fin_s": 103.294,
+   "duree_fichier_s": 17.537,
+   "tete_s": 0.551,
+   "queue_s": 0.648
+  },
+  {
+   "id": "S24",
+   "debut_parole": 103.942,
+   "fin_parole": 122.406,
+   "pause_apres_s": 1.404,
+   "coupe_debut_s": 103.294,
+   "coupe_fin_s": 123.108,
+   "duree_fichier_s": 19.814,
+   "tete_s": 0.648,
+   "queue_s": 0.702
+  },
+  {
+   "id": "S25",
+   "debut_parole": 123.81,
+   "fin_parole": 136.806,
+   "pause_apres_s": 1.262,
+   "coupe_debut_s": 123.108,
+   "coupe_fin_s": 137.437,
+   "duree_fichier_s": 14.329,
+   "tete_s": 0.702,
+   "queue_s": 0.631
+  },
+  {
+   "id": "S26",
+   "debut_parole": 138.068,
+   "fin_parole": 149.208,
+   "pause_apres_s": 1.267,
+   "coupe_debut_s": 137.437,
+   "coupe_fin_s": 149.8415,
+   "duree_fichier_s": 12.4045,
+   "tete_s": 0.631,
+   "queue_s": 0.633
+  },
+  {
+   "id": "S27",
+   "debut_parole": 150.475,
+   "fin_parole": 170.008,
+   "pause_apres_s": 1.182,
+   "coupe_debut_s": 149.8415,
+   "coupe_fin_s": 170.599,
+   "duree_fichier_s": 20.7575,
+   "tete_s": 0.633,
+   "queue_s": 0.591
+  },
+  {
+   "id": "S28",
+   "debut_parole": 171.19,
+   "fin_parole": 188.008,
+   "coupe_debut_s": 170.599,
+   "coupe_fin_s": 188.08,
+   "duree_fichier_s": 17.481,
+   "tete_s": 0.591,
+   "queue_s": 0.072
+  }
+ ]
+}

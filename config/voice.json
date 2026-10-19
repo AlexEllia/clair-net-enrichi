@@ -2,18 +2,13 @@
   "voice_id": "O31r762Gb3WFygrEOGh0",
   "nom_voix": "Victoria - Content Creator",
   "model_id": "eleven_v3",
-
-  "syllabes_par_seconde": null,
-  "calibre_sur": null,
-
-  "debit_mots_min": 154,
+  "syllabes_par_seconde": 3.61,
+  "calibre_sur": "EP001c",
+  "debit_mots_min": 149.4,
   "debit_mesure_sur": "O31r762Gb3WFygrEOGh0",
-  "volume_cible_mots": 1310,
-
+  "volume_cible_mots": 1270,
   "_unite": "L'unite de reference est la SYLLABE PAR SECONDE, pas le mot par minute. D'un segment a l'autre le debit en mots/minute varie d'environ 45 %, celui en syllabes/seconde d'environ 7 % : les mots francais n'ont pas tous la meme longueur, et un script de finances personnelles est rempli de nombres ecrits en toutes lettres. debit_mots_min et volume_cible_mots ne sont qu'un ordre de grandeur pour demarrer la redaction.",
-
-  "_etat": "syllabes_par_seconde est NUL : la Phase 0 doit etre executee sur le dernier episode termine (EP001b) pour l'etablir. Cette mesure est gratuite et porte sur un echantillon reel de plusieurs minutes. Les valeurs en mots/minute ci-dessus viennent de l'EP001b (1400 mots pour 546 s) et servent de garde-fou provisoire en attendant.",
-
+  "_etat": "Recalibre le 2026-10-17 par la methode A sur EP001c regenere par blocs (B1 S01-S10, B2 S11-S18, B3 S19-S28) : duree.py --calibrer episodes/EP001c/tts_manifest.json 557.12 -> 3,610. 557,12 s = somme des duree_audio_s de audio/durations.json, de coupure a coupure, pauses naturelles entre phrases comprises (mode bloc) ; silences ajoutes aux jonctions de blocs exclus (2,16 s). Valeur precedente 3,940 (EP001c genere segment par segment, voix seule) : ecart -8,4 %. Au point de controle du bloc B1, l'ecart reel/estime etait de +9,9 %.",
   "_historique": {
     "Antoine": {
       "debit_mots_min": 190.3,
@@ -28,7 +23,34 @@
     "Victoria (production EP001b)": {
       "debit_mots_min": 154,
       "mesure": "546 s de parole reelle, balises incluses",
-      "resultat": "reference courante"
+      "resultat": "remplacee le 2026-09-27 par la mesure en syllabes/seconde (methode A, par segment)"
+    },
+    "Victoria (methode A sur EP001b, par segment)": {
+      "syllabes_par_seconde": 4.008,
+      "debit_mots_min": 158.5,
+      "mesure": "498,16 s de voix reelle, 28 segments, balises incluses, coefficient applique par segment",
+      "resultat": "4,008 : methode reconnue fausse, remplace le 2026-09-27 par 3,976",
+      "recalcul_outil_corrige": 3.976
+    },
+    "Victoria (methode A sur EP001b, outil corrige)": {
+      "syllabes_par_seconde": 3.976,
+      "debit_mots_min": 158.5,
+      "mesure": "498,16 s de voix seule, 28 segments, tts_manifest.json EP001b, duree.py corrige",
+      "resultat": "3,976 : reference pour EP001c, remplacee le 2026-10-17 par la mesure sur EP001c"
+    },
+    "Victoria (methode A sur EP001c)": {
+      "syllabes_par_seconde": 3.94,
+      "debit_mots_min": 163.0,
+      "mesure": "510,48 s de voix seule, 28 segments, tts_manifest.json EP001c, duree.py corrige",
+      "resultat": "3,940 : mesure segment par segment (voix seule), remplacee le 2026-10-17 par la mesure en mode bloc (3,610)"
+    },
+    "Victoria (methode A sur EP001c, mode bloc)": {
+      "syllabes_par_seconde": 3.61,
+      "debit_mots_min": 149.4,
+      "mode_calibrage": "bloc",
+      "mesure": "557,12 s de coupure a coupure (pauses naturelles comprises), 28 segments en 3 blocs, tts_manifest.json EP001c, duree.py corrige",
+      "resultat": "reference courante a compter de l episode suivant"
     }
-  }
+  },
+  "mode_calibrage": "bloc"
 }

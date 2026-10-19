@@ -131,13 +131,23 @@
  },
  "S27": {
   "duree_audio_s": 20.758,
-  "silence_apres_s": 0.0,
-  "duree_totale_s": 20.758
+  "silence_apres_s": 0.809,
+  "duree_totale_s": 21.567
  },
  "S28": {
-  "duree_audio_s": 17.481,
+  "duree_audio_s": 7.269,
   "silence_apres_s": 0.0,
-  "duree_totale_s": 17.481
+  "duree_totale_s": 7.269
+ },
+ "S29": {
+  "duree_audio_s": 17.562,
+  "silence_apres_s": 0.0,
+  "duree_totale_s": 17.562
+ },
+ "S30": {
+  "duree_audio_s": 9.809,
+  "silence_apres_s": 0.0,
+  "duree_totale_s": 9.809
  },
  "_generation": {
   "mode": "bloc",
@@ -164,10 +174,26 @@
     "id": "B3",
     "segments": [
      "S19",
-     "S28"
+     "S27"
     ],
     "caracteres": 2901,
-    "duree_s": 188.08
+    "duree_s": 188.08,
+    "note": "fichier continu inchange (contient l'ancien S28) ; S19-S27 au montage"
+   },
+   {
+    "id": "B4",
+    "segments": [
+     "S28",
+     "S30"
+    ],
+    "caracteres": 581,
+    "duree_s": 34.64,
+    "prise_retenue": 3,
+    "caracteres_consommes_prises": [
+     581,
+     581,
+     581
+    ]
    }
   ],
   "jonctions": [
@@ -188,10 +214,19 @@
     "pause_naturelle_s": 0.38,
     "silence_ajoute_s": 1.02,
     "pause_effective_s": 1.4
+   },
+   {
+    "jonction": "B3>B4",
+    "apres": "S27",
+    "fin_bloc_s": 0.591,
+    "debut_bloc_suivant_s": 0.0,
+    "pause_naturelle_s": 0.591,
+    "silence_ajoute_s": 0.809,
+    "pause_effective_s": 1.4
    }
   ],
-  "duree_audio_totale_s": 557.12,
-  "duree_totale_s": 559.277,
-  "note": "duree_audio_s = de coupure a coupure, pauses naturelles comprises ; silence_apres_s seulement aux jonctions entre blocs (pause effective portee a 1,4 s)."
+  "duree_audio_totale_s": 574.279,
+  "duree_totale_s": 577.245,
+  "note": "duree_audio_s = de coupure a coupure, pauses naturelles comprises ; silence_apres_s seulement aux jonctions entre blocs (pause effective portee a 1,4 s). 18/10/2026 : ancien S28 remplace par S28-S30 (bloc B4) ; ancien S28 archive dans audio_segments_v1/S28_ancien.wav. 19/10/2026 : S28-S30 remplaces par la prise 3 de B4."
  }
 }
