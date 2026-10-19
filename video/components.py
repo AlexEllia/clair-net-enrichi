@@ -1780,6 +1780,16 @@ def Bars(seg, cues):
     # passe en mise en avant (encadree, les barres deja montees estompees) au
     # milieu de l'attente, calee sur le debut du mot le plus proche, et revient
     # a l'etat normal quand g+1 commence a monter. En deca, rien.
+    #
+    # Ce qui est encadre suit le mode : en simple et en groupees, la barre g
+    # elle-meme ; en empilees, toute la colonne de sa categorie deja montee.
+    # Jamais une barre qui n'a pas atteint sa hauteur : l'encadre part apres
+    # l'arrivee de g, et ne compte que des barres arrivees.
+    #
+    # Le cadre n'existe a l'ecran qu'entre son trace et son retrait : son
+    # FadeOut est declare introducteur. Sans cela, Manim le pose des la
+    # premiere image du plan (LISEZ-MOI, pieges) - un cadre vide autour d'une
+    # barre pas encore montee, defaut vu a l'ecran sur S17 et S22 de l'EP001c.
     mises = []
     if BARS_RULE != "v2-anticipation":
         for prev, k in zip(order, order[1:]):
@@ -1790,16 +1800,22 @@ def Bars(seg, cues):
             if s_k - fin <= MAX_STILL_BARS:
                 continue
             c = _mot_proche(seg.get("_voix"), (fin + s_k) / 2, fin + GAP, s_k - MIN_RT - GAP)
-            rect, lab, _ = bars[prev]
-            box = SurroundingRectangle(VGroup(rect, lab), color=INK, buff=0.08,
-                                       stroke_width=2.6, corner_radius=0.05)
-            autres = [bars[o][0] for o in order if o != prev and runs[o][0][0][0] < c]
-            autres += [bars[o][1] for o in order if o != prev and rev.times[o] < c]
+            arrivees = [o for o in order if grown.get(o, 1e9) <= c]
+            if prev not in arrivees or order[0] not in arrivees:
+                continue
+            if mode == "empilees":
+                cible = [o for o in arrivees if int(o.split("_")[1]) == g]
+            else:
+                cible = [prev]
+            box = SurroundingRectangle(VGroup(*[m for o in cible for m in bars[o][:2]]),
+                                       color=INK, buff=0.08, stroke_width=2.6,
+                                       corner_radius=0.05)
+            autres = [m for o in arrivees if o not in cible for m in bars[o][:2]]
             retour = [Restyle(m, m.copy()) for m in autres]     # etat plein, d'avance
             cues.at(c, Create(box), *[_dim_to(m, 0.32) for m in autres],
                     rt=min(PUNCTUAL_MAX, s_k - c - GAP))
-            cues.at(s_k, FadeOut(box), *retour, rt=0.4)
-            mises.append((prev, round(c, 2), round(s_k, 2)))
+            cues.at(s_k, FadeOut(box, introducer=True), *retour, rt=0.4)
+            mises.append(("+".join(cible), round(c, 2), round(s_k, 2)))
     cues.meta["mises_en_avant"] = mises
 
     if hl is not None:
