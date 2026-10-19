@@ -86,3 +86,8 @@ jamais sortir une famille de `PILOTES` sans validation à l'écran.
 - Les médias (wav, mp3, mp4), `build/` et `video/` des épisodes, et
   `config/secrets.env` sont ignorés par git.
 - Ne jamais demander de coller un mot de passe ou un jeton dans la conversation.
+- **Fin de session** (règle du 19/10/2026) : à la fin de chaque session où il y a
+  eu un commit, `git push`, puis confirmer à Alexandre que `origin/main` pointe
+  sur le même commit que `main`. Dépôt distant :
+  `https://github.com/AlexEllia/clair-net-enrichi`. Les médias, builds et
+  secrets ne sont pas sur GitHub : ils se sauvegardent autrement.
