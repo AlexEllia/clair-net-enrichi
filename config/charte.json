@@ -1,0 +1,23 @@
+{
+  "_lisez_moi": "Charte de la chaine : regles valables pour tous les episodes. Lue par video/musique_fin.py (build.py et outil autonome).",
+  "musique_fin": {
+    "fichier": "assets/musique/instant-crush-corbyn-kites.mp3",
+    "debut_morceau_s": 0.0,
+    "sauter_silence_initial": true,
+    "seuil_silence_dbfs": -50.0,
+    "avance_sur_fin_voix_s": 3.0,
+    "fondu_entree_s": 1.5,
+    "sous_voix_db": 20.0,
+    "montee_s": 1.0,
+    "niveau_fin_lufs": -20.0,
+    "fondu_sortie_s": 2.0
+  },
+  "mastering": {
+    "_lisez_moi": "Gain global sur le mix final, puis limiteur true-peak si la crete depasse le plafond. Lu par video/mastering.py.",
+    "sonie_cible_lufs": -14.0,
+    "tolerance_lu": 0.05,
+    "crete_max_dbtp": -1.0,
+    "marge_limiteur_db": 0.2,
+    "fenetre_limiteur_ms": 10.0
+  }
+}

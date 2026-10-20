@@ -409,8 +409,20 @@ def main():
     mute = vdir / "_image.mp4"
     concat([conf_dir / f"{sid}.mp4" for sid in order], mute, extra=["-c", "copy"])
 
+    # --- musique de fin et mastering (config/charte.json, musique_fin.py) ---
+    import musique_fin
+    voix, sr = musique_fin.lire_wav(voice)
+    fin = next((r for r in tl["segments"]
+                if any(s["id"] == r["id"] and s["type_visuel"] == "ecran_fin"
+                       for s in segments)), None)
+    piste, rapport, _ = musique_fin.bande_finale(
+        voix, sr, fin and fin["fin_voix_s"], musique_fin.duree_image(mute),
+        fin and (fin["debut_s"], fin["fin_voix_s"]))
+    bande = vdir / "bande.wav"
+    musique_fin.ecrire_wav(bande, piste, sr)
+
     final = vdir / f"{args.ep}.mp4"
-    sh(["ffmpeg", "-y", "-loglevel", "error", "-i", str(mute), "-i", str(voice),
+    sh(["ffmpeg", "-y", "-loglevel", "error", "-i", str(mute), "-i", str(bande),
         "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-ar", "44100",
         "-movflags", "+faststart", "-shortest", str(final)])
     mute.unlink(missing_ok=True)
@@ -423,6 +435,17 @@ def main():
     print(f"video   : {final}")
     print(f"duree   : {mm}:{ss:02d}  ({vd:.2f}s, timeline {ad:.2f}s, ecart {vd - ad:+.2f}s)")
     print(f"sous-titres : {vdir / (args.ep + '.srt')}  ({n_cards} cartons)")
+    if "mastering" in rapport:
+        m = rapport["mastering"]
+        print(f"mastering   : {m['avant_lufs']} -> {m['apres_lufs']} LUFS, crete "
+              f"{m['avant_dbtp']} -> {m['apres_dbtp']} dBTP, gain {m['gain_db']:+.2f} dB, "
+              f"limiteur sur {100 * m['part_limitee']:.1f} % des echantillons")
+    if "musique_fin" in rapport:
+        mf = rapport["musique_fin"]
+        f = mf.get("apres_mastering", mf["avant_mastering"])
+        print(f"musique fin : des {mf['debut_s']:.2f} s, {f['ecart_sous_voix_db']} dB sous la "
+              f"voix, fin a {f['musique_fin_lufs']} LUFS" + (f"  {mf['ATTENTION']}"
+                                                              if "ATTENTION" in mf else ""))
     print(f"timeline    : {ep_dir / 'build' / 'timeline.json'}")
     print(f"chapitres   : {ep_dir / 'build' / 'chapitres.txt'}")
     if vd < 480:

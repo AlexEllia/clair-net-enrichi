@@ -12,6 +12,9 @@ episodes/*/STOP
 *.wav
 *.mp3
 *.mp4
+# Exception : la musique de la charte (config/charte.json) fait partie du
+# depot tant qu'un morceau reste sous 10 Mo.
+!assets/musique/*.mp3
 # Images de build des episodes (rendus, gabarits) : regenerables.
 episodes/**/*.png
 
