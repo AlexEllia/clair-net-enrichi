@@ -914,6 +914,27 @@ contenir le mot « ni » ; le texte du CTA, « Clair net enrichi » et
 « abonnez-vous ». Sans ces mots, le moteur pose la ligne, le nom ou le bouton à
 un instant par défaut.
 
+**Musique de fin** (règle de chaîne, `video/musique_fin.py`, paramètres dans
+`config/charte.json`, clé `musique_fin`) : le morceau de la charte
+(`assets/musique/`) entre sous la voix du CTA, **3 s avant la fin de la voix**,
+en fondu de 1,5 s, **au moins 20 dB sous la voix** de l'écran de fin, pour ne
+jamais couvrir « Clair net enrichi » ni « abonnez-vous ». À la fin de la voix,
+il remonte en 1 s jusqu'à **−20 LUFS** et s'y tient pendant la prolongation
+silencieuse ; il sort en fondu de 2 s, nul sur la dernière image. Le silence
+qui ouvre le morceau est sauté ; chaque niveau est calé sur la sonie du
+passage du morceau qui tombe dans sa phase. Le morceau ne boucle jamais :
+s'il est trop court, le build le signale. Le mixage se fait sur la piste
+finale : l'image n'est pas rendue à nouveau.
+
+**Mastering** (règle de chaîne, `video/mastering.py`, clé `mastering`) : un
+gain global sur tout le mix amène l'épisode à **−14 LUFS** ; un limiteur
+true-peak le tient sous **−1 dBTP**. Même gain pour la voix et la musique :
+l'équilibre ne change pas. Les deux niveaux de la musique s'entendent dans la
+vidéo livrée : celui de fin est corrigé du gain global, et l'écart sous la
+voix est mesuré après le limiteur (qui rabote les crêtes de la voix) ; sous
+20 dB, rien n'est produit. Sur l'EP001c : +3,10 dB de gain, limiteur sur
+9,6 % des échantillons (plus de 1 dB sur 3,9 % du temps, 3,9 dB au plus).
+
 ---
 
 ## 6. Avant de rendre un `manim_brief`, vérifie

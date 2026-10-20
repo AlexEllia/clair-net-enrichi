@@ -54,6 +54,22 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
   être introductrice (`introducer=True`, `Restyle`), sinon Manim le pose dès la
   première image. Vu deux fois sur l'EP001c (cadre des barres, bouton).
   Commits : `a8c490b`, `3e40004`.
+- **Musique de fin et mastering** (règles de chaîne, 20/10/2026 ;
+  `video/musique_fin.py`, `video/mastering.py`, paramètres dans
+  `config/charte.json`) : la musique de la charte entre 3 s avant la fin de la
+  voix du CTA, en fondu de 1,5 s, au moins 20 dB sous la voix ; à la fin de la
+  voix elle remonte en 1 s jusqu'à −20 LUFS, se tient pendant la prolongation
+  silencieuse, et sort en fondu de 2 s qui finit sur la dernière image. Jamais
+  de boucle : un morceau trop court est signalé. Puis un gain global sur tout
+  le mix amène l'épisode à −14 LUFS, avec un limiteur true-peak à −1 dBTP ;
+  l'écart de 20 dB et le niveau de fin se mesurent dans la vidéo livrée. Le
+  mixage se fait sur la piste finale, sans nouveau rendu de l'image
+  (`-c:v copy`) ; `build.py` l'applique à chaque build.
+  *Pourquoi* : la voix seule était à −16,6 LUFS et −0,4 dBTP, hors des cibles
+  de diffusion.
+  Contrôles : voix inchangée avant la musique (à l'échantillon près, au gain
+  global près hors action du limiteur), crête, sonie, durée, chapitres et
+  mid-rolls inchangés.
 - **Familles pilotes** : une famille nouvelle passe par le verrou `PILOTES`
   (components.py), un brief dans `video/pilotes/` rendu par `video/pilote.py`
   (jamais dans script.json), la validation à l'écran par Alexandre, **puis
