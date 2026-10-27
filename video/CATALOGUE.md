@@ -935,6 +935,54 @@ voix est mesuré après le limiteur (qui rabote les crêtes de la voix) ; sous
 20 dB, rien n'est produit. Sur l'EP001c : +3,10 dB de gain, limiteur sur
 9,6 % des échantillons (plus de 1 dB sur 3,9 % du temps, 3,9 dB au plus).
 
+### Les miniatures : `make miniature EP=…`
+
+Règle de chaîne (`video/miniature.py`). Le moteur dessine les miniatures YouTube
+aux couleurs et dans la police de la charte, une par variante de la section
+**`## Miniatures`** de `metadonnees.md` (pour « Tester et comparer » de YouTube
+Studio). Sorties dans `build/miniatures/` : 1280×720, version 168×94 (mobile),
+planche côte à côte.
+
+**Ce que la rédaction écrit** (exemple réel : EP001c) :
+
+```
+### A — chiffre
+- Chiffre : 27
+- Texte : ans / ==plus tôt==
+- Barres : Livret A = bascule 1,70 % ; 5 % = bascule 5 %
+
+### B — contraste
+- Texte : En quelle année / ==tout bascule ?==
+- Courbes : versé et capital, 200 €/mois, 5 %, 40 ans
+
+### C — bascule
+- Texte : Quand tes {intérêts} / ==dépassent== / tes [versements]
+- Courbes : intérêts et versements de l'année, 200 €/mois, 5 %, 28 ans
+```
+
+` / ` change de ligne ; `==…==` met la ligne dans un bloc incliné (ambre, ou
+blanc si un mot est déjà en ambre) ; `{…}` écrit en ambre (ce que le capital
+verse), `[…]` en bleu (ce que vous versez). Le texte s'affiche en capitales.
+
+| Famille | Ce que le moteur pose |
+|---|---|
+| `chiffre` | Un chiffre géant ambre, son texte à droite ; deux barres (années de bascule calculées) et l'écart entre elles, fléché. Le chiffre **doit** être cet écart. |
+| `contraste` | Cumul versé (bleu) et capital (ambre) qui divergent, l'aire entre les deux remplie, la courbe haute fléchée vers le haut du cadre. |
+| `bascule` | Versements de l'année (ligne bleue) croisés par les intérêts de l'année (ambre) ; impact lumineux au croisement réel. |
+
+**Le texte** : une phrase qui accroche, **6 mots au plus**, un seul chiffre
+géant ; racoleur permis, mensonge interdit. Ni lexique interdit, ni promesse de
+gain : un fait du calcul (« quand tes intérêts dépassent tes versements »),
+pas une promesse (« tu gagnes plus que… »). Cohérent avec le titre retenu, sans
+le recopier mot pour mot.
+
+**Contrôles** (le moteur refuse sinon) : 1280×720, PNG sous 2 Mo ; coin
+inférieur droit (200×76 px, où YouTube affiche la durée) laissé au fond ;
+mots, chiffre géant et lexique comptés ; hauteur de capitale d'au moins 7 px en
+168×94 ; contraste WCAG d'au moins 4,5:1 ; données recalculées avec la
+convention 9A de `recherche.md`, et tout nombre affiché présent dans
+`recherche.md`.
+
 ---
 
 ## 6. Avant de rendre un `manim_brief`, vérifie

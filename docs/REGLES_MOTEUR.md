@@ -70,6 +70,19 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
   Contrôles : voix inchangée avant la musique (à l'échantillon près, au gain
   global près hors action du limiteur), crête, sonie, durée, chapitres et
   mid-rolls inchangés.
+- **Miniatures** (règle de chaîne, 27/10/2026 ; `make miniature EP=…`,
+  `video/miniature.py`) : le moteur dessine une miniature par variante de la
+  section `## Miniatures` de `metadonnees.md` (familles `chiffre`,
+  `contraste`, `bascule`), aux couleurs et dans la police de la charte,
+  en 1280×720 et en 168×94, avec une planche. Phrase qui accroche, **6 mots au
+  plus** (décision d'Alexandre), un seul chiffre géant, mot-clé dans un bloc
+  incliné ; aucun terme du lexique interdit, aucune promesse de gain. Coin
+  inférieur droit laissé libre pour la durée. Données recalculées
+  (convention 9A), chiffre géant égal à l'écart des barres, tout nombre
+  affiché présent dans `recherche.md`.
+  *Pourquoi* : la v1, fidèle à la charte mais sage, n'accrochait pas ; la v3
+  (textes en capitales, blocs, halos, phrases de 5 à 6 mots) a été validée
+  sur l'EP001c.
 - **Familles pilotes** : une famille nouvelle passe par le verrou `PILOTES`
   (components.py), un brief dans `video/pilotes/` rendu par `video/pilote.py`
   (jamais dans script.json), la validation à l'écran par Alexandre, **puis
