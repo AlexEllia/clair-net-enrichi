@@ -8,6 +8,7 @@
 #   make scene EP=EP001 S=S06  un seul plan, basse qualite (alias de plans)
 #   make draft EP=EP001        episode complet en basse qualite (alias de preview)
 #   make clean EP=EP001        effacer les fichiers intermediaires
+#   make miniature EP=EP001    miniatures YouTube (section Miniatures de metadonnees.md)
 #
 # Prerequis : python, manim, ffmpeg. L'audio de l'episode doit deja exister
 # (audio/Sxx.wav + audio/durations.json), c'est la skill Cowork qui le produit.
@@ -21,7 +22,7 @@ ifeq ($(EP),)
 $(error precisez l'episode : make video EP=EP001)
 endif
 
-.PHONY: video preview plans rebuild clean check scene draft
+.PHONY: video preview plans rebuild clean check scene draft miniature
 
 video:
 	$(PY) video/build.py --ep $(EP) --locale $(LOCALE)
@@ -41,6 +42,9 @@ draft: preview
 
 rebuild:
 	$(PY) video/build.py --ep $(EP) --skip-render --locale $(LOCALE)
+
+miniature:
+	$(PY) video/miniature.py $(EP)
 
 clean:
 	rm -rf episodes/$(EP)/video/plans episodes/$(EP)/video/plans_cales \

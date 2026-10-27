@@ -12,6 +12,26 @@
 
 L'année de bascule
 
+## Miniatures
+
+Variantes pour « Tester et comparer » de YouTube Studio, lues par `make miniature EP=EP001c`. Syntaxe du texte : ` / ` change de ligne, `==…==` met la ligne dans un bloc, `{…}` écrit en ambre (ce que le capital verse), `[…]` en bleu (ce que vous versez). Données : convention 9A de recherche.md.
+
+### A — chiffre
+
+- Chiffre : 27
+- Texte : ans / ==plus tôt==
+- Barres : Livret A = bascule 1,70 % ; 5 % = bascule 5 %
+
+### B — contraste
+
+- Texte : En quelle année / ==tout bascule ?==
+- Courbes : versé et capital, 200 €/mois, 5 %, 40 ans
+
+### C — bascule
+
+- Texte : Quand tes {intérêts} / ==dépassent== / tes [versements]
+- Courbes : intérêts et versements de l'année, 200 €/mois, 5 %, 28 ans
+
 ## Description
 
 Deux mille quatre cents euros versés dans l'année, quatorze mille euros d'intérêts la même année. Hypothèse de calcul : 200 € par mois, 5 % par an, 40 ans. Presque six fois plus d'intérêts que de versements, et cet écart ne doit rien au montant que vous versez chaque mois.
