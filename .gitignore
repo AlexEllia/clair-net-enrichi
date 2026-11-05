@@ -24,5 +24,8 @@ build/
 episodes/*/video/
 media/
 video/media_exemple/
+# Identite de chaine : planches d'exploration (python identite/logo.py
+# exploration N ; python identite/declinaisons.py avatars|signatures)
+identite/exploration/
 __pycache__/
 *.pyc
