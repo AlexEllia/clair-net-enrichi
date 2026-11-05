@@ -27,5 +27,8 @@ video/media_exemple/
 # Identite de chaine : planches d'exploration (python identite/logo.py
 # exploration N ; python identite/declinaisons.py avatars|signatures)
 identite/exploration/
+# Archive de livraison : copie zippee de identite/livraison/ (versionne),
+# refaite par python identite/declinaisons.py
+identite/clair-net-enrichi-identite.zip
 __pycache__/
 *.pyc

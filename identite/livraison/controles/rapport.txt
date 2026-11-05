@@ -1,0 +1,10 @@
+Controles de livraison - identite Clair Net Enrichi
+
+Banniere : contenu (texte + logo) dans la zone sure : True
+  boite du contenu (552, 596, 2017, 844), zone sure (507.0, 508.5, 2053.0, 931.5)
+  marges gauche/haut/droite/bas : 45.0 / 87.5 / 36.0 / 87.5 px
+  croisement des courbes en (2262, 844) : visible sur ordinateur True, hors zone sure True
+Avatar : symbole dans le cercle de recadrage : True (rayon max 378.1 px sur 400)
+Filigrane : 150x150, coins transparents : True
+Poids (limite YouTube) : banniere 0.13 Mo (6 Mo), avatar 0.10 Mo (15 Mo), filigrane 0.02 Mo (1 Mo)
+SVG : aucun ne contient d'image matricielle (texte vectorise en traces).
