@@ -283,6 +283,112 @@ def check_chaine(segments):
     return f"plans de chaine : {n}, sans brief ni overlay" if n else "plans de chaine : aucun"
 
 
+class _SceneMuette:
+    """Tient lieu de scene pour composer un plan de chaine sans le rendre."""
+
+    def add(self, *m):
+        return self
+
+
+def _visible(anim):
+    """L'animation touche-t-elle quelque chose qui se voit ? Un encart pose
+    hors de l'image (quatrieme encart « centre ») s'anime sans rien montrer."""
+    from style import FW, FH
+    m = getattr(anim, "mobject", None)
+    if m is None:
+        return False
+    try:
+        x, y = m.get_center()[:2]
+    except Exception:
+        return True
+    return abs(x) <= FW / 2 and abs(y) <= FH / 2
+
+
+def calendrier_nouveaute(seg, dur, ep_dir=None):
+    """[(debut, fin)] de tout ce qui arrive a l'ecran pendant le plan, tel que
+    le moteur le posera : revelations, etiquettes, overlays, mises en avant.
+
+    Ne compte pas : ce qui s'anime hors de l'image, ni l'argent qui circule
+    sur un lien de Flux deja trace (Courant) - il tient l'image en mouvement
+    mais n'apporte rien de nouveau. Un plan de chaine est compose par le
+    moteur seul : tout son mouvement compte, derive comprise."""
+    import contextlib
+    import io
+    from briefs import resolve, with_voice
+    from components import COMPONENTS, Cues
+    from scenes import add_overlays
+
+    if ep_dir is not None:
+        seg = with_voice(seg, ep_dir)
+    visual = seg["type_visuel"]
+    cues = Cues(dur)
+    cues.anchors = {o["ancre"] for o in seg.get("overlay_texte") or []}
+    with contextlib.redirect_stderr(io.StringIO()):
+        if visual in CHAINE:
+            import plans_chaine
+            getattr(plans_chaine, visual)(_SceneMuette(), seg, dur, cues)
+        else:
+            if visual == "manim":
+                target, fam = resolve(seg, dur, log=False)
+                COMPONENTS[fam](target, cues)
+            add_overlays(seg, cues, visual)
+    out = []
+    for t, anims, rt in cues.items:
+        if t >= dur:
+            continue
+        if any(_visible(a) for a in anims):
+            out.append((t, min(t + rt, dur)))
+    return sorted(out)
+
+
+def check_nouveaute(segments, durations, ep_dir):
+    """Controle bloquant : aucun intervalle de plus de 4 s sans element
+    nouveau, du debut a la fin de la voix de chaque plan, quel que soit son
+    type_visuel. Jugee au calendrier du moteur, sans rendu.
+
+    Renvoie (lignes du rapport, fautes) ; l'appelant refuse s'il y a des
+    fautes. L'ecran de fin est juge sur toute sa duree, prolongation comprise."""
+    from briefs import _gaps, MAX_STILL
+    lignes, fautes = [], []
+    for s in segments:
+        sid, visual = s["id"], s["type_visuel"]
+        if visual == "ecran_fin":
+            # Anime par construction jusqu'a la derniere image (courbe
+            # parcourue, pictogrammes en derive) : ces mouvements continus ne
+            # sont pas au calendrier. Il se juge en pixels, au controle final.
+            lignes.append(f"  {sid:<4} {visual:<15} anime en continu par le moteur, juge en "
+                          f"pixels au controle final")
+            continue
+        d = durations[sid]
+        dur = d.total if visual == "ecran_fin" else d.audio
+        kind = (s.get("manim_brief") or {}).get("composant", "manim") \
+            if visual == "manim" else visual
+        try:
+            cal = calendrier_nouveaute(s, dur, ep_dir)
+        except SystemExit as e:
+            fautes.append(f"{sid} ({kind}) : calendrier impossible a etablir - {e}")
+            lignes.append(f"  {sid:<4} {kind:<15} calendrier impossible")
+            continue
+        trous = [(a, b) for a, b in _gaps(cal, 0.0, dur) if b - a > MAX_STILL]
+        tous = _gaps(cal, 0.0, dur)
+        pire = max(tous, key=lambda g: g[1] - g[0]) if tous else (0.0, 0.0)
+        lignes.append(f"  {sid:<4} {kind:<15} {len(cal):3d} arrivees, plus long intervalle "
+                      f"{pire[1] - pire[0]:5.2f} s (de {pire[0]:.2f} a {pire[1]:.2f} s)"
+                      + ("   << REFUS" if trous else ""))
+        for a, b in trous:
+            fautes.append(f"{sid} ({kind}) : {b - a:.2f} s sans element nouveau, "
+                          f"de {a:.2f} a {b:.2f} s")
+    return lignes, fautes
+
+
+def refuser_nouveaute(fautes):
+    from briefs import MAX_STILL
+    raise SystemExit(f"REFUS : {len(fautes)} intervalle(s) de plus de {MAX_STILL:.0f} s sans "
+                     f"element nouveau (R6, controle bloquant) :\n  " + "\n  ".join(fautes)
+                     + "\nAjoute une revelation ou un overlay visible dans chaque intervalle "
+                       "(video/CATALOGUE.md, R6).")
+
+
 def check_density(final, tl, segments, dest):
     """Controle final : carte de densite de l'episode monte, en pixels.
 
@@ -356,7 +462,16 @@ def main():
                           ep_dir=ep_dir)
         print(f"\n  ecrit : {ep_dir / 'build' / 'timeline.json'}")
         print(f"          {ep_dir / 'build' / 'chapitres.txt'}")
+        from briefs import MAX_STILL
+        lignes, fautes = check_nouveaute(segments, durations, ep_dir)
+        print(f"\n  element nouveau : aucun intervalle de plus de {MAX_STILL:.0f} s, tout "
+              f"type de plan (bloquant)")
+        print("\n".join(lignes))
+        if fautes:
+            refuser_nouveaute(fautes)
+        print("  controle bloquant : passe")
         return
+
 
     vdir = ep_dir / "video"
     scenes_dir, conf_dir, media_dir = vdir / "plans", vdir / "plans_cales", vdir / "_manim"
