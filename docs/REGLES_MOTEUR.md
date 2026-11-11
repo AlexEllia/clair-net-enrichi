@@ -44,6 +44,18 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
   dans la version. Chaque version de référence enregistre ses règles
   (`regle_cadre`, `regle_comparaison`, `regle_barres`).
   Commits : `a23c1d9` (R6 mesurée en pixels), `e78d1b0` (`--derogation-r6`).
+- **Contrôle bloquant de `make check`** (11/11/2026, `check_nouveaute` dans
+  build.py) : refus de tout plan, quel que soit son `type_visuel`, où plus de 4 s
+  passent sans rien de nouveau à l'écran, de la première image à la fin de la voix.
+  Jugé au calendrier du moteur, sans rendu ; ce qui s'anime hors de l'image ne
+  compte pas (quatrième encart `centre`) ; l'argent qui circule compte ; l'écran
+  de fin n'est jugé qu'en pixels. Le build, lui, ne refuse pas : il mesure en
+  pixels et avertit. *Pourquoi* : l'EP004 rendu le 11/11 comptait 15 plages figées
+  (135 s sur 503 s), dont 24 s sur un plan de typographie à 13 encarts.
+- **Mention** (11/11/2026) : dérive de 2 % sur toute la durée du plan, portée par
+  une seule animation (`Mention`) avec les deux fondus. *Pourquoi* : la dérive ne
+  partait qu'après la seconde ligne, et seulement s'il restait plus de 4 s ; sur
+  l'EP004, 4,1 s figées entre la première ligne et « ni ».
 - **Règle de méthode** : tout changement de règle d'une famille → aperçu de
   **tous** ses plans dans l'épisode à publier, audio réel compris
   (`video/apercu.py`).

@@ -60,6 +60,17 @@ check` mesure ses temps morts en pixels. Un fondu ne s'y voit qu'à ~20 %
 d'opacité, soit ~0,5 s après son mot : vise 3,5 s au plus entre la fin d'une
 animation et le mot suivant.
 
+**`make check` refuse** (code de sortie non nul) tout plan, quel que soit son
+`type_visuel`, où plus de 4 s s'écoulent sans que rien de nouveau n'arrive à
+l'écran, de la première image à la fin de la voix. Il le juge sans rendu, au
+calendrier que le moteur posera : révélations, étiquettes, overlays, mises en
+avant, argent qui circule sur un lien ou une jauge. Ce qui s'anime hors de
+l'image ne compte pas (un quatrième encart `centre`, par exemple). Le
+correctif est dans le script : une révélation ou un overlay visible dans
+l'intervalle. L'écran de fin, animé en continu par le moteur, n'est jugé
+qu'en pixels. Le calendrier est un peu plus indulgent que les pixels (~0,5 s) :
+un plan qui passe le check peut encore être signalé une fois rendu.
+
 **R7 — Pas de mots dans la scène.** Le graphe n'écrit que des chiffres et
 les symboles € et %, et ne dessine que les pictogrammes du catalogue. Tout mot
 passe par `overlay_texte` : titre, titres d'axes, légendes, source, noms des
@@ -168,7 +179,7 @@ unique quand leur instant dépend de la voix.
 | `axe_y` | à gauche de l'axe vertical, pivoté de 90° | titre de l'axe vertical |
 | `legende` | bandeau sous le titre | une entrée par série, **dans l'ordre des séries** : la 1re légende prend la couleur de la série 1, etc. |
 | `bas` | pied d'image | source, mention |
-| `centre` | encart à droite du graphe | propos court |
+| `centre` | encart à droite du graphe | propos court ; **trois au plus par plan** : les encarts s'empilent de haut en bas et le quatrième tombe hors de l'image (son texte ne se lit pas, et `make check` ne le compte pas) |
 | `option_1`, `option_2` | au-dessus de chaque colonne de `Comparaison` | nom de l'option, dans sa couleur |
 | `noeud_k` | sous le k-ième nœud de `Flux` | nom du nœud |
 | `lien_k` | le long du k-ième lien de `Flux` | nom du flux, dans sa couleur |
@@ -741,7 +752,7 @@ montants, eux, sont écrits dans la scène, sur leur lien.
 | Paramètre | Obligatoire | Valeurs admises | Effet |
 |---|---|---|---|
 | `noeuds` | **oui** | `[{"icone": nom, "position": [x, y], "couleur": c}]` | Un nœud par entrée ; `node_1` est le premier. `icone` : la liste des pictogrammes de `Comparaison`. `position` en unités de scène, centre (0, 0) : x de −5,5 à 5,5, y de −2,4 à 1,8 ; sans position, les nœuds s'alignent de gauche à droite. `couleur` : celle du cercle (gris clair par défaut). |
-| `liens` | **oui** | `[{"de": i, "vers": j, "couleur": c, "intensite": n, "courbure": a, "montant": v, "format": f}]` | Une flèche du nœud i vers le nœud j ; `link_1` est le premier. `intensite` (1 à 3) règle le débit visible des particules : un flux plus fort se voit plus dense. `courbure` (en radians, 1,0 conseillé) courbe le lien : deux liens opposés entre les mêmes nœuds, de même courbure, forment une boucle. `montant` est facultatif ; s'il est écrit, il vient des sources (R3), au `format` `"euro"` par défaut. |
+| `liens` | **oui** | `[{"de": i, "vers": j, "couleur": c, "intensite": n, "courbure": a, "montant": v, "format": f}]` | Une flèche du nœud i vers le nœud j ; `link_1` est le premier. `intensite` (1 à 3) règle le débit visible des particules : un flux plus fort se voit plus dense. `courbure` (en radians, 1,0 conseillé) courbe le lien : deux liens opposés entre les mêmes nœuds, de même courbure, forment une boucle. `montant` est facultatif ; s'il est écrit, il vient des sources (R3). `format` dit comment il s'écrit sur le lien : `"euro"` par défaut (« 200 € »), `"pct"` (« 1,7 % »), `"nombre"` (« 1,7 »), `"facteur"` (« ×3 ») — les mêmes que `LineChart`. Un flux qui porte un pourcentage **doit** écrire `"format": "pct"` : sans lui, 1,7 s'écrirait « 1,7 € », un chiffre faux. Un format inconnu arrête le build. |
 | `mise_en_avant` | non | `{"liens": [k, …]}` | Ces liens s'affirment ; les autres et leurs particules s'estompent. |
 
 **Éléments adressables dans `revelations`** :
@@ -889,7 +900,7 @@ l'épisode sinon.
 
 | `type_visuel` | Ce que le moteur pose |
 |---|---|
-| `mention` | La mention légale, centrée, en blanc cassé : « Contenu informatif et pédagogique. » puis « Ni conseil en investissement, ni recommandation personnalisée. ». La première ligne apparaît sur le premier mot de la voix, la seconde sur le mot « ni ». Rien d'autre : c'est une respiration. Si le plan dure encore plus de 4 s après la seconde ligne, le texte dérive très lentement (2 % d'échelle) pour que l'écran ne soit pas figé (R6). |
+| `mention` | La mention légale, centrée, en blanc cassé : « Contenu informatif et pédagogique. » puis « Ni conseil en investissement, ni recommandation personnalisée. ». La première ligne apparaît sur le premier mot de la voix, la seconde sur le mot « ni ». Rien d'autre : c'est une respiration. Le texte dérive très lentement (2 % d'échelle, linéaire) pendant tout le plan, de la première à la dernière image, y compris entre la première ligne et le mot « ni » : l'écran n'est jamais figé (R6). |
 | `ecran_fin` | L'écran de fin de la chaîne. « Clair net enrichi » s'écrit en haut à gauche sur ces mots de la voix ; sur « abonnez-vous », un bouton d'abonnement dessiné (ni logo ni couleur de YouTube) s'enfonce, puis passe à « Abonné » avec une cloche. En fond, une courbe qui monte sous les zones, parcourue par un point, et des pictogrammes de `Flux` (pièces, pousse, hausse) qui dérivent loin des zones. |
 
 **Durée de l'écran de fin** : celle de la voix, prolongée en silence jusqu'à
@@ -1004,7 +1015,8 @@ convention 9A de `recherche.md`, et tout nombre affiché présent dans
    `donnees` ou dans un paramètre, et dans les sources.
 7. La première révélation de donnée tombe avant ~4,5 s.
 8. Aucun intervalle entre deux révélations ne laisse l'écran figé plus de
-   4 s.
+   4 s, du début à la fin de la voix (`make check` le refuse), et jamais
+   plus de trois overlays `centre` dans un plan.
 9. Aucune révélation pour le cadre, et aucun mot dans la scène : les noms
    des options et des nœuds passent par `option_k`, `noeud_k`, `lien_k`.
 10. Chaque pictogramme est dans la liste du catalogue.
