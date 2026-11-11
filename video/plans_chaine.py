@@ -29,6 +29,7 @@ from components import Restyle
 ZONE_VIDEO = (1340, 540, 830, 467)      # centre x, centre y, largeur, hauteur (px)
 ZONE_ABONNEMENT = (480, 600, 300)       # centre x, centre y, diametre (px)
 ZONES_VISIBLES = 2.0       # contour des zones : les 2 premieres secondes seulement
+DERIVE_MENTION = 0.02      # derive de la mention : 2 % d'echelle sur tout le plan
 
 
 def px(x, y):
@@ -74,12 +75,43 @@ def premier_mot(align, defaut):
 
 # --- mention -------------------------------------------------------------------
 
+class Mention(Animation):
+    """Les deux lignes de la mention, sur toute la duree du plan : chacune
+    apparait en fondu sur son mot (0,8 s, legere montee), et le bloc derive
+    sans arret, de 100 % a 100 % + `ampleur`, lineairement, de la premiere a
+    la derniere image.
+
+    Une seule animation porte le fondu et la derive : deux animations sur les
+    memes lignes se disputeraient leur etat, et une derive introductrice
+    poserait le texte des la premiere image (piege Manim, REGLES_MOTEUR)."""
+
+    FONDU, MONTEE = 0.8, 0.12
+
+    def __init__(self, bloc, instants, duree, ampleur=None, **kw):
+        ampleur = DERIVE_MENTION if ampleur is None else ampleur
+        self.bases = [l.copy() for l in bloc]
+        self.centre = bloc.get_center().copy()
+        self.instants, self.duree, self.ampleur = list(instants), float(duree), ampleur
+        for l in bloc:
+            l.set_opacity(0)
+        super().__init__(bloc, rate_func=linear, introducer=True, **kw)
+
+    def interpolate_mobject(self, alpha):
+        t = alpha * self.duree
+        for l, base, ti in zip(self.mobject, self.bases, self.instants):
+            a = smooth(min(max((t - ti) / self.FONDU, 0.0), 1.0))
+            l.become(base)
+            l.scale(1 + self.ampleur * alpha, about_point=self.centre)
+            l.shift(DOWN * self.MONTEE * (1 - a))
+            l.set_opacity(a)
+
+
 def mention(scene, seg, dur, cues):
     """Deux lignes centrees, en blanc casse, chacune en fondu sur son mot :
     la premiere au premier mot de la voix, la seconde au mot « ni ». Rien
-    d'autre - une respiration. Si le plan dure encore plus de 4 s apres la
-    seconde ligne, le texte derive tres lentement (2 % d'echelle) pour que
-    l'ecran ne soit pas fige (R6)."""
+    d'autre - une respiration. Le texte derive tres lentement (2 % d'echelle)
+    pendant tout le plan, de la premiere a la derniere image, y compris entre
+    la premiere ligne et le mot « ni » : l'ecran n'est jamais fige (R6)."""
     al = seg.get("_voix")
     l1 = txt(MENTION[0], SZ_BODY + 4, INK_SOFT)
     l2 = txt(MENTION[1], SZ_BODY + 4, INK_SOFT)
@@ -90,16 +122,8 @@ def mention(scene, seg, dur, cues):
     t1 = min(premier_mot(al, 0.3), max(dur - 1.0, 0.0))
     t2 = mot(al, r"\bni\b", t1 + 0.4 * max(dur - t1, 1.0))
     t2 = min(max(t2, t1 + 0.6), max(dur - 0.6, t1))
-    cues.at(t1, FadeIn(l1, shift=UP * 0.12), rt=0.8)
-    cues.at(t2, FadeIn(l2, shift=UP * 0.12), rt=0.8)
-    reste = dur - (t2 + 0.8)
-    if reste > 4.0:
-        # Derive : de 100 % a 102 %, lineaire, de la fin de la seconde ligne
-        # a la fin du plan. Rien ne bouge avant.
-        t0 = t2 + 0.8
-        cues.at(t0, ScaleInPlace(bloc, 1.02, rate_func=linear, introducer=True), rt=reste)
-    return {"ligne_1": round(t1, 2), "ligne_2": round(t2, 2),
-            "derive": round(t2 + 0.8, 2) if reste > 4.0 else None}
+    cues.at(0.0, Mention(bloc, (t1, t2), dur), rt=dur)
+    return {"ligne_1": round(t1, 2), "ligne_2": round(t2, 2), "derive": 0.0}
 
 
 # --- ecran_fin -----------------------------------------------------------------
