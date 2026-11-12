@@ -141,6 +141,16 @@ ENCART_Y = (1.35, -0.40, -2.15)             # centre des trois emplacements
 ENCART_GAUCHE = ENCART_X - ENCART_W / 2     # bord gauche de la colonne
 GRAPHE_DROITE = ENCART_GAUCHE - 0.30        # limite droite du graphique, encarts presents
 ENCART_SORTIE = 0.35    # fondu de sortie du plus ancien, juste avant l'arrivee du nouveau
+MARGE_ENCART = 0.15     # typographie, vide minimal autour d'un texte : autre texte, libelle,
+                        # bord de l'image (make check, 20 px en 1080p)
+# Typographie : les trois emplacements des textes « centre », centres entre le
+# titre et la source et espaces de 2,05 (avant le 13/11/2026 : 0,95 / -0,95 /
+# -2,85, espaces de 1,9 - deux grands textes voisins se touchaient presque et
+# le troisieme arrivait au ras de la source). Deux textes : memes ecarts,
+# centres sur l'image.
+TYPO_PAS = 2.05
+TYPO_Y = (1.66, -0.39, -2.44)
+TYPO_H = TYPO_PAS - MARGE_ENCART    # hauteur maximale d'un texte : la marge reste libre
 
 
 def reserve_encarts(cues):

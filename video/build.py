@@ -399,6 +399,12 @@ def _chevauche(a, b, marge=0.03):
             and min(a[3], b[3]) - max(a[2], b[2]) > marge)
 
 
+def _proche(a, b, marge):
+    """Deux boites sont-elles a moins de `marge` l'une de l'autre ?"""
+    return (max(a[0], b[0]) - min(a[1], b[1]) < marge
+            and max(a[2], b[2]) - min(a[3], b[3]) < marge)
+
+
 def _objets(cues):
     """[(objet, premier instant, animation)] de tout ce que le plan pose, les
     groupes d'animations deplies. Les particules qui circulent (Courant) n'ont
@@ -435,7 +441,9 @@ def collisions(seg, dur, ep_dir=None):
     tout ce que le moteur y pose :
 
     - un encart « centre » qui sort de l'image, ou qui recouvre un element du
-      graphique, un libelle, ou un autre encart present en meme temps que lui ;
+      graphique, un libelle, ou un autre encart present en meme temps que lui -
+      ou, en typographie, qui s'en approche, comme du bord de l'image, a
+      moins de MARGE_ENCART ;
     - un libelle (titre, nom d'axe, d'option, de noeud, de lien, legende,
       source) qui sort de l'image, qui recouvre un autre libelle, ou, pour
       Flux, un noeud, un montant ou le trace d'un lien.
@@ -468,20 +476,38 @@ def collisions(seg, dur, ep_dir=None):
     def hors(b):
         return b[0] < bord[0] or b[1] > bord[1] or b[2] < bord[2] or b[3] > bord[3]
 
+    # La marge minimale ne vaut que pour la typographie, ou les textes sont
+    # grands et se suivent de pres ; ailleurs, seul le recouvrement est refuse.
+    from components import MARGE_ENCART
+    marge = MARGE_ENCART if seg["type_visuel"] == "typo_cinetique" else 0.0
+    pres = f"serre de trop pres (moins de {MARGE_ENCART:.2f})".replace(".", ",")
+
+    def verbe(b, c):
+        """« recouvre », « serre de trop pres », ou None si la marge est libre."""
+        if _chevauche(b, c):
+            return "recouvre"
+        return pres if marge and _proche(b, c, marge - 1e-6) else None
+
     for i, (e, t0, t1) in enumerate(encarts):
         b = _boite(e)
         if hors(b):
             fautes.append(f"encart {e.nom} sort de l'image")
-        touche = [g for g in graphe if _chevauche(b, _boite(g))]
+        elif marge and hors((b[0] - marge + 1e-6, b[1] + marge - 1e-6,
+                             b[2] - marge + 1e-6, b[3] + marge - 1e-6)):
+            fautes.append(f"encart {e.nom} {pres} le bord de l'image")
+        touche = [(v, g) for g in graphe for v in [verbe(b, _boite(g))] if v]
         if touche:
-            fautes.append(f"encart {e.nom} recouvre {len(touche)} element(s) du graphique, "
-                          f"dont {_nom_element(touche[0])}")
+            v = "recouvre" if any(x == "recouvre" for x, _ in touche) else pres
+            fautes.append(f"encart {e.nom} {v} {len(touche)} element(s) du graphique, "
+                          f"dont {_nom_element(touche[0][1])}")
         for l in libelles:
-            if _chevauche(b, _boite(l)):
-                fautes.append(f"encart {e.nom} recouvre le libelle {l.nom}")
+            v = verbe(b, _boite(l))
+            if v:
+                fautes.append(f"encart {e.nom} {v} le libelle {l.nom}")
         for f, u0, u1 in encarts[i + 1:]:
-            if min(t1, u1) - max(t0, u0) > 1e-6 and _chevauche(b, _boite(f)):
-                fautes.append(f"encart {e.nom} recouvre l'encart {f.nom} "
+            v = verbe(b, _boite(f))
+            if min(t1, u1) - max(t0, u0) > 1e-6 and v:
+                fautes.append(f"encart {e.nom} {v} l'encart {f.nom} "
                               f"(ensemble de {max(t0, u0):.2f} a {min(t1, u1):.2f} s)")
     for i, l in enumerate(libelles):
         b = _boite(l)

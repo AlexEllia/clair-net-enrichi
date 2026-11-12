@@ -90,6 +90,22 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
 - **Mention exclue de R6** (12/11/2026, décision d'Alexandre) : ni `make check` ni
   la carte de densité ne comptent le plan `mention` (`densite.EXCLUS_R6`) ; le
   build écrit sa mesure à part, « hors R6 ». La dérive reste à 2 %.
+- **Typographie : rotation à trois, emplacements desserrés, marge minimale**
+  (12 et 13/11/2026, scenes.add_overlays) : en `typo_cinetique`, trois textes
+  `centre` au plus à l'écran, le quatrième remplace le plus ancien, qui sort en
+  fondu (0,35 s). Emplacements `TYPO_Y` = 1,66 / −0,39 / −2,44, espacés de 2,05
+  et centrés entre le titre et la source (avant : 0,95 / −0,95 / −2,85) ; deux
+  textes : ±1,025 ; hauteur d'un texte plafonnée à 1,90. Le contrôle de
+  placement s'applique à la typographie, avec une marge minimale de 0,15 unité
+  (`MARGE_ENCART`, 20 px en 1080p) entre un texte et un autre texte, un
+  libellé ou le bord. La marge ne vaut que pour la typographie : étendue aux
+  encarts latéraux, elle refuserait EP004 S09 et S20 (encart à moins de 0,15
+  d'un nom de nœud). `fond_anime` et `broll` : empilement d'avant. *Pourquoi* :
+  sur le plan d'essai à six encarts, deux grands textes voisins se touchaient
+  presque et le troisième arrivait à 0,04 unité de la source, sans que le
+  contrôle le voie. Outils : `video/outils/planche.py` (plan d'essai `.json`),
+  `video/outils/identique.py` (comparaison image par image d'un épisode),
+  `video/outils/essais/`.
 - **Mention** (11/11/2026) : dérive de 2 % sur toute la durée du plan, portée par
   une seule animation (`Mention`) avec les deux fondus. *Pourquoi* : la dérive ne
   partait qu'après la seconde ligne, et seulement s'il restait plus de 4 s ; sur

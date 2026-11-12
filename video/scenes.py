@@ -17,7 +17,8 @@ from style import (BG, BG_LIFT, INK, INK_SOFT, MUTED, RULE_SOFT, CONTRIB,
                    SZ_TITLE, SZ_BIG, SZ_HUGE, SZ_BODY, SZ_LABEL, SZ_SOURCE,
                    txt, fade_up)
 from components import (COMPONENTS, Cues, ENCART_RULE, ENCART_X, ENCART_W, ENCART_H,
-                        ENCART_Y, ENCART_GAUCHE, GRAPHE_DROITE, ENCART_SORTIE, reserve_encarts)
+                        ENCART_Y, ENCART_GAUCHE, GRAPHE_DROITE, ENCART_SORTIE, TYPO_PAS, TYPO_Y, TYPO_H,
+                        reserve_encarts)
 
 Z_BACK, Z_AMB, Z_PLOT, Z_OVER = -100, -50, 0, 50
 
@@ -515,9 +516,37 @@ def add_overlays(seg, cues, visual):
                 cues.at(cues.late(t0 + (i + 1) * step, 0.8), _opacity(m, 0), rt=0.5)
         return out
 
+    # Typographie, regle « v2-zone » : comme pour les encarts lateraux, trois
+    # textes au plus a l'ecran, sur trois emplacements (TYPO_Y) ; le
+    # quatrieme prend la place du plus ancien, qui sort en fondu juste avant.
+    # Un plan peut ainsi faire apparaitre autant d'elements que le propos en
+    # demande. « v1 » et les fonds animes : empiles sans limite.
+    tourne = visual == "typo_cinetique" and ENCART_RULE != "v1"
+    poses = []
+
+    def entree(i, m, at):
+        """Instant d'arrivee du i-ieme texte, apres la sortie de celui dont
+        il prend la place."""
+        if visual == "typo_cinetique":
+            _marque(m, "encart", ctr[i])        # juge par make check, quelle que soit la regle
+        if tourne and i >= 3:
+            ancien, depuis = poses[i - 3]
+            sortie = max(at - ENCART_SORTIE, depuis + 0.6)
+            at = max(at, sortie + ENCART_SORTIE)
+            cues.at(sortie, Efface(ancien), rt=ENCART_SORTIE)
+        poses.append((m, at))
+        return at
+
+    def hauteur(i):
+        if len(ctr) == 1:
+            return 0.0
+        if not tourne:
+            return 0.95 - 1.9 * i
+        return TYPO_PAS / 2 - TYPO_PAS * i if len(ctr) == 2 else TYPO_Y[i % 3]
+
     for i, o in enumerate(ctr):
         s = o["texte_fr"]
-        y = 0.0 if len(ctr) == 1 else 0.95 - 1.9 * i
+        y = hauteur(i)
         if ARROW in s and len(ctr) == 1:
             # Consequence : la cause, puis la fleche et le resultat.
             left, right = [p.strip() for p in s.split(ARROW, 1)]
@@ -526,7 +555,10 @@ def add_overlays(seg, cues, visual):
             b = txt(right, SZ_BIG, INTEREST, weight=SEMIBOLD)
             row = VGroup(a, arr, b).arrange(RIGHT, buff=0.42)
             _fit(row, FW - 2.2)
+            if tourne:
+                _fit_h(row, TYPO_H)
             row.move_to([0, y, 0]).set_z_index(Z_OVER)
+            entree(i, row, cues.late(o["t_rel_s"], 1.6))
             cues.at(cues.late(o["t_rel_s"], 1.6), fade_up(a, 0.3), rt=0.55)
             cues.at(cues.late(o["t_rel_s"] + 0.9, 1.0),
                     FadeIn(arr), fade_up(b, 0.3), rt=0.6)
@@ -534,13 +566,15 @@ def add_overlays(seg, cues, visual):
         else:
             size = SZ_BIG if len(s) > 22 else SZ_HUGE
             m = _fit(txt(s, size, INK, weight=SEMIBOLD), FW - 2.6)
+            if tourne and len(ctr) > 1:
+                _fit_h(m, TYPO_H)
             m.move_to([0, y, 0]).set_z_index(Z_OVER)
             if visual in ("fond_anime", "broll"):
                 sc = _scrim(m)
                 out.add(sc)
                 cues.at(cues.late(o["t_rel_s"], 0.9), FadeIn(sc), fade_up(m, 0.34), rt=0.6)
             else:
-                cues.at(cues.late(o["t_rel_s"], 0.9), fade_up(m, 0.34), rt=0.6)
+                cues.at(entree(i, m, cues.late(o["t_rel_s"], 0.9)), fade_up(m, 0.34), rt=0.6)
             out.add(m)
     return out
 

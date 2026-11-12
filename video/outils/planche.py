@@ -7,7 +7,8 @@ Chaque plan est rendu en 960x540 dans DEST (dossier de travail) et une image
 en est extraite : la derniere par defaut, ou celles des instants donnes apres
 `@`, separes par des virgules. `EPxxx:Sxx` rend le segment du script ; `EPxxx_Sxx` rend un plan de
 reference comme le fait non_regression.py (brief pilote de video/pilotes/ et
-voix figee s'il y en a un). Les images s'appellent DEST/<nom>.png ; la planche,
+voix figee s'il y en a un) ; un chemin `.json` rend un plan d'essai hors
+episode ({"duree_s": ..., "segment": {...}}, voir video/outils/essais/). Les images s'appellent DEST/<nom>.png ; la planche,
 DEST/planche.png, les range dans l'ordre donne, trois par ligne.
 """
 import copy
@@ -22,6 +23,10 @@ sys.path.insert(0, str(ROOT))
 
 def segment(nom):
     import non_regression as nr
+    if nom.endswith(".json"):
+        # Plan d'essai hors episode : {"duree_s": ..., "segment": {...}}.
+        essai = json.loads(Path(nom).read_text(encoding="utf-8"))
+        return essai["segment"], float(essai["duree_s"])
     if ":" in nom:
         ep, sid = nom.split(":")
         return nr._segment(ep, sid)
@@ -53,7 +58,7 @@ def main():
     for arg in sys.argv[2:]:
         nom, _, quand = arg.partition("@")
         seg, dur = segment(nom)
-        seg = dict(seg, id=nom.replace(":", "_"))
+        seg = dict(seg, id=seg["id"] if nom.endswith(".json") else nom.replace(":", "_"))
         plan = build.render_segment(seg, dur, dest, dest / "_manim", 960, 540)
         for q in (quand.split(",") if quand else [""]):
             t = min(float(q), dur - 0.1) if q else max(dur - 0.1, 0.0)

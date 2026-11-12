@@ -236,6 +236,17 @@ remplace le deuxième, et ainsi de suite. Trois encarts au plus sont donc à
 l'écran, et un encart reste lisible tant que trois autres ne l'ont pas
 suivi : laisse-lui le temps d'être lu avant le troisième suivant.
 
+**En typographie (`typo_cinetique`), même règle.** Les textes `centre` sont
+écrits en grand au milieu de l'image, sur trois emplacements espacés de
+2,05 unités entre le titre et la source ; le quatrième prend la place du plus
+ancien, qui sort en fondu, et ainsi de suite. Un plan à deux textes les
+écarte du même pas, autour du centre ; un texte seul reste au centre. Un texte
+plus haut que 1,90 unité est réduit pour tenir dans son emplacement. `make
+check` y applique le contrôle de placement, avec en plus une **marge minimale
+de 0,15 unité** (20 px en 1080p) : il refuse un texte qui recouvre ou serre de
+plus près un autre texte présent en même temps, le titre, la source ou le bord
+de l'image. Les plans `fond_anime` et `broll` gardent l'empilement d'avant.
+
 **Les libellés de `Flux`.** Le moteur cherche pour chaque nom de nœud ou de
 lien une place où il ne touche ni un nœud, ni un lien, ni un montant, ni un
 autre libellé, ni la colonne des encarts : sa place habituelle d'abord, puis

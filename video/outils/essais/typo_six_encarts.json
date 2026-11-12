@@ -1,0 +1,19 @@
+{
+ "_role": "Plan d'essai, hors episode : typographie cinetique a six encarts « centre », pour voir la rotation a trois (le quatrieme remplace le plus ancien). Rendu par video/outils/planche.py.",
+ "duree_s": 18.0,
+ "segment": {
+  "id": "essai_typo_six_encarts",
+  "role": "essai",
+  "type_visuel": "typo_cinetique",
+  "overlay_texte": [
+   {"ancre": "titre_haut", "t_rel_s": 0.5, "texte_fr": "Essai : six encarts"},
+   {"ancre": "centre", "t_rel_s": 1.5, "texte_fr": "Premier encart"},
+   {"ancre": "centre", "t_rel_s": 4.0, "texte_fr": "Deuxième : un texte plus long que les autres"},
+   {"ancre": "centre", "t_rel_s": 6.5, "texte_fr": "Troisième"},
+   {"ancre": "bas", "t_rel_s": 7.5, "texte_fr": "Plan d'essai du moteur, sans donnée ni source"},
+   {"ancre": "centre", "t_rel_s": 9.0, "texte_fr": "Quatrième, à la place du premier"},
+   {"ancre": "centre", "t_rel_s": 11.5, "texte_fr": "Cinquième"},
+   {"ancre": "centre", "t_rel_s": 14.0, "texte_fr": "Sixième et dernier"}
+  ]
+ }
+}
