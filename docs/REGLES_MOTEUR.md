@@ -106,6 +106,22 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
   contrôle le voie. Outils : `video/outils/planche.py` (plan d'essai `.json`),
   `video/outils/identique.py` (comparaison image par image d'un épisode),
   `video/outils/essais/`.
+- **Code couleur de sens, R10** (12/11/2026, décision d'Alexandre) : `CONTRIB`
+  (bleu) = ce que l'on verse, `INTEREST` (ambre) = ce que l'on gagne, `NEG`
+  (#E2725B) = ce que l'on perd ; une perte n'apparaît jamais en ambre ni en
+  bleu. Liens de `Flux` : paramètre `nature` (`neutre` par défaut, `gain`,
+  `perte`). `perte` : le lien part de celui qui perd, tracé en `NEG`, montant
+  précédé du signe moins (U+2212), et le nœud qui perd rétrécit à 88 % quand
+  le montant est écrit (plancher 70 %) ; `gain` : ambre, signe plus. La nature
+  l'emporte sur `couleur`. **Contrôle bloquant** (`check_sens` dans build.py) :
+  refus d'une perte déclarée ou dessinée hors `NEG` ou sans signe moins, d'un
+  gain hors ambre ou sans signe plus ; jugé sur le brief et sur les objets
+  posés, contre la charte (`style.py`). Un lien `NEG` sans `nature` est
+  refusé si `meta.catalogue_md5` du script est celui du catalogue actuel,
+  signalé sinon. Mise en avant : un lien estompé estompe aussi son montant
+  (0,25, comme sa pointe et ses particules). Les plans d'essai hors épisode passent les mêmes
+  contrôles par `video/outils/controle.py`. *Pourquoi* : EP004 S17, « 1,2 %
+  perdus » illustrés par un flux entrant.
 - **Mention** (11/11/2026) : dérive de 2 % sur toute la durée du plan, portée par
   une seule animation (`Mention`) avec les deux fondus. *Pourquoi* : la dérive ne
   partait qu'après la seconde ligne, et seulement s'il restait plus de 4 s ; sur

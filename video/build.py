@@ -573,6 +573,102 @@ def check_placement(segments, durations, ep_dir):
     return lignes, fautes
 
 
+def _teintes(m):
+    """Couleurs reellement portees par un objet : celle du trait de chaque
+    piece tracee, celle du fond de chaque piece pleine."""
+    out = set()
+    for sm in m.family_members_with_points():
+        c = sm.get_stroke_color() if sm.get_stroke_width() > 1e-3 else sm.get_fill_color()
+        out.add(c.to_hex().upper())
+    return out
+
+
+def fautes_sens(seg, dur, ep_dir=None, strict=True):
+    """Fautes de code couleur de sens d'un plan : (fautes, remarques, nombre
+    d'elements juges).
+
+    Ce que le plan presente comme une perte est trace en NEG et son montant
+    porte le signe moins ; un gain est en ambre (INTEREST), avec un signe
+    plus. Juge deux fois : sur le brief (une `couleur` ou un `montant` qui
+    contredit la `nature`) et sur les objets que le moteur pose vraiment.
+
+    Un lien trace en NEG sans `nature` : refuse si `strict` (script ecrit
+    contre le catalogue actuel, plan d'essai), simple remarque sinon (script
+    anterieur a la regle)."""
+    from components import SIGNE_SENS, NATURES, _PALETTE
+    from style import NEG, INTEREST
+    # La charte fait foi, pas la table du moteur : c'est elle que l'on controle.
+    COULEUR_SENS = {"gain": INTEREST, "perte": NEG}
+    fautes, remarques = [], []
+    mb = seg.get("manim_brief") or {}
+    if mb.get("composant") == "Flux":
+        for i, ln in enumerate(mb.get("liens") or [], 1):
+            nature = ln.get("nature", "neutre")
+            if nature not in NATURES:
+                fautes.append(f"link_{i} : nature {nature!r} inconnue ({', '.join(NATURES)})")
+                continue
+            c = ln.get("couleur")
+            if nature == "neutre":
+                if _PALETTE.get(c, c) == COULEUR_SENS["perte"]:
+                    (fautes if strict else remarques).append(
+                        f"link_{i} est trace en NEG sans `nature` : NEG dit une perte, "
+                        f"ecris \"nature\": \"perte\" (ou change de couleur)")
+                continue
+            if c is not None and _PALETTE.get(c, c) != COULEUR_SENS[nature]:
+                fautes.append(f"link_{i} : {nature} declare en couleur {c} - "
+                              + ("une perte se trace en NEG, jamais en ambre ni en bleu"
+                                 if nature == "perte" else "un gain se trace en ambre (INTEREST)"))
+            v = ln.get("montant")
+            if v is not None and float(v) < 0 and nature == "gain":
+                fautes.append(f"link_{i} : gain de montant negatif ({v})")
+    cues = composer(seg, dur, ep_dir)
+    for e in cues.sens:
+        nature, nom = e["nature"], e["nom"]
+        voulu = COULEUR_SENS[nature].upper()
+        vues = set()
+        for m in e["objets"] + ([e["montant"]] if e["montant"] is not None else []):
+            vues |= _teintes(m)
+        if vues != {voulu}:
+            fautes.append(f"{nom} : {nature} dessine en {', '.join(sorted(vues))} au lieu de "
+                          f"{voulu}")
+        if e["montant"] is not None:
+            texte = getattr(e["montant"], "text", "")
+            if not texte.startswith(SIGNE_SENS[nature]):
+                fautes.append(f"{nom} : montant « {texte} » sans signe "
+                              f"{'moins' if nature == 'perte' else 'plus'}")
+    return fautes, remarques, len(cues.sens)
+
+
+def check_sens(segments, durations, ep_dir, strict=True):
+    """Controle bloquant du code couleur de sens (voir `fautes_sens`).
+    `strict` : le script a ete ecrit contre le catalogue actuel.
+    Renvoie (lignes du rapport, fautes)."""
+    lignes, fautes = [], []
+    for s in segments:
+        sid = s["id"]
+        if s["type_visuel"] != "manim":
+            continue
+        kind = (s.get("manim_brief") or {}).get("composant", "manim")
+        try:
+            f, rq, n = fautes_sens(s, durations[sid].audio, ep_dir, strict)
+        except SystemExit as e:
+            f, rq, n = [f"non construit - {e}"], [], 0
+        if not (f or rq or n):
+            continue
+        lignes.append(f"  {sid:<4} {kind:<15} {n} gain(s) ou perte(s) declare(s)"
+                      + (f"   << REFUS ({len(f)})" if f else ""))
+        lignes += [f"       remarque : {x}" for x in rq]
+        fautes += [f"{sid} ({kind}) : {x}" for x in f]
+    return lignes or ["  aucun gain ni perte declare"], fautes
+
+
+def refuser_sens(fautes):
+    raise SystemExit(f"REFUS : {len(fautes)} faute(s) de code couleur de sens (controle "
+                     f"bloquant) :\n  " + "\n  ".join(fautes)
+                     + "\nUne perte : NEG et signe moins ; un gain : ambre et signe plus "
+                       "(video/CATALOGUE.md, R10).")
+
+
 def refuser_placement(fautes):
     raise SystemExit(f"REFUS : {len(fautes)} faute(s) de placement (encart ou libelle qui "
                      f"recouvre un element ou sort de l'image, controle bloquant) :\n  "
@@ -675,8 +771,17 @@ def main():
         print("\n  placement : aucun encart ni libelle ne recouvre un element ni ne sort de "
               "l'image (bloquant)")
         print("\n".join(lignes_p))
+        # Un script ecrit contre le catalogue actuel connait R10 : un lien NEG
+        # sans `nature` y est refuse ; dans un script anterieur, il est signale.
+        md5_script = str((script.get("meta") or {}).get("catalogue_md5") or "").strip().lower()
+        actuel = md5_script in _md5_variants((ROOT / "CATALOGUE.md").read_bytes())
+        lignes_s, fautes_s = check_sens(segments, durations, ep_dir, strict=actuel)
+        print("\n  sens : une perte en NEG avec son signe moins, un gain en ambre avec son "
+              "signe plus (bloquant)")
+        print("\n".join(lignes_s))
         refus = []
-        for f, refuser in ((fautes, refuser_nouveaute), (fautes_p, refuser_placement)):
+        for f, refuser in ((fautes, refuser_nouveaute), (fautes_p, refuser_placement),
+                           (fautes_s, refuser_sens)):
             if f:
                 try:
                     refuser(f)

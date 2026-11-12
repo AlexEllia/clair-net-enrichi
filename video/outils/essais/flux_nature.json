@@ -1,0 +1,42 @@
+{
+ "_role": "Plan d'essai, hors episode : les trois natures d'un lien de Flux (neutre, gain, perte) et la mise en avant d'une perte. Chiffres d'essai, sans source. Rendu par video/outils/planche.py, controle par video/outils/controle.py.",
+ "duree_s": 15.0,
+ "segment": {
+  "id": "essai_flux_nature",
+  "role": "essai",
+  "type_visuel": "manim",
+  "manim_brief": {
+   "composant": "Flux",
+   "noeuds": [
+    {"icone": "wallet", "position": [0.0, -0.3]},
+    {"icone": "hand-coins", "position": [-4.8, -0.3]},
+    {"icone": "trending-up", "position": [4.6, 1.3]},
+    {"icone": "percent", "position": [4.6, -1.7]}
+   ],
+   "liens": [
+    {"de": 2, "vers": 1, "couleur": "CONTRIB", "intensite": 1, "montant": 200},
+    {"de": 3, "vers": 1, "nature": "gain", "intensite": 2, "montant": 7, "format": "pct"},
+    {"de": 1, "vers": 4, "nature": "perte", "intensite": 2, "montant": 1.2, "format": "pct"}
+   ],
+   "mise_en_avant": {"liens": [3]},
+   "revelations": [
+    {"element": "node_1", "t_rel_s": 1.0},
+    {"element": "node_2", "t_rel_s": 2.5},
+    {"element": "link_1", "t_rel_s": 2.5},
+    {"element": "node_3", "t_rel_s": 5.5},
+    {"element": "link_2", "t_rel_s": 5.5},
+    {"element": "node_4", "t_rel_s": 8.5},
+    {"element": "link_3", "t_rel_s": 8.5},
+    {"element": "highlight", "t_rel_s": 12.0}
+   ]
+  },
+  "overlay_texte": [
+   {"ancre": "titre_haut", "t_rel_s": 0.5, "texte_fr": "Essai : le sens d'un lien"},
+   {"ancre": "noeud_1", "t_rel_s": 1.0, "texte_fr": "Votre épargne"},
+   {"ancre": "noeud_2", "t_rel_s": 2.5, "texte_fr": "Versement"},
+   {"ancre": "noeud_3", "t_rel_s": 5.5, "texte_fr": "Marché"},
+   {"ancre": "noeud_4", "t_rel_s": 8.5, "texte_fr": "Frais"},
+   {"ancre": "bas", "t_rel_s": 3.5, "texte_fr": "Plan d'essai du moteur, sans donnée ni source"}
+  ]
+ }
+}

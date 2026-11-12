@@ -63,6 +63,10 @@ class Cues:
         self.etiquettes = []
         self.courbes = {}
         self.obstacles = []
+        # Code couleur de sens, pour make check : ce que le plan presente comme
+        # un gain ou une perte, [{"nom", "nature", "objets", "montant"}] -
+        # les objets traces et l'etiquette du montant (ou None).
+        self.sens = []
 
     def add(self, *m):
         self.static.extend(m)
@@ -2733,6 +2737,26 @@ def Comparaison(seg, cues):
 # Parties : node_k, link_k, highlight (surgissements)
 # =============================================================================
 
+# --- Le sens d'un lien, d'une tranche, d'une marche ---------------------------
+# Code couleur obligatoire : CONTRIB = ce que l'on verse, INTEREST = ce que
+# l'on gagne, NEG = ce que l'on perd. Une perte n'apparait jamais en ambre ni
+# en bleu ; son montant porte un signe moins, celui d'un gain un signe plus.
+NATURES = ("neutre", "gain", "perte")
+COULEUR_SENS = {"gain": INTEREST, "perte": NEG}
+SIGNE_SENS = {"gain": "+", "perte": "−"}   # le vrai signe moins, pas le trait d'union
+PERTE_RETRECIT = 0.88   # le noeud qui perd retrecit a l'arrivee du montant
+PERTE_PLANCHER = 0.70   # ... sans jamais passer sous 70 % de sa taille
+PERTE_RT = 0.6
+
+
+def montant_signe(v, kind, nature):
+    """Le montant tel qu'il s'ecrit : signe du sens, puis la valeur absolue."""
+    import nombres
+    if nature not in SIGNE_SENS:
+        return nombres.fmt(float(v), kind)
+    return SIGNE_SENS[nature] + nombres.fmt(abs(float(v)), kind)
+
+
 def Flux(seg, cues):
     """Des noeuds relies par des fleches, ou l'argent circule.
 
@@ -2741,9 +2765,16 @@ def Flux(seg, cues):
                      de scene, centre (0, 0), x de -5,5 a 5,5, y de -2,4 a 1,8.
                      Sans position : alignes de gauche a droite.
       liens          [{"de": i, "vers": j, "couleur": "CONTRIB", "intensite": 1,
-                       "courbure": 0, "montant": v, "format": "euro"}] ;
+                       "courbure": 0, "montant": v, "format": "euro",
+                       "nature": "neutre"}] ;
                      `intensite` (1 a 3) regle le debit visible des particules,
                      `montant` (facultatif, source, R3) s'ecrit sur le lien.
+                     `nature` dit le sens du lien : "neutre" (defaut), "gain"
+                     (ambre, montant precede de +) ou "perte" (NEG, montant
+                     precede du signe moins ; le lien part de celui qui perd,
+                     et ce noeud retrecit a l'arrivee du montant). La nature
+                     l'emporte sur `couleur` ; make check refuse un brief qui
+                     les contredit.
       mise_en_avant  {"liens": [k, ...]} : ces liens s'affirment, les autres
                      s'estompent.
     Parties : node_k, link_k, highlight - toutes surgissent (1,5 s) sur leur
@@ -2796,6 +2827,11 @@ def Flux(seg, cues):
     for i, ln in enumerate(links_spec):
         a, b = nodes[f"node_{int(ln['de'])}"][1], nodes[f"node_{int(ln['vers'])}"][1]
         col = _PALETTE.get(ln.get("couleur", "CONTRIB"), ln.get("couleur", CONTRIB))
+        nature = ln.get("nature", "neutre")
+        if nature not in NATURES:
+            raise SystemExit(f"{sid} : liens[{i}].nature {nature!r} inconnue "
+                             f"({', '.join(NATURES)})")
+        col = COULEUR_SENS.get(nature, col)
         u = (b - a) / np.linalg.norm(b - a)
         p0, p1 = a + u * (R + 0.14), b - u * (R + 0.20)
         bend = float(ln.get("courbure", 0.0))
@@ -2820,11 +2856,14 @@ def Flux(seg, cues):
                 normal = -normal
         label = None
         if ln.get("montant") is not None:
-            label = txt(nombres.fmt(float(ln["montant"]), ln.get("format", "euro")), SZ_LABEL,
+            label = txt(montant_signe(ln["montant"], ln.get("format", "euro"), nature), SZ_LABEL,
                         col, weight=SEMIBOLD).move_to(mid + normal * 0.34)
         key = f"link_{i + 1}"
         links[key] = (path, tip, dots, label, k, (int(ln["de"]), int(ln["vers"])))
         order.append(key)
+        if nature != "neutre":
+            cues.sens.append({"nom": key, "nature": nature, "objets": [path, tip, dots],
+                              "montant": label})
         cues.point(f"lien_{i + 1}", mid + normal * (0.80 if label is not None else 0.42))
         cues.anchor_colors[f"lien_{i + 1}"] = col
         cues.anchor_widths[f"lien_{i + 1}"] = 3.0
@@ -2854,6 +2893,7 @@ def Flux(seg, cues):
         t_hl = rev.t("highlight")
         focus = {f"link_{int(k)}" for k in mb["mise_en_avant"]["liens"]}
 
+    pertes = {}        # noeud -> (taille atteinte, fin de son dernier retrecissement)
     for k in order:
         if k in nodes:
             rev.at(k, FadeIn(nodes[k][0], scale=0.7), rt=PUNCTUAL_MAX)
@@ -2870,6 +2910,17 @@ def Flux(seg, cues):
             # L'information au mot : le montant s'ecrit quand la fleche part,
             # pas quand elle arrive.
             cues.at(t0, FadeIn(label, scale=0.6), rt=LABEL_RT)
+        if links_spec[int(k.split("_")[1]) - 1].get("nature") == "perte":
+            # Celui qui perd retrecit quand le montant est ecrit - et jamais
+            # pendant qu'il surgit lui-meme, ni pendant un autre retrecissement.
+            nk = f"node_{ends[0]}"
+            taille, libre = pertes.get(nk, (1.0, rev.t(nk) + rev.run_time(nk, PUNCTUAL_MAX)))
+            cible = max(taille * PERTE_RETRECIT, PERTE_PLANCHER)
+            quand = max(t0 + (LABEL_RT if label is not None else 0.0), libre)
+            if cible < taille - 1e-6 and quand < cues.dur:
+                node = nodes[nk][0]
+                cues.at(quand, Restyle(node, node.copy().scale(cible)), rt=PERTE_RT)
+                pertes[nk] = (cible, quand + PERTE_RT)
         level = None
         if t_hl is not None and k not in focus:
             level = _schedule([(t_hl, 1.0), (t_hl + PUNCTUAL_MAX, 0.25)])
@@ -2889,6 +2940,11 @@ def Flux(seg, cues):
                 anims.append(Restyle(path, path.copy().set_stroke(width=5.2, opacity=0.95)))
             else:
                 anims += [_dim_to(path, 0.18), _dim_to(tip, 0.25)]
+                if label is not None:
+                    # Un lien estompe estompe aussi son montant, comme sa
+                    # pointe et son argent : un chiffre reste a pleine
+                    # lumiere se lirait comme celui du lien mis en avant.
+                    anims.append(_dim_to(label, 0.25))
         rev.at("highlight", *anims, rt=PUNCTUAL_MAX)
     return VGroup(*[v[0] for v in nodes.values()], *[VGroup(p, t) for p, t, *_ in links.values()])
 

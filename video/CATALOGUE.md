@@ -113,6 +113,21 @@ la voix parle d'autre chose. Les courbes, elles, gardent leurs points
 intermédiaires : ils sont sur le chemin du tracé. Le build signale toute
 barre, bande ou jauge sans révélation.
 
+**R10 — L'image dit le sens que dit la voix.** Trois couleurs portent un
+sens, et un seul : bleu (`CONTRIB`) = ce que l'on verse ; ambre (`INTEREST`)
+= ce que l'on gagne ; `NEG` (#E2725B) = ce que l'on perd. **Une perte
+n'apparaît jamais en ambre ni en bleu**, et son montant porte un signe
+moins (« −1,2 % ») ; le montant d'un gain porte un signe plus. Ce que la voix
+appelle une perte (frais, inflation, impôt, moins-value, retard) se déclare
+comme telle dans le brief : `"nature": "perte"` sur un lien de `Flux`. C'est
+le moteur qui écrit le signe et choisit la couleur ; n'écris ni l'un ni
+l'autre. **`make check` refuse** une perte déclarée dans une autre couleur
+que `NEG`, une perte dessinée autrement qu'en `NEG` ou dont le montant n'a
+pas son signe moins, et de même un gain hors de l'ambre ou sans signe plus.
+`NEG` dit toujours une perte : un lien tracé en `NEG` sans `nature` est
+refusé lui aussi (dans un script écrit contre une version antérieure du
+catalogue, il est seulement signalé).
+
 ---
 
 ## 2. Comment le temps est compté
@@ -824,7 +839,25 @@ montants, eux, sont écrits dans la scène, sur leur lien.
 |---|---|---|---|
 | `noeuds` | **oui** | `[{"icone": nom, "position": [x, y], "couleur": c}]` | Un nœud par entrée ; `node_1` est le premier. `icone` : la liste des pictogrammes de `Comparaison`. `position` en unités de scène, centre (0, 0) : x de −5,5 à 5,5, y de −2,4 à 1,8 ; sans position, les nœuds s'alignent de gauche à droite. `couleur` : celle du cercle (gris clair par défaut). |
 | `liens` | **oui** | `[{"de": i, "vers": j, "couleur": c, "intensite": n, "courbure": a, "montant": v, "format": f}]` | Une flèche du nœud i vers le nœud j ; `link_1` est le premier. `intensite` (1 à 3) règle le débit visible des particules : un flux plus fort se voit plus dense. `courbure` (en radians, 1,0 conseillé) courbe le lien : deux liens opposés entre les mêmes nœuds, de même courbure, forment une boucle. `montant` est facultatif ; s'il est écrit, il vient des sources (R3). `format` dit comment il s'écrit sur le lien : `"euro"` par défaut (« 200 € »), `"pct"` (« 1,7 % »), `"nombre"` (« 1,7 »), `"facteur"` (« ×3 ») — les mêmes que `LineChart`. Un flux qui porte un pourcentage **doit** écrire `"format": "pct"` : sans lui, 1,7 s'écrirait « 1,7 € », un chiffre faux. Un format inconnu arrête le build. |
-| `mise_en_avant` | non | `{"liens": [k, …]}` | Ces liens s'affirment ; les autres et leurs particules s'estompent. |
+| `mise_en_avant` | non | `{"liens": [k, …]}` | Ces liens s'affirment ; les autres s'estompent, avec leurs particules et leur montant. |
+
+**Le sens d'un lien : `nature`** (R10). Chaque lien peut porter
+`"nature"` : `"neutre"` (défaut), `"gain"` ou `"perte"`.
+
+| `nature` | Sens de la flèche | Couleur | Montant | Effet |
+|---|---|---|---|---|
+| `"neutre"` | de la source vers la destination | celle de `couleur` | tel quel (« 200 € ») | Un versement, un transfert : rien n'est gagné ni perdu. |
+| `"gain"` | de ce qui rapporte **vers celui qui gagne** | ambre, imposée | précédé de « + » (« +7 % ») | — |
+| `"perte"` | **part de celui qui perd**, vers ce qui lui prend (frais, impôt, inflation) | `NEG`, imposée | précédé du signe moins (« −1,2 % ») | Le nœud qui perd rétrécit légèrement (à 88 %) dès que le montant est écrit ; à chaque nouvelle perte encore, sans passer sous 70 %. |
+
+Avec `gain` ou `perte`, n'écris pas `couleur` : la nature l'impose, et `make
+check` refuse un brief où les deux se contredisent. Écris `montant` en valeur
+positive, sans signe : c'est le moteur qui l'ajoute. Une perte que la voix ne
+chiffre pas se déclare quand même (`"nature": "perte"`, sans `montant`) : le
+lien est tracé en `NEG` et le nœud rétrécit quand la flèche part. **Une perte
+se dessine toujours ainsi** : un lien qui arrive sur celui qui perd, ou tracé
+en bleu ou en ambre, dit à l'image le contraire de la voix (EP004 S17, « 1,2 %
+perdus » montrés comme un flux entrant).
 
 **Éléments adressables dans `revelations`** :
 
@@ -940,6 +973,50 @@ les intérêts et « 55 € » sur « cinquante-cinq euros » ; le retour des in
 vers l'enveloppe ferme la boucle sur « restent dans l'enveloppe », et
 s'affirme sur « rapportent à leur tour ». L'écran n'est jamais figé après la
 première seconde.
+
+**Exemple exemplaire d'une perte et d'un gain** — **à imiter dès qu'un lien
+est une perte ou un gain.** Le lien de perte part de l'épargne et va vers les
+frais ; le lien de gain vient du marché et arrive sur l'épargne ; ni l'un ni
+l'autre n'écrit `couleur` ni signe. Les `t_rel_s` sont des estimations
+(3,94 syllabes/s) que le recalage remplacera.
+
+```json
+{
+  "vo_fr": "Vous placez votre épargne dans un fonds. Chaque année, il vous prélève un virgule huit pour cent de frais. Et le marché, lui, vous rapporte sept pour cent.",
+  "type_visuel": "manim",
+  "manim_brief": {
+    "composant": "Flux",
+    "noeuds": [
+      {"icone": "wallet", "position": [0.0, -0.2]},
+      {"icone": "percent", "position": [4.6, -0.2]},
+      {"icone": "trending-up", "position": [-4.8, -0.2]}
+    ],
+    "liens": [
+      {"de": 1, "vers": 2, "nature": "perte", "intensite": 1, "montant": 1.8, "format": "pct"},
+      {"de": 3, "vers": 1, "nature": "gain", "intensite": 2, "montant": 7, "format": "pct"}
+    ],
+    "revelations": [
+      {"element": "node_1", "t_rel_s": 0.76, "declencheur": "votre épargne"},
+      {"element": "node_2", "t_rel_s": 4.31, "declencheur": "un virgule huit"},
+      {"element": "link_1", "t_rel_s": 4.31, "declencheur": "un virgule huit"},
+      {"element": "node_3", "t_rel_s": 6.60, "declencheur": "le marché"},
+      {"element": "link_2", "t_rel_s": 8.38, "declencheur": "sept pour cent"}
+    ]
+  },
+  "overlay_texte": [
+    {"ancre": "noeud_1", "t_rel_s": 0.76, "texte_fr": "Votre épargne", "declencheur": "votre épargne"},
+    {"ancre": "noeud_2", "t_rel_s": 4.31, "texte_fr": "Frais du fonds", "declencheur": "un virgule huit"},
+    {"ancre": "noeud_3", "t_rel_s": 6.60, "texte_fr": "Marché", "declencheur": "le marché"}
+  ]
+}
+```
+
+Ce que ça donne : l'épargne apparaît sur « votre épargne » ; sur « un virgule
+huit », les frais surgissent, une flèche `NEG` part de l'épargne vers eux avec
+« −1,8 % », et le nœud de l'épargne rétrécit ; le marché surgit sur son mot,
+puis, sur « sept pour cent », une flèche ambre arrive sur l'épargne avec
+« +7 % ». Plus longue attente : 2,05 s, entre l'arrivée de l'épargne et les
+frais.
 
 ### Pas encore disponible — ne pas utiliser
 
