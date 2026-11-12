@@ -65,11 +65,36 @@ animation et le mot suivant.
 l'écran, de la première image à la fin de la voix. Il le juge sans rendu, au
 calendrier que le moteur posera : révélations, étiquettes, overlays, mises en
 avant, argent qui circule sur un lien ou une jauge. Ce qui s'anime hors de
-l'image ne compte pas (un quatrième encart `centre`, par exemple). Le
-correctif est dans le script : une révélation ou un overlay visible dans
-l'intervalle. L'écran de fin, animé en continu par le moteur, n'est jugé
-qu'en pixels. Le calendrier est un peu plus indulgent que les pixels (~0,5 s) :
-un plan qui passe le check peut encore être signalé une fois rendu.
+l'image ne compte pas. Le correctif est dans le script : une révélation ou
+un overlay visible dans l'intervalle. L'écran de fin, animé en continu par le
+moteur, n'est jugé qu'en pixels. Le calendrier est un peu plus indulgent que
+les pixels (~0,5 s) : un plan qui passe le check peut encore être signalé une
+fois rendu.
+
+**Exception : la carte de mention.** Le plan `mention` est exclu de R6, dans
+`make check` comme dans la mesure en pixels du build (carte de densité) : il
+n'est ni refusé, ni compté dans les plages figées, ni dans le total. C'est une
+respiration voulue — deux lignes, et une dérive de 2 % trop lente pour que la
+mesure la voie. Le build écrit quand même ce qu'il y mesure, sous la mention
+« hors R6 ». Aucun autre plan n'a d'exception.
+
+**`make check` refuse aussi toute faute de placement**, sans rendu, sur les
+boîtes englobantes de ce que le moteur posera :
+
+- un encart `centre` qui sort de l'image, ou qui recouvre un élément du
+  graphique (barre, jauge, courbe, valeur, catégorie, axe), un libellé, ou
+  un autre encart présent en même temps que lui — jugé de son arrivée à sa
+  sortie ;
+- un libellé (titre, titre d'axe, nom d'option, de nœud, de lien, légende,
+  source) qui sort de l'image ou recouvre un autre libellé ; pour `Flux`,
+  un libellé qui recouvre un nœud, un montant ou le tracé d'un lien ;
+- une étiquette de valeur plus proche d'un autre point, d'une autre barre ou
+  de la courbe d'une autre série que de ce qu'elle chiffre, ou à plus de
+  0,60 unité de sa cible (voir `LineChart`).
+
+Le moteur évite ces fautes de lui-même (section 3) ; quand il n'y arrive
+pas — pas de place autour d'un nœud, libellé trop long — le refus nomme le
+libellé : raccourcis-le, ou écarte les nœuds.
 
 **R7 — Pas de mots dans la scène.** Le graphe n'écrit que des chiffres et
 les symboles € et %, et ne dessine que les pictogrammes du catalogue. Tout mot
@@ -179,10 +204,10 @@ unique quand leur instant dépend de la voix.
 | `axe_y` | à gauche de l'axe vertical, pivoté de 90° | titre de l'axe vertical |
 | `legende` | bandeau sous le titre | une entrée par série, **dans l'ordre des séries** : la 1re légende prend la couleur de la série 1, etc. |
 | `bas` | pied d'image | source, mention |
-| `centre` | encart à droite du graphe | propos court ; **trois au plus par plan** : les encarts s'empilent de haut en bas et le quatrième tombe hors de l'image (son texte ne se lit pas, et `make check` ne le compte pas) |
+| `centre` | encart dans la colonne de droite, réservée | propos court, 18 caractères par ligne ; voir « Les encarts » ci-dessous |
 | `option_1`, `option_2` | au-dessus de chaque colonne de `Comparaison` | nom de l'option, dans sa couleur |
-| `noeud_k` | sous le k-ième nœud de `Flux` | nom du nœud |
-| `lien_k` | le long du k-ième lien de `Flux` | nom du flux, dans sa couleur |
+| `noeud_k` | sous le k-ième nœud de `Flux` ; à défaut de place, au-dessus, à droite ou à gauche | nom du nœud |
+| `lien_k` | le long du k-ième lien de `Flux`, d'un côté ou de l'autre | nom du flux, dans sa couleur |
 | `source_g` | sous la catégorie g de `Bars` | source de la barre g, en gris ; remplace `bas` |
 
 - `axe_x`, `axe_y` et `titre_haut` : poser à ~0,6 s.
@@ -194,6 +219,29 @@ unique quand leur instant dépend de la voix.
 - `source_g` : son instant est celui de la fin de croissance de la barre g,
   quel que soit le `t_rel_s` écrit. Une source identique à celle d'une barre
   précédente ne se répète pas.
+
+**Les encarts (`centre`).** Un encart ne recouvre jamais le graphique. Dès
+qu'un plan en porte un, le moteur lui réserve la colonne de droite (un tiers
+de l'image environ) et resserre le graphique à gauche, dans toutes les
+familles : l'aire de tracé de `LineChart`, `Bars` et `Areas` s'arrête avant
+la colonne, les deux colonnes de `Comparaison` se rapprochent, la légende
+reste au-dessus du graphique, et les nœuds de `Flux` se resserrent vers la
+gauche si l'un d'eux y débordait (un schéma qui tient déjà à gauche de
+x = 1,7 n'est pas touché). Un plan sans encart garde toute la largeur.
+
+La colonne a trois emplacements, de haut en bas. Écris autant d'encarts que
+le propos en demande : quand un quatrième arrive, le plus ancien sort en
+fondu (0,35 s, juste avant) et le nouveau prend sa place ; le cinquième
+remplace le deuxième, et ainsi de suite. Trois encarts au plus sont donc à
+l'écran, et un encart reste lisible tant que trois autres ne l'ont pas
+suivi : laisse-lui le temps d'être lu avant le troisième suivant.
+
+**Les libellés de `Flux`.** Le moteur cherche pour chaque nom de nœud ou de
+lien une place où il ne touche ni un nœud, ni un lien, ni un montant, ni un
+autre libellé, ni la colonne des encarts : sa place habituelle d'abord, puis
+les autres côtés, puis les mêmes sur deux lignes. La taille des lettres ne
+change pas. Laisse de la place : 2 unités au moins entre deux nœuds empilés
+dont celui du haut porte un nom, et des noms courts (25 caractères).
 
 ---
 
@@ -235,19 +283,31 @@ l'écran (`34,8 %` ou `34.8%`) dépend de la langue du rendu, pas du script.
 | `origine` | non | `[x, y]` | Point commun ajouté en tête de chaque série (ex. `[0, 0]` : gain nul au départ). Il ne porte pas d'étiquette. |
 | `couleurs` | non | liste parmi `"INTEREST"` (ambre), `"CONTRIB"` (bleu), `"TEAL"`, `"NEG"`, `"WHITE_DIM"` | Une par série. Convention de la chaîne : bleu = ce que vous versez, ambre = ce que le capital verse. |
 | `croisement` | non | `true` | Repère au premier croisement des séries 1 et 2. |
-| `ecart` | non | `{"x": 30, "valeur": 9.5, "format": "facteur"}` | Accolade verticale entre les séries à l'abscisse `x`. `valeur` est facultative ; si elle est écrite, elle vient des sources (R3). `format` : `"nombre"`, `"pct"`, `"euro"`, `"facteur"` (×). |
+| `ecart` | non | `{"x": 30, "valeur": 9.5, "format": "facteur"}` | Accolade verticale entre les séries à l'abscisse `x`. `valeur` est facultative ; si elle est écrite, elle vient des sources (R3). `format` : `"nombre"`, `"pct"`, `"euro"`, `"facteur"` (×). L'accolade a la hauteur réelle de l'écart : sous 0,35 unité d'écran (≈ 9 % de la hauteur de l'axe), elle se lit mal — le moteur allonge ses pattes et affirme son trait, et le build le signale. Donne-lui alors une `valeur` sourcée, ou dis l'écart dans un encart. |
 | `facteur` | non | `{"serie": 1, "x": 30, "valeur": 4.3}` | Multiplicateur « ×4,3 » écrit à côté du point de la série à l'abscisse `x`. `valeur` vient des sources (R3). |
 
 **Éléments adressables dans `revelations`** :
 
 | Élément | Type | Remarque |
 |---|---|---|
-| `series_k_point_j` | tracé (≤ 6 s) + étiquette | Le j-ième point sourcé de la série k (`origine` exclue, dans l'ordre de `donnees`). À écrire pour **chaque valeur énoncée** (R4). La courbe est planifiée pour atteindre ce point à cet instant ; sa valeur apparaît alors. |
+| `series_k_point_j` | tracé (≤ 6 s) + étiquette | Le j-ième point sourcé de la série k (`origine` exclue, dans l'ordre de `donnees`). À écrire pour **chaque valeur énoncée** (R4). La courbe est planifiée pour atteindre ce point à cet instant ; sa valeur apparaît alors. **Dès qu'un point est nommé dans le plan, seuls les points nommés portent un point et une valeur** : les autres lignes de `donnees` ne servent qu'à tracer la courbe. Un plan qui ne nomme aucun point (séries seules) les marque tous. |
 | `series_k` | tracé (≤ 6 s) | À n'écrire que si aucun point de la série n'est énoncé ; son `t_rel_s` vaut alors rendez-vous de son premier point. |
 | `crossing` | surgissement (1,5 s) | Exige `croisement: true`. |
 | `gap` | surgissement (1,5 s) | Exige `ecart`. |
 | `factor` | surgissement (1,5 s) | Exige `facteur`. |
 | ~~`frame`~~ | décor | Ne pas écrire (R8). |
+
+**Où s'écrit la valeur d'un point.** L'étiquette reste collée à son point, de
+la couleur de sa série : le moteur n'essaie que des places tout autour de lui
+(les quatre coins, les côtés, dessus, dessous), et n'en retient une que si le
+point le plus proche de l'étiquette est le sien — ni un autre point marqué,
+ni la courbe d'une autre série (à 0,05 unité près, pour deux points presque
+confondus). Si aucune n'est libre, l'étiquette s'écarte un peu, reliée à son
+point par un trait de rappel fin ; jamais à plus de **0,60 unité** de lui
+(≈ 80 px en 1080p). `make check` refuse une étiquette qui enfreint l'une de
+ces deux limites, dans toutes les familles (pour `Bars` et `Comparaison`, la
+cible est la barre ou la jauge). Moins de points nommés, c'est plus de place :
+ne nomme que les valeurs que la voix énonce.
 
 **Comment les séries se partagent le temps** :
 
@@ -900,7 +960,7 @@ l'épisode sinon.
 
 | `type_visuel` | Ce que le moteur pose |
 |---|---|
-| `mention` | La mention légale, centrée, en blanc cassé : « Contenu informatif et pédagogique. » puis « Ni conseil en investissement, ni recommandation personnalisée. ». La première ligne apparaît sur le premier mot de la voix, la seconde sur le mot « ni ». Rien d'autre : c'est une respiration. Le texte dérive très lentement (2 % d'échelle, linéaire) pendant tout le plan, de la première à la dernière image, y compris entre la première ligne et le mot « ni » : l'écran n'est jamais figé (R6). |
+| `mention` | La mention légale, centrée, en blanc cassé : « Contenu informatif et pédagogique. » puis « Ni conseil en investissement, ni recommandation personnalisée. ». La première ligne apparaît sur le premier mot de la voix, la seconde sur le mot « ni ». Rien d'autre : c'est une respiration. Le texte dérive très lentement (2 % d'échelle, linéaire) pendant tout le plan, de la première à la dernière image, y compris entre la première ligne et le mot « ni ». **Exclue de R6** (section 1) : ni `make check` ni la mesure en pixels ne la comptent. |
 | `ecran_fin` | L'écran de fin de la chaîne. « Clair net enrichi » s'écrit en haut à gauche sur ces mots de la voix ; sur « abonnez-vous », un bouton d'abonnement dessiné (ni logo ni couleur de YouTube) s'enfonce, puis passe à « Abonné » avec une cloche. En fond, une courbe qui monte sous les zones, parcourue par un point, et des pictogrammes de `Flux` (pièces, pousse, hausse) qui dérivent loin des zones. |
 
 **Durée de l'écran de fin** : celle de la voix, prolongée en silence jusqu'à
@@ -1015,8 +1075,7 @@ convention 9A de `recherche.md`, et tout nombre affiché présent dans
    `donnees` ou dans un paramètre, et dans les sources.
 7. La première révélation de donnée tombe avant ~4,5 s.
 8. Aucun intervalle entre deux révélations ne laisse l'écran figé plus de
-   4 s, du début à la fin de la voix (`make check` le refuse), et jamais
-   plus de trois overlays `centre` dans un plan.
+   4 s, du début à la fin de la voix (`make check` le refuse).
 9. Aucune révélation pour le cadre, et aucun mot dans la scène : les noms
    des options et des nœuds passent par `option_k`, `noeud_k`, `lien_k`.
 10. Chaque pictogramme est dans la liste du catalogue.

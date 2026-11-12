@@ -52,6 +52,43 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
   de fin n'est jugé qu'en pixels. Le build, lui, ne refuse pas : il mesure en
   pixels et avertit. *Pourquoi* : l'EP004 rendu le 11/11 comptait 15 plages figées
   (135 s sur 503 s), dont 24 s sur un plan de typographie à 13 encarts.
+- **Encarts « centre », règle `v2-zone`** (12/11/2026, `ENCART_RULE` dans
+  components.py, placement dans scenes.add_overlays) : un encart ne recouvre jamais
+  le graphique. Dès qu'un plan en porte un, la colonne de droite lui est réservée
+  (centre x = 4,75, largeur 4,2) et le graphique s'arrête à x = 2,35 : aire de tracé
+  de LineChart, Bars et Areas, colonnes de Comparaison, légende, nœuds de Flux
+  (resserrés seulement si l'un déborde). Trois emplacements ; le quatrième encart
+  prend la place du plus ancien, qui sort en fondu (0,35 s). Un plan sans encart ne
+  change pas : les quatre plans validés à l'écran sont identiques au pixel près.
+  `v1` (encarts à x = 4,15 par-dessus le graphique, empilés sans limite) est
+  archivée. *Pourquoi* : sur l'EP004, les encarts cachaient la dernière jauge ou la
+  dernière barre et sa valeur sur 11 plans, et le quatrième sortait de l'image.
+- **Libellés de Flux** (12/11/2026) : chaque nom de nœud ou de lien est posé là où
+  il ne touche rien (place habituelle, puis autres côtés, puis deux lignes), sans
+  changer la taille des lettres. *Pourquoi* : EP004 S13, deux noms superposés.
+- **Contrôle bloquant de placement** (12/11/2026, `check_placement` dans build.py) :
+  `make check` refuse tout encart ou libellé qui recouvre un élément, un autre
+  encart ou libellé, ou sort de l'image ; jugé sans rendu, sur les boîtes
+  englobantes. Sous la règle `v1`, il refuse 23 plans de l'EP004.
+- **Ancrage des étiquettes de valeur, règle `v2-ancre`** (12/11/2026, `LABEL_RULE`
+  dans components.py) : une étiquette reste collée à son point, de la couleur de sa
+  série ; elle n'a de places que tout autour de lui, et le point le plus proche
+  d'elle est toujours le sien (ni un autre point, ni la courbe d'une autre série, à
+  0,05 près). Sans place libre : trait de rappel court, jamais au-delà de
+  `ANCRE_MAX` = 0,60 unité. `make check` le refuse sinon (toutes familles).
+  *Pourquoi* : EP004 S04, « 91,7 % » (courbe bleue) se lisait sur la courbe jaune
+  et « 100 % » sous l'avant-dernier point — une étiquette lue près d'un autre point
+  est un chiffre faux, même si chaque point était tracé à la bonne hauteur
+  (vérifié : 0,00 d'écart). `v1` (trois crans d'éloignement sans trait) archivée.
+- **LineChart : étiquettes des seuls points nommés** (12/11/2026) : dès qu'un
+  `series_k_point_j` est nommé, les autres points ne servent qu'à tracer. Un plan
+  sans point nommé (EP001b S09, validé) les marque tous, inchangé. *Pourquoi* :
+  EP004 S10, 40 valeurs superposées.
+- **Accolade d'écart** (12/11/2026) : hauteur réelle toujours ; sous 0,35 unité,
+  pattes allongées, trait affirmé et avertissement au build.
+- **Mention exclue de R6** (12/11/2026, décision d'Alexandre) : ni `make check` ni
+  la carte de densité ne comptent le plan `mention` (`densite.EXCLUS_R6`) ; le
+  build écrit sa mesure à part, « hors R6 ». La dérive reste à 2 %.
 - **Mention** (11/11/2026) : dérive de 2 % sur toute la durée du plan, portée par
   une seule animation (`Mention`) avec les deux fondus. *Pourquoi* : la dérive ne
   partait qu'après la seconde ligne, et seulement s'il restait plus de 4 s ; sur
