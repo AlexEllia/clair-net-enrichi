@@ -82,7 +82,8 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
   (vérifié : 0,00 d'écart). `v1` (trois crans d'éloignement sans trait) archivée.
 - **LineChart : étiquettes des seuls points nommés** (12/11/2026) : dès qu'un
   `series_k_point_j` est nommé, les autres points ne servent qu'à tracer. Un plan
-  sans point nommé (EP001b S09, validé) les marque tous, inchangé. *Pourquoi* :
+  sans point nommé (EP001b S09, validé) les marque tous, inchangé, dans la limite
+  de 6 étiquettes (`ETIQUETTES_MAX`) : au-delà, `make check` refuse. *Pourquoi* :
   EP004 S10, 40 valeurs superposées.
 - **Accolade d'écart** (12/11/2026) : hauteur réelle toujours ; sous 0,35 unité,
   pattes allongées, trait affirmé et avertissement au build.

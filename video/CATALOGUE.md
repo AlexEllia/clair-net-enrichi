@@ -290,7 +290,7 @@ l'écran (`34,8 %` ou `34.8%`) dépend de la langue du rendu, pas du script.
 
 | Élément | Type | Remarque |
 |---|---|---|
-| `series_k_point_j` | tracé (≤ 6 s) + étiquette | Le j-ième point sourcé de la série k (`origine` exclue, dans l'ordre de `donnees`). À écrire pour **chaque valeur énoncée** (R4). La courbe est planifiée pour atteindre ce point à cet instant ; sa valeur apparaît alors. **Dès qu'un point est nommé dans le plan, seuls les points nommés portent un point et une valeur** : les autres lignes de `donnees` ne servent qu'à tracer la courbe. Un plan qui ne nomme aucun point (séries seules) les marque tous. |
+| `series_k_point_j` | tracé (≤ 6 s) + étiquette | Le j-ième point sourcé de la série k (`origine` exclue, dans l'ordre de `donnees`). À écrire pour **chaque valeur énoncée** (R4). La courbe est planifiée pour atteindre ce point à cet instant ; sa valeur apparaît alors. **Dès qu'un point est nommé dans le plan, seuls les points nommés portent un point et une valeur** : les autres lignes de `donnees` ne servent qu'à tracer la courbe. Un plan qui ne nomme aucun point (séries seules) les marque tous : il ne peut alors pas afficher plus de **6 étiquettes** de valeur, sinon `make check` le refuse en donnant leur nombre. |
 | `series_k` | tracé (≤ 6 s) | À n'écrire que si aucun point de la série n'est énoncé ; son `t_rel_s` vaut alors rendez-vous de son premier point. |
 | `crossing` | surgissement (1,5 s) | Exige `croisement: true`. |
 | `gap` | surgissement (1,5 s) | Exige `ecart`. |

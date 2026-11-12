@@ -870,6 +870,7 @@ def _place_label(lab, dot, placed, xmin, xmax, zone=None, traces=None, own=None,
 LABEL_RULE = "v2-ancre"
 ECART_MIN = 0.35      # hauteur sous laquelle une accolade d'ecart se lit mal
 ANCRE_MAX = 0.60      # distance maximale du bord de l'etiquette a son point
+ETIQUETTES_MAX = 6    # LineChart sans aucun point nomme : etiquettes au plus (make check)
 ANCRE_TOL = 0.05      # deux points presque confondus : a 0,05 pres, la couleur les departage
 ANCRE_RAPPEL = (0.26, 0.40)   # ecarts essayes quand rien n'est libre contre le point
 
@@ -1166,6 +1167,10 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
             area = VMobject(fill_color=cols[i], fill_opacity=0.30, stroke_width=0)
             areas[i] = (area, np.array(top), base)
 
+    # Sans point nomme, tous les points sont marques : make check plafonne
+    # alors le nombre d'etiquettes d'un LineChart (ETIQUETTES_MAX).
+    if family == "LineChart" and not nommes:
+        cues.meta["etiquettes_sans_point_nomme"] = len(placed)
     extras = [k for c in curves for k, _, m in c[2] if m is not None]
     cross, gap, factor = None, None, None
     if mb.get("croisement") and n >= 2:

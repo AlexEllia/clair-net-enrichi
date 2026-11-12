@@ -495,7 +495,12 @@ def collisions(seg, dur, ep_dir=None):
             if noms:
                 fautes.append(f"libelle {l.nom} recouvre {', '.join(noms)}")
     # Etiquettes de valeur : chacune au plus pres de ce qu'elle chiffre.
-    from components import ANCRE_MAX, ANCRE_TOL, dist_boite, dist_boites
+    from components import ANCRE_MAX, ANCRE_TOL, ETIQUETTES_MAX, dist_boite, dist_boites
+    n_sans_nom = cues.meta.get("etiquettes_sans_point_nomme", 0)
+    if n_sans_nom > ETIQUETTES_MAX:
+        fautes.append(f"{n_sans_nom} etiquettes de valeur sans aucun point nomme (maximum "
+                      f"{ETIQUETTES_MAX}) : nomme les points que la voix enonce "
+                      f"(`series_k_point_j`), les autres ne feront que tracer")
     etiquettes = getattr(cues, "etiquettes", [])
     for lab, cible, serie, nom in etiquettes:
         b = _boite(lab)
