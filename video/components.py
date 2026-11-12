@@ -52,6 +52,17 @@ class Cues:
         self.anchor_widths = {}
         # ... et l'instant ou l'ancre apparait, pour un nom sans declencheur.
         self.anchor_times = {}
+        # Geometrie de ce que nomme un libelle (noeud, lien), pour lui chercher
+        # une autre place, et ce qu'un libelle ne doit pas recouvrir,
+        # [(nom, (x0, x1, y0, y1))] : exportes par le composant, lus par les
+        # overlays et par make check.
+        self.anchor_geo = {}
+        # Etiquettes de valeur et ce qu'elles chiffrent, pour make check :
+        # [(etiquette, boite de sa cible (x0, x1, y0, y1), serie, nom)] ; et
+        # les courbes echantillonnees de chaque serie, {serie: points}.
+        self.etiquettes = []
+        self.courbes = {}
+        self.obstacles = []
 
     def add(self, *m):
         self.static.extend(m)
@@ -64,6 +75,14 @@ class Cues:
     def late(self, t, margin=1.2):
         """Borne un top de depart pour qu'il tienne dans la duree du segment."""
         return min(float(t), max(0.0, self.dur - margin))
+
+    def etiquette(self, lab, cible, serie, nom):
+        """Declare une etiquette de valeur et sa cible : un point (x, y, ...)
+        ou une boite (x0, x1, y0, y1)."""
+        c = tuple(float(v) for v in cible)
+        if len(c) != 4:
+            c = (c[0], c[0], c[1], c[1])
+        self.etiquettes.append((lab, c, serie, nom))
 
     def point(self, name, xy, rot=0):
         self.points[name] = (float(xy[0]), float(xy[1]), rot)
@@ -106,6 +125,28 @@ BARS_RULE = "v3-phrase" # barre suivante : "v2-anticipation" monte jusqu'a 6 s a
                         # (retenue le 18/10/2026) ; "v3", la fin de la phrase qui porte le
                         # mot de la precedente (essayee, non retenue). Voir Bars.
 BAR_MIN_GROW = 0.6      # croissance plus courte : la barre surgit, comme une etiquette
+
+# --- Encarts « centre » -------------------------------------------------------
+# Un encart ne recouvre jamais le graphique : des qu'un plan en porte un, une
+# colonne lui est reservee a droite et le graphique se resserre a gauche de
+# GRAPHE_DROITE. Trois encarts au plus a l'ecran : le quatrieme prend la place
+# du plus ancien, qui sort en fondu (scenes.add_overlays).
+ENCART_RULE = "v2-zone" # "v1" : encarts poses a x = 4,15 par-dessus le graphique, empiles
+                        # sans limite (le quatrieme sortait de l'image), archivee le
+                        # 12/11/2026 ; "v2-zone" : colonne reservee, rotation a trois.
+ENCART_X = 4.75         # centre de la colonne des encarts
+ENCART_W = 4.2          # largeur maximale d'un encart
+ENCART_H = 1.55         # hauteur maximale d'un encart
+ENCART_Y = (1.35, -0.40, -2.15)             # centre des trois emplacements
+ENCART_GAUCHE = ENCART_X - ENCART_W / 2     # bord gauche de la colonne
+GRAPHE_DROITE = ENCART_GAUCHE - 0.30        # limite droite du graphique, encarts presents
+ENCART_SORTIE = 0.35    # fondu de sortie du plus ancien, juste avant l'arrivee du nouveau
+
+
+def reserve_encarts(cues):
+    """Le plan porte-t-il des encarts « centre » ? Le graphique leur cede alors
+    la colonne de droite."""
+    return ENCART_RULE != "v1" and "centre" in cues.anchors
 COMPARAISON_RULE = "v2" # "v1" : cadre habituel meme si la premiere donnee tarde, et toute
                         # jauge anticipe (17/10/2026), archivee ; voir Comparaison
 MIN_LEAD = 0.5          # temps minimal d'un trace pour rejoindre son premier point
@@ -818,6 +859,35 @@ def _place_label(lab, dot, placed, xmin, xmax, zone=None, traces=None, own=None,
     return lab
 
 
+# Regle d'ancrage des etiquettes de valeur (12/11/2026). Une etiquette reste
+# collee a son point : elle n'a de places que tout autour de lui, et le point
+# le plus proche d'elle est toujours le sien - ni un autre point, ni la
+# courbe d'une autre serie. Sans place libre contre le point, elle s'en ecarte
+# un peu, reliee a lui par un trait de rappel, jamais au-dela d'ANCRE_MAX.
+# « v1 » (archivee) : jusqu'a trois crans d'eloignement sans trait, et aucune
+# garantie de proximite - sur l'EP004 S04, « 91,7 % » se lisait sur l'autre
+# courbe.
+LABEL_RULE = "v2-ancre"
+ECART_MIN = 0.35      # hauteur sous laquelle une accolade d'ecart se lit mal
+ANCRE_MAX = 0.60      # distance maximale du bord de l'etiquette a son point
+ANCRE_TOL = 0.05      # deux points presque confondus : a 0,05 pres, la couleur les departage
+ANCRE_RAPPEL = (0.26, 0.40)   # ecarts essayes quand rien n'est libre contre le point
+
+
+def dist_boite(boite, p):
+    """Distance d'un point a une boite (x0, x1, y0, y1) ; 0 s'il est dedans."""
+    dx = max(boite[0] - p[0], 0.0, p[0] - boite[1])
+    dy = max(boite[2] - p[1], 0.0, p[1] - boite[3])
+    return float(np.hypot(dx, dy))
+
+
+def dist_boites(a, b):
+    """Distance entre deux boites (x0, x1, y0, y1) ; 0 si elles se touchent."""
+    dx = max(a[0] - b[1], 0.0, b[0] - a[1])
+    dy = max(a[2] - b[3], 0.0, b[2] - a[3])
+    return float(np.hypot(dx, dy))
+
+
 LABEL_PAD = 0.10  # ecart minimal entre deux etiquettes de valeur
 TICK_PAD = 0.15   # ... entre une etiquette et une graduation de l'axe x
 
@@ -831,9 +901,17 @@ def _place_label_scored(lab, dot, placed, zone, traces, own, sources, floor=None
     # Glissements : au-dessus ou au-dessous du point, decale de -half a +half.
     cands += [("glisse", v, dx, 0.0) for v in (UP, DOWN)
               for dx in np.linspace(-half, half, 9)[1:-1]]
-    cands += [("coin", v, h, lift) for lift in (0.22, 0.44, 0.66) for v, h in corners]
+    v1 = LABEL_RULE == "v1"
+    if v1:
+        cands += [("coin", v, h, lift) for lift in (0.22, 0.44, 0.66) for v, h in corners]
+    else:
+        # Trait de rappel : huit directions, a peine plus loin. Leur cout les
+        # place apres toute position collee au point.
+        huit = (UP, DOWN, RIGHT, LEFT, UP + RIGHT, UP + LEFT, DOWN + RIGHT, DOWN + LEFT)
+        cands += [("rappel", None, u, d) for d in ANCRE_RAPPEL for u in huit]
     dense = [_densify(t) for t in traces]
     c = dot.get_center()
+    autres = [p for p in sources if np.hypot(p[0] - c[0], p[1] - c[1]) > 1e-6]
     best = None
     for order, (kind, vdir, hdir, lift) in enumerate(cands):
         _pose(lab, dot, kind, vdir, hdir, lift)
@@ -841,6 +919,17 @@ def _place_label_scored(lab, dot, placed, zone, traces, own, sources, floor=None
         b, t = lab.get_bottom()[1], lab.get_top()[1]
         if l < xmin or r > xmax or b < ymin or t > ymax:
             continue
+        if not v1:
+            # Le point le plus proche de l'etiquette est le sien.
+            boite = (l, r, b, t)
+            d_own = dist_boite(boite, c)
+            if d_own > ANCRE_MAX:
+                continue
+            if any(dist_boite(boite, p) < d_own - ANCRE_TOL for p in autres):
+                continue
+            if any(min(dist_boite(boite, p) for p in pts) < d_own - ANCRE_TOL
+                   for k, pts in enumerate(dense) if k != own):
+                continue
         if any(_boxes_overlap(lab, o, pad=LABEL_PAD) for o in placed):
             continue
         if any(_boxes_overlap(lab, o, pad=TICK_PAD) for o in ticks):
@@ -855,7 +944,7 @@ def _place_label_scored(lab, dot, placed, zone, traces, own, sources, floor=None
             inside = ((pts[:, 0] >= l - pad) & (pts[:, 0] <= r + pad) &
                       (pts[:, 1] >= b - pad) & (pts[:, 1] <= t + pad)).sum()
             cost += inside * (0.5 if k == own else 1.0)
-        cost += lift * 6 + {"coin": 0.0, "glisse": 0.5, "cote": 1.0}[kind]
+        cost += lift * 6 + {"coin": 0.0, "glisse": 0.5, "cote": 1.0, "rappel": 20.0}[kind]
         if floor is not None and t < floor:
             cost += 2.0
         if best is None or cost < best[0] - 1e-9:
@@ -865,13 +954,23 @@ def _place_label_scored(lab, dot, placed, zone, traces, own, sources, floor=None
         return lab
     _, kind, vdir, hdir, lift = best
     _pose(lab, dot, kind, vdir, hdir, lift)
+    if kind == "rappel":
+        # Trait fin, de la couleur de la serie, du point au bord de l'etiquette.
+        boite = (lab.get_left()[0], lab.get_right()[0], lab.get_bottom()[1], lab.get_top()[1])
+        q = np.array([np.clip(c[0], boite[0], boite[1]), np.clip(c[1], boite[2], boite[3]), 0.0])
+        u = (q - c) / max(np.linalg.norm(q - c), 1e-6)
+        lab.rappel = Line(c + u * 0.11, q - u * 0.04, stroke_color=lab.get_color(),
+                          stroke_width=1.8, stroke_opacity=0.9)
     return lab
 
 
 def _pose(lab, dot, kind, vdir, hdir, lift):
     """coin : au-dessus ou au-dessous, decale d'une demi-largeur ; glisse :
-    decale de `hdir` unites ; cote : a droite ou a gauche du point."""
-    if kind == "coin":
+    decale de `hdir` unites ; cote : a droite ou a gauche du point ; rappel :
+    dans la direction `hdir`, a `lift` du point."""
+    if kind == "rappel":
+        lab.next_to(dot, hdir, buff=lift)
+    elif kind == "coin":
         lab.next_to(dot, vdir, buff=0.14 + lift).shift(hdir * (lab.width / 2 + 0.06))
     elif kind == "glisse":
         lab.next_to(dot, vdir, buff=0.14).shift(RIGHT * float(hdir))
@@ -949,14 +1048,16 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
     top = 1.70 if "legende" in cues.anchors else 1.90
     bottom = -2.20 if {"axe_x", "bas"} <= cues.anchors else -2.60
     right = 1.30 if (mb.get("facteur") or mb.get("ecart")) else 0.0
+    # Colonne des encarts : l'aire de trace s'arrete avant elle.
+    enc = (PLOT_W / 2 - GRAPHE_DROITE) if reserve_encarts(cues) else 0.0
     yvals = np.linspace(ylo, yhi, 5)
     step = _nice_step((x1 - x0) / 4)
     xvals = list(np.arange(np.ceil(x0 / step) * step, x1 + 1e-9, step))
 
     def frame(cut):
         """Cadre, graduations et ancres, l'aire de trace amputee de `cut` a gauche."""
-        f = Frame(x0, x1, ylo, yhi, w=PLOT_W - right - cut, h=top - bottom,
-                  center=[(cut - right) / 2, (top + bottom) / 2, 0])
+        f = Frame(x0, x1, ylo, yhi, w=PLOT_W - right - cut - enc, h=top - bottom,
+                  center=[(cut - right - enc) / 2, (top + bottom) / 2, 0])
         g = f.gridlines(yvals, fmt=lambda v: nombres.fmt(v, yfmt, 0))
         t = f.xticks(xvals, fmt=lambda v: nombres.num(v, 0))
         w = max((m.width for m in g if isinstance(m, Text)), default=0.0)
@@ -989,11 +1090,34 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
     # les points sources de toutes les series.
     traces = [np.array([fr.pt(x, y) for x, y in zip(xs, _interp(s, xs, mode, growth))])
               for s in series]
-    sources = [fr.pt(x, y) for s in series for x, y in s if not (origin and (x, y) == origin)]
+    # Des que le script nomme un point (`series_k_point_j`, une valeur que la
+    # voix enonce), seuls les points nommes portent un point et sa valeur :
+    # les autres ne servent qu'a tracer la courbe. Un plan qui n'en nomme
+    # aucun (series seules, comme le plan valide S09) les marque tous.
+    cibles = {r.get("target") for r in (mb.get("reveals") or []) if isinstance(r, dict)}
+    nommes = {t for t in cibles if re.fullmatch(prefix + r"_\d+_point_\d+", str(t))}
+    if LABEL_RULE == "v1":
+        nommes = set()
+
+    def marque(i, j):
+        return not nommes or f"{prefix}_{i + 1}_point_{j}" in nommes
+
+    sources = []
+    for i, s in enumerate(series):
+        j = 0
+        for x, y in s:
+            if origin and (x, y) == origin:
+                continue
+            j += 1
+            if marque(i, j):
+                sources.append(fr.pt(x, y))
+    for i, tr in enumerate(traces):
+        cues.courbes[i] = _densify(tr)
     # Une etiquette peut descendre sous l'axe horizontal, dans la rangee des
     # graduations, sans en couvrir aucune : c'est la seule place des valeurs
     # coincees entre l'axe et une autre courbe (55 EUR sous les 2 400 EUR).
-    zone = (fr.px(x0) + 0.05, X_RIGHT, fr.py(ylo) - 0.34 - xticks.height, top + 0.20)
+    zone = (fr.px(x0) + 0.05, GRAPHE_DROITE if enc else X_RIGHT,
+            fr.py(ylo) - 0.34 - xticks.height, top + 0.20)
 
     for i, s in enumerate(series):
         ys = _interp(s, xs, mode, growth)
@@ -1008,6 +1132,11 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
             if origin and (x, y) == origin:
                 continue
             mk = f"{prefix}_{i + 1}_point_{len(marks) + 1}"
+            if not marque(i, len(marks) + 1):
+                # Point de trace seulement : ni point ni valeur a l'ecran.
+                marks.append((mk, x, None))
+                prev_y = y
+                continue
             dot = Dot(fr.pt(x, y), radius=0.08, color=cols[i])
             lab = txt(nombres.fmt(y, yfmt), SZ_LABEL, cols[i], weight=SEMIBOLD)
             _place_label(lab, dot, placed, zone[0], zone[1], zone=zone,
@@ -1017,12 +1146,16 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
             # ne se reecrit pas - le point seul apparait -, sauf si la voix
             # l'enonce (partie nommee par le script). Une ligne plate de
             # versements ne porte ainsi sa valeur qu'une fois.
-            if prev_y is not None and y == prev_y:
+            if prev_y is not None and y == prev_y and mk not in nommes:
                 repeats.add(mk)
             else:
                 placed.append(lab)
+                cues.etiquette(lab, fr.pt(x, y), i, mk)
             prev_y = y
-            marks.append((mk, x, VGroup(dot, lab)))
+            grp = VGroup(dot, lab)
+            if getattr(lab, "rappel", None) is not None:
+                grp.add(lab.rappel)
+            marks.append((mk, x, grp))
         curves.append((ys, ln, marks))
         cues.point(f"{prefix}_{i + 1}_fin", fr.pt(*s[-1]))
         if fill:
@@ -1033,7 +1166,8 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
             area = VMobject(fill_color=cols[i], fill_opacity=0.30, stroke_width=0)
             areas[i] = (area, np.array(top), base)
 
-    extras, cross, gap, factor = [k for c in curves for k, _, _ in c[2]], None, None, None
+    extras = [k for c in curves for k, _, m in c[2] if m is not None]
+    cross, gap, factor = None, None, None
     if mb.get("croisement") and n >= 2:
         diff = curves[0][0] - curves[1][0]
         idx = np.where(np.diff(np.sign(diff)) != 0)[0]
@@ -1057,9 +1191,19 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
         lo, hi = min(ys), max(ys)
         bx = fr.px(gx) + 0.32
         kw = dict(stroke_color=INK_SOFT, stroke_width=2.4)
+        haut = fr.py(hi) - fr.py(lo)
+        patte = 0.14
+        if haut < ECART_MIN and LABEL_RULE != "v1":
+            # Ecart trop petit pour se lire : l'accolade garde sa vraie hauteur
+            # (elle mesure), mais ses pattes s'allongent et son trait s'affirme.
+            kw = dict(stroke_color=INK, stroke_width=3.4)
+            patte = 0.30
+            print(f"[ATTENTION] {sid} : ecart de {haut:.2f} unite a l'ecran ({hi - lo:.4g} sur "
+                  f"un axe de {yhi - ylo:.4g}) : l'accolade reste petite, donne-lui une "
+                  f"`valeur` sourcee ou un encart", file=sys.stderr, flush=True)
         gap = VGroup(Line([bx, fr.py(lo), 0], [bx, fr.py(hi), 0], **kw),
-                     Line([bx - 0.14, fr.py(lo), 0], [bx, fr.py(lo), 0], **kw),
-                     Line([bx - 0.14, fr.py(hi), 0], [bx, fr.py(hi), 0], **kw))
+                     Line([bx - patte, fr.py(lo), 0], [bx, fr.py(lo), 0], **kw),
+                     Line([bx - patte, fr.py(hi), 0], [bx, fr.py(hi), 0], **kw))
         if e.get("valeur") is not None:
             tag = txt(nombres.fmt(float(e["valeur"]), e.get("format", "nombre")),
                       SZ_TITLE, INK, weight=SEMIBOLD)
@@ -1093,7 +1237,8 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
     tracks = {}
     for i in range(n):
         key, (_, _, marks) = keys[i], curves[i]
-        rdv = [((x - x0) / span, rev.t(mk)) for mk, x, _ in marks if mk in rev.fixed]
+        rdv = [((x - x0) / span, rev.t(mk)) for mk, x, m in marks
+               if mk in rev.fixed and m is not None]
         # Le top de la serie vaut rendez-vous de son premier point quand le
         # script ecrit `series_k`, ou quand il ne nomme aucun point (cadence par
         # defaut). Un premier point non nomme, alors que d'autres le sont, est
@@ -1109,6 +1254,7 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
     cues.meta["frame_end"] = frame_end
 
     own = set(keys) | {mk for c in curves for mk, _, _ in c[2]}
+    marks_vus = [m for c in curves for _, _, m in c[2] if m is not None]
     later = [(t, False) for k, t in rev.times.items() if k in rev.fixed and k not in own]
     runs, first_motion = _plan_runs(sid, tracks, frame_end, later, CONTINUOUS_MAX, cues.dur)
 
@@ -1127,6 +1273,8 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
                 cues.at(kf[0][0], *sweep(kf), TracePiece(ln, full, kf),
                         rt=kf[-1][0] - kf[0][0])
         for mk, x, m in marks:
+            if m is None:
+                continue
             f = (x - x0) / span
             kf = next((r for r in rs if r[0][1] - 1e-9 <= f <= r[-1][1] + 1e-9), None)
             if kf is None:
@@ -1149,7 +1297,7 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
         rev.at("factor", Create(factor[0]), fade_up(factor[1], 0.2), rt=PUNCTUAL_MAX)
 
     return VGroup(*[a[0] for a in areas.values()],
-                  *[VGroup(c[1], *[m for _, _, m in c[2]]) for c in curves],
+                  *[VGroup(c[1], *[m for _, _, m in c[2] if m is not None]) for c in curves],
                   *[m for m in (cross, gap, factor) if m is not None])
 
 
@@ -1639,8 +1787,9 @@ def Bars(seg, cues):
     if sources:
         bottom = -1.95
     right = 1.30 if mb.get("annotation") else 0.0
-    fr = Frame(0.4, n_g + 0.6, ylo, yhi, w=PLOT_W - right, h=top - bottom,
-               center=[-right / 2, (top + bottom) / 2, 0])
+    enc = (PLOT_W / 2 - GRAPHE_DROITE) if reserve_encarts(cues) else 0.0
+    fr = Frame(0.4, n_g + 0.6, ylo, yhi, w=PLOT_W - right - enc, h=top - bottom,
+               center=[-(right + enc) / 2, (top + bottom) / 2, 0])
     cues.legend_colors = cols[:n_s]
 
     yvals = list(np.arange(ylo, yhi + ystep / 2, ystep))
@@ -1689,6 +1838,8 @@ def Bars(seg, cues):
             else:
                 lab.next_to(rect, UP if v >= 0 else DOWN, buff=0.14)
             bars[key] = (rect, lab, edge)
+            cues.etiquette(lab, (rect.get_left()[0], rect.get_right()[0],
+                                 rect.get_bottom()[1], rect.get_top()[1]), key, key)
             order.append(key)
             if mode == "empilees":
                 if v >= 0:
@@ -1918,7 +2069,9 @@ def _bands(seg, cues):
 
     top = 1.70 if "legende" in cues.anchors else 1.90
     bottom = -2.20 if {"axe_x", "bas"} <= cues.anchors else -2.60
-    fr = Frame(0.4, n_g + 0.6, ylo, yhi, h=top - bottom, center=[0, (top + bottom) / 2, 0])
+    enc = (PLOT_W / 2 - GRAPHE_DROITE) if reserve_encarts(cues) else 0.0
+    fr = Frame(0.4, n_g + 0.6, ylo, yhi, w=PLOT_W - enc, h=top - bottom,
+               center=[-enc / 2, (top + bottom) / 2, 0])
     cues.legend_colors = [body]
 
     yvals = list(np.arange(ylo, yhi + ystep / 2, ystep))
@@ -2262,8 +2415,9 @@ def _comparison_structure(sid, cues, gauges, pic_groups, base, divider, X, y0, y
             # Colonne sans jauge (pictogrammes seuls) : sa base et un socle sous
             # l'emplacement de la grille, vide.
             grids = [g for g, o in pic_groups.values() if o == k]
-            x0 = grids[0].get_left()[0] if grids else X[k] - 1.3
-            x1 = grids[0].get_right()[0] if grids else X[k] + 1.3
+            half = abs(X[2] - X[1]) / 2 / 3.3 * 1.3
+            x0 = grids[0].get_left()[0] if grids else X[k] - half
+            x1 = grids[0].get_right()[0] if grids else X[k] + half
             head = [Create(base[k - 1]),
                     FadeIn(Line([x0, y0, 0], [x1, y0, 0], stroke_color=INK_SOFT, stroke_width=4))]
             if k == 2:
@@ -2349,7 +2503,15 @@ def Comparaison(seg, cues):
     pics = mb.get("pictogrammes") or []
 
     # --- geometrie : deux colonnes, une ligne de base commune ----------------
-    X = {1: -3.3, 2: 3.3}
+    # Avec des encarts, les deux colonnes se resserrent a gauche de leur
+    # colonne reservee : memes proportions, a l'echelle `kx`.
+    X, half = {1: -3.3, 2: 3.3}, 2.6
+    if reserve_encarts(cues):
+        gauche = -6.60
+        half = (GRAPHE_DROITE - gauche) / 4 - 0.04
+        X = {1: gauche + half, 2: GRAPHE_DROITE - half}
+    kx = half / 2.6
+    x_mid = (X[1] + X[2]) / 2
     y0 = -2.45 if "bas" in cues.anchors else -2.70
     y_top = 1.25                    # sommet de la plus haute jauge
     y_name = 2.30                   # ancre du nom de l'option
@@ -2358,11 +2520,13 @@ def Comparaison(seg, cues):
     for k in (1, 2):
         cues.point(f"option_{k}", (X[k], y_name))
         cues.anchor_colors[f"option_{k}"] = cols[k - 1]
-        cues.anchor_widths[f"option_{k}"] = 5.2
+        # Resserrees, les colonnes se touchent presque : leurs noms gardent
+        # un blanc entre eux.
+        cues.anchor_widths[f"option_{k}"] = 5.2 if kx == 1.0 else 2 * half - 0.35
 
-    base = VGroup(*[Line([X[k] - 2.6, y0, 0], [X[k] + 2.6, y0, 0], stroke_color=RULE,
+    base = VGroup(*[Line([X[k] - half, y0, 0], [X[k] + half, y0, 0], stroke_color=RULE,
                          stroke_width=2.4) for k in (1, 2)])
-    divider = DashedLine([0, y0 - 0.1, 0], [0, y_name + 0.2, 0], dash_length=0.10,
+    divider = DashedLine([x_mid, y0 - 0.1, 0], [x_mid, y_name + 0.2, 0], dash_length=0.10,
                          stroke_color=RULE, stroke_width=1.6)
 
     # Jauges a gauche de leur colonne quand des pictos l'occupent aussi.
@@ -2373,7 +2537,7 @@ def Comparaison(seg, cues):
     bw = 1.0
     for k in (1, 2):
         idx = per_opt[k]
-        cx = X[k] - (1.2 if k in has_pics else 0.0)
+        cx = X[k] - (1.2 * kx if k in has_pics else 0.0)
         span = 1.4 * (len(idx) - 1)
         for j, g in enumerate(idx):
             v = rows[g][1]
@@ -2385,6 +2549,8 @@ def Comparaison(seg, cues):
             lab = txt(nombres.fmt(v, fmt), SZ_BODY, INK, weight=SEMIBOLD)
             lab.next_to(rect, UP, buff=0.14)
             key = f"value_{g + 1}"
+            cues.etiquette(lab, (rect.get_left()[0], rect.get_right()[0],
+                                 rect.get_bottom()[1], rect.get_top()[1]), key, key)
             gauges[key] = (rect, lab, k)
             order.append(key)
             by_opt[k].add(rect, lab)
@@ -2395,14 +2561,14 @@ def Comparaison(seg, cues):
         k, n = int(p["option"]), int(p["nombre"])
         if k not in (1, 2) or not 1 <= n <= 40:
             raise SystemExit(f"{sid} : pictogrammes[{i}] : option 1 ou 2, nombre de 1 a 40")
-        ncol, size = _picto_grid(n, 2.7, y_top + 0.2 - (y0 + 0.15))
+        ncol, size = _picto_grid(n, 2.7 * kx, y_top + 0.2 - (y0 + 0.15))
         gap = 0.44 * size
         icons = VGroup()
         for j in range(n):
             ic = picto(p["icone"], cols[k - 1], hauteur=size)
             r, c = divmod(j, ncol)
             # Grille alignee a gauche, a 0,5 de la jauge : l'accolade d'un ecart y passe.
-            ic.move_to([X[k] - 0.2 + size / 2 + c * (size + gap),
+            ic.move_to([X[k] - 0.2 * kx + size / 2 + c * (size + gap),
                         y0 + 0.15 + size / 2 + r * (size + gap), 0])
             _set_alpha(ic, 0.0)
             icons.add(ic)
@@ -2582,9 +2748,22 @@ def Flux(seg, cues):
     R = 0.62
     nodes, order = {}, []
     n = len(nodes_spec)
+    places = [nd.get("position") or [-5.0 + 10.0 * i / max(n - 1, 1), 0.0]
+              for i, nd in enumerate(nodes_spec)]
+    xs_n = [float(p[0]) for p in places]
+    # Colonne des encarts : si un noeud y deborde, tous se resserrent vers la
+    # gauche, en proportion, le plus a gauche restant ou il est. Un schema qui
+    # tient deja a gauche de la colonne n'est pas touche.
+    x_max = GRAPHE_DROITE - R - 0.05
+    serre = None
+    if reserve_encarts(cues) and max(xs_n) > x_max and max(xs_n) > min(xs_n):
+        serre = (min(xs_n), (x_max - min(xs_n)) / (max(xs_n) - min(xs_n)))
+    cues.obstacles = []
     for i, nd in enumerate(nodes_spec):
-        pos = nd.get("position") or [-5.0 + 10.0 * i / max(n - 1, 1), 0.0]
+        pos = places[i]
         x, y = float(pos[0]), float(pos[1])
+        if serre:
+            x = serre[0] + (x - serre[0]) * serre[1]
         col = _PALETTE.get(nd.get("couleur"), nd.get("couleur")) or INK_SOFT
         ring = Circle(radius=R, stroke_color=col, stroke_width=3,
                       fill_color=BG_LIFT, fill_opacity=1).move_to([x, y, 0])
@@ -2594,6 +2773,9 @@ def Flux(seg, cues):
         order.append(key)
         cues.point(f"noeud_{i + 1}", (x, y - R - 0.36))
         cues.anchor_widths[f"noeud_{i + 1}"] = 3.2
+        # Ou poser le nom si la place du dessous est prise : autour du noeud.
+        cues.anchor_geo[f"noeud_{i + 1}"] = ("noeud", np.array([x, y, 0.0]), R)
+        cues.obstacles.append((f"node_{i + 1}", (x - R, x + R, y - R, y + R)))
 
     links = {}
     for i, ln in enumerate(links_spec):
@@ -2631,6 +2813,16 @@ def Flux(seg, cues):
         cues.point(f"lien_{i + 1}", mid + normal * (0.80 if label is not None else 0.42))
         cues.anchor_colors[f"lien_{i + 1}"] = col
         cues.anchor_widths[f"lien_{i + 1}"] = 3.0
+        # ... ou de l'autre cote du lien, a distance de son trace.
+        cues.anchor_geo[f"lien_{i + 1}"] = ("lien", mid, normal, label is not None)
+        if label is not None:
+            cues.obstacles.append((f"montant du lien {i + 1}",
+                                   (label.get_left()[0], label.get_right()[0],
+                                    label.get_bottom()[1], label.get_top()[1])))
+        for f in np.linspace(0.1, 0.9, 9):
+            q = path.point_from_proportion(float(f))
+            cues.obstacles.append((f"link_{i + 1}", (q[0] - 0.06, q[0] + 0.06,
+                                                     q[1] - 0.06, q[1] + 0.06)))
 
     extras = ["highlight"] if mb.get("mise_en_avant") else []
     rev = Reveal(seg, cues, order, extras=extras, t0=1.6, rt=PUNCTUAL_MAX, margin=0.6)

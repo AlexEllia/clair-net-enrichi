@@ -16,7 +16,8 @@ from style import (BG, BG_LIFT, INK, INK_SOFT, MUTED, RULE_SOFT, CONTRIB,
                    INTEREST, NEG, TEAL, FW, FH, Y_TOP, Y_BOTTOM, X_LEFT,
                    SZ_TITLE, SZ_BIG, SZ_HUGE, SZ_BODY, SZ_LABEL, SZ_SOURCE,
                    txt, fade_up)
-from components import COMPONENTS, Cues
+from components import (COMPONENTS, Cues, ENCART_RULE, ENCART_X, ENCART_W, ENCART_H,
+                        ENCART_Y, ENCART_GAUCHE, GRAPHE_DROITE, ENCART_SORTIE, reserve_encarts)
 
 Z_BACK, Z_AMB, Z_PLOT, Z_OVER = -100, -50, 0, 50
 
@@ -157,12 +158,136 @@ def _wrap(s, width):
     return "\n".join(lines)
 
 
+PONCTUATION = ("?", "!", ":", ";", "%", "»", "€", "$")
+
+
+def _wrap_equilibre(s, width):
+    """Retour a la ligne des encarts : autant de lignes que `_wrap`, mais de
+    longueurs voisines, et jamais un signe de ponctuation ni un mot d'un ou
+    deux caracteres seul en derniere ligne (« Et si on le place / ? »,
+    « Encore 7 fois sur / 10 »)."""
+    mots = []
+    for w in s.split():
+        if mots and (w in PONCTUATION or mots[-1] in ("«", "≈")):
+            mots[-1] += "\ue000" + w        # liaison : le signe suit son mot (split()
+                                            # couperait sur une espace insecable)
+        else:
+            mots.append(w)
+    colle = " ".join(mots)
+    lignes = _wrap(colle, width).splitlines()
+    n = len(lignes)
+    if n > 1:
+        for l in range(max(len(m) for m in mots), width + 1):
+            essai = _wrap(colle, l).splitlines()
+            if len(essai) == n:
+                lignes = essai
+                break
+    return "\n".join(lignes).replace("\ue000", " ")
+
+
 def _scrim(m, pad=0.34):
     s = RoundedRectangle(width=m.width + 2 * pad, height=m.height + 1.3 * pad,
                          corner_radius=0.16, fill_color=BG, fill_opacity=0.62,
                          stroke_width=0)
     s.move_to(m).set_z_index(Z_OVER - 1)
     return s
+
+
+class Efface(Animation):
+    """Sortie en fondu d'un objet deja a l'ecran, qui y reste, invisible.
+
+    Introductrice, comme tout ce qui touche un objet pose plus tard dans le
+    plan : un FadeOut ordinaire le montrerait des la premiere image."""
+
+    def __init__(self, m, **kw):
+        self.base = m.copy()
+        super().__init__(m, introducer=True, **kw)
+
+    def interpolate_mobject(self, alpha):
+        self.mobject.become(self.base)
+        self.mobject.fade(self.rate_func(alpha))
+
+
+def _marque(m, role, o):
+    """Dit a make check ce qu'est cet objet : un encart ou un libelle."""
+    m.role, m.nom = role, f"{o['ancre']} « {o['texte_fr']} »"
+    return m
+
+
+def _boite(m):
+    return (m.get_left()[0], m.get_right()[0], m.get_bottom()[1], m.get_top()[1])
+
+
+def _recouvre(a, b):
+    """Aire commune de deux boites (x0, x1, y0, y1)."""
+    w = min(a[1], b[1]) - max(a[0], b[0])
+    h = min(a[3], b[3]) - max(a[2], b[2])
+    return w * h if w > 0 and h > 0 else 0.0
+
+
+def _places(cues, anchor, t):
+    """Centres possibles du libelle `t`, par ordre de preference. Le premier
+    est sa place habituelle ; les suivants dependent de sa taille : le libelle
+    se tient a 0,25 de ce qu'il nomme, sans jamais le toucher."""
+    x, y, _ = cues.points[anchor]
+    out = [np.array([x, y, 0.0])]
+    geo = cues.anchor_geo.get(anchor)
+    if ENCART_RULE == "v1" or geo is None:
+        return out
+    w, h = t.width, t.height
+    if geo[0] == "noeud":
+        _, c, r = geo
+        if h > 0.4:
+            out[0] = c + DOWN * (r + 0.21 + h / 2)        # deux lignes : vers le bas
+        out += [c + UP * (r + 0.21 + h / 2),
+                c + RIGHT * (r + 0.25 + w / 2), c + LEFT * (r + 0.25 + w / 2)]
+    else:
+        _, mid, n, montant = geo
+        ext = abs(n[0]) * w / 2 + abs(n[1]) * h / 2
+        out += [mid + n * ((0.62 if montant else 0.25) + ext),
+                mid - n * (0.25 + ext),
+                mid + n * ((1.0 if montant else 0.6) + ext)]
+    return out
+
+
+def _poser_libelle(cues, anchor, texte, taille, couleur, graisse, poses, limites):
+    """Le libelle d'un noeud ou d'un lien, la ou il ne recouvre rien.
+
+    Essais, dans l'ordre : sa place habituelle sur une ligne, puis les autres
+    places autour de ce qu'il nomme (au-dessus, a droite, a gauche du noeud ;
+    de l'autre cote du lien), puis les memes sur deux lignes. Le premier essai
+    qui ne touche ni un noeud, ni un lien, ni un montant, ni un libelle deja
+    pose, ni la colonne des encarts, ni le bord de l'image est retenu ; a
+    defaut, celui qui recouvre le moins. La taille des lettres ne change pas."""
+    v1 = ENCART_RULE == "v1"
+    large = cues.anchor_widths.get(anchor, 4.0)
+    textes = [texte]
+    if " " in texte.strip() and not v1:
+        textes.append(_wrap(texte, max(len(texte) // 2 + 2, 8)))
+    obstacles = [b for _, b in cues.obstacles] + poses
+    xg, xd, yb, yh = limites
+    best = None
+    for s_ in textes:
+        lignes = s_.splitlines()
+        if len(lignes) > 1:
+            t = VGroup(*[txt(l, taille, couleur, weight=graisse) for l in lignes])
+            t.arrange(DOWN, buff=0.08)
+        else:
+            t = txt(s_, taille, couleur, weight=graisse)
+        _fit(t, large)
+        for c in _places(cues, anchor, t):
+            t.move_to(c)
+            if v1:
+                return t
+            b = _boite(t)
+            cout = sum(_recouvre(b, o) for o in obstacles)
+            cout += 10 * (max(xg - b[0], 0) + max(b[1] - xd, 0)
+                          + max(yb - b[2], 0) + max(b[3] - yh, 0))
+            if cout <= 1e-9:
+                return t
+            if best is None or cout < best[0] - 1e-9:
+                best = (cout, t.copy())
+    return best[1]
 
 
 def add_overlays(seg, cues, visual):
@@ -182,6 +307,7 @@ def add_overlays(seg, cues, visual):
     for o in by.get("titre_haut", []):
         t = _fit(txt(o["texte_fr"], SZ_TITLE, INK, weight=SEMIBOLD), FW - 2.4)
         t.move_to([0, Y_TOP, 0]).set_z_index(Z_OVER)
+        _marque(t, "libelle", o)
         cues.at(cues.late(o["t_rel_s"], 1.0), fade_up(t), rt=0.6)
         out.add(t)
 
@@ -205,6 +331,7 @@ def add_overlays(seg, cues, visual):
             else:
                 _fit(t, FW - 2.4)
             t.move_to([x, y, 0]).set_z_index(Z_OVER)
+            _marque(t, "libelle", o)
             cues.at(cues.late(o["t_rel_s"], 0.8), FadeIn(t), rt=0.5)
             out.add(t)
 
@@ -212,7 +339,16 @@ def add_overlays(seg, cues, visual):
     # Comparaison exporte option_k (le nom de l'option, au-dessus de sa
     # colonne), Flux exporte noeud_k (sous le noeud) et lien_k (le long du
     # lien). Le composant n'ecrit aucun mot (R7) : ces noms passent ici.
-    for anchor in sorted(a for a in by if re.fullmatch(r"(option|noeud|lien)_\d+", a)):
+    reserve = visual == "manim" and reserve_encarts(cues)
+    poses = []
+    limites = (-FW / 2 + 0.25, (ENCART_GAUCHE - 0.05) if reserve else FW / 2 - 0.25,
+               Y_BOTTOM + (0.05 if by.get("bas") else -0.25),
+               Y_TOP - (0.42 if by.get("titre_haut") else -0.3))
+    # Les noms des noeuds d'abord : ils ont moins de places possibles que
+    # ceux des liens, qui les contournent ensuite.
+    ordre = sorted((a for a in by if re.fullmatch(r"(option|noeud|lien)_\d+", a)),
+                   key=lambda a: (a.startswith("lien"), a))
+    for anchor in ordre:
         for o in by[anchor]:
             if anchor not in cues.points:
                 print(f"[ATTENTION] {seg.get('id')} : le composant n'exporte pas l'ancre "
@@ -221,11 +357,18 @@ def add_overlays(seg, cues, visual):
                 continue
             x, y, _ = cues.points[anchor]
             option = anchor.startswith("option")
-            t = txt(o["texte_fr"], SZ_BODY if option else SZ_LABEL,
-                    cues.anchor_colors.get(anchor, INK if option else INK_SOFT),
-                    weight=SEMIBOLD if option else NORMAL)
-            _fit(t, cues.anchor_widths.get(anchor, 4.0))
-            t.move_to([x, y, 0]).set_z_index(Z_OVER)
+            if option:
+                t = txt(o["texte_fr"], SZ_BODY, cues.anchor_colors.get(anchor, INK),
+                        weight=SEMIBOLD)
+                _fit(t, cues.anchor_widths.get(anchor, 4.0))
+                t.move_to([x, y, 0])
+            else:
+                t = _poser_libelle(cues, anchor, o["texte_fr"], SZ_LABEL,
+                                   cues.anchor_colors.get(anchor, INK_SOFT), NORMAL,
+                                   poses, limites)
+                poses.append(_boite(t))
+            t.set_z_index(Z_OVER)
+            _marque(t, "libelle", o)
             # Un nom sans declencheur arrive avec ce qu'il nomme, quand le
             # composant le dit (colonne d'une Comparaison construite d'avance).
             at = o["t_rel_s"]
@@ -260,6 +403,7 @@ def add_overlays(seg, cues, visual):
         t.scale(k)
         x, y, _ = cues.points[anchor]
         t.move_to([x, y, 0], aligned_edge=UP).set_z_index(Z_OVER)
+        _marque(t, "libelle", o)
         at = cues.anchor_times.get(anchor, o["t_rel_s"])
         cues.at(cues.late(at, 0.5), FadeIn(t), rt=0.4)
         out.add(t)
@@ -268,6 +412,7 @@ def add_overlays(seg, cues, visual):
     for o in ([] if seen else by.get("bas", [])):
         t = _fit(txt(o["texte_fr"], SZ_SOURCE, MUTED), FW - 1.8)
         t.move_to([0, Y_BOTTOM - 0.44, 0]).set_z_index(Z_OVER)
+        _marque(t, "libelle", o)
         cues.at(cues.late(o["t_rel_s"], 0.8), FadeIn(t), rt=0.5)
         out.add(t)
 
@@ -291,12 +436,16 @@ def add_overlays(seg, cues, visual):
             row.move_to([0, 0.55 - 1.35 * i, 0])
     elif rows:
         band = VGroup(*rows).arrange(RIGHT, buff=0.9)
-        _fit(band, FW - 1.8)
+        # Avec des encarts, la legende reste au-dessus du graphique, a gauche
+        # de leur colonne.
+        _fit(band, (GRAPHE_DROITE - X_LEFT) if reserve else FW - 1.8)
         # Sous le titre quand il y en a un : au meme niveau, ils se chevauchent.
-        band.move_to([0, Y_TOP - (0.80 if by.get("titre_haut") else 0.05), 0])
+        band.move_to([(X_LEFT + GRAPHE_DROITE) / 2 if reserve else 0,
+                      Y_TOP - (0.80 if by.get("titre_haut") else 0.05), 0])
 
     for row, o in zip(rows, legs):
         row.set_z_index(Z_OVER)
+        _marque(row, "libelle", o)
         cues.at(cues.late(o["t_rel_s"], 0.9), fade_up(row, 0.2), rt=0.55)
         out.add(row)
 
@@ -307,16 +456,38 @@ def add_overlays(seg, cues, visual):
 
     if not big:
         # Un graphe occupe deja le centre : le propos passe en encart lateral.
+        # Regle « v2-zone » : la colonne de droite leur est reservee (le
+        # graphique s'arrete avant, components.reserve_encarts) ; trois
+        # emplacements, et le quatrieme encart prend celui du plus ancien, qui
+        # sort en fondu juste avant. « v1 » : par-dessus le graphique, empiles
+        # sans limite.
+        v1 = ENCART_RULE == "v1"
+        cartes = []
         for i, o in enumerate(ctr):
-            t = _fit(txt(_wrap(o["texte_fr"], 18), SZ_BODY, INK, weight=SEMIBOLD), 3.7)
+            t = _fit(txt((_wrap if v1 else _wrap_equilibre)(o["texte_fr"], 18), SZ_BODY,
+                         INK, weight=SEMIBOLD), 3.7 if v1 else ENCART_W - 0.7)
             card = RoundedRectangle(width=t.width + 0.7, height=t.height + 0.6,
                                     corner_radius=0.14, fill_color=BG_LIFT,
                                     fill_opacity=0.92, stroke_color=INTEREST,
                                     stroke_width=2)
             grp = VGroup(card, t)
             t.move_to(card)
-            grp.move_to([4.15, 1.4 - 1.9 * i, 0]).set_z_index(Z_OVER)
-            cues.at(cues.late(o["t_rel_s"], 1.2), fade_up(grp, 0.24), rt=0.6)
+            if v1:
+                grp.move_to([4.15, 1.4 - 1.9 * i, 0])
+            else:
+                if grp.height > ENCART_H:
+                    grp.scale_to_fit_height(ENCART_H)
+                grp.move_to([ENCART_X, ENCART_Y[i % 3], 0])
+            grp.set_z_index(Z_OVER)
+            _marque(grp, "encart", o)
+            at = cues.late(o["t_rel_s"], 1.2)
+            if not v1 and i >= 3:
+                ancien, depuis = cartes[i - 3]
+                sortie = max(at - ENCART_SORTIE, depuis + 0.6)
+                at = max(at, sortie + ENCART_SORTIE)
+                cues.at(sortie, Efface(ancien), rt=ENCART_SORTIE)
+            cartes.append((grp, at))
+            cues.at(at, fade_up(grp, 0.24), rt=0.6)
             out.add(grp)
         return out
 
