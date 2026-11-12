@@ -29,6 +29,9 @@ FPS, W, H = 10, 480, 270
 SEUIL, MIN_PX = 24, 20           # evenement visible
 SEUIL_DECOR, MIN_DECOR = 6, 3    # derive du decor seule
 MAX_STILL = 4.0
+# Plans exclus de R6 : la carte de mention legale est une respiration voulue,
+# deux lignes et une derive de 2 % que la mesure ne voit pas (CATALOGUE.md).
+EXCLUS_R6 = ("mention",)
 
 
 def mesurer(video):
@@ -110,6 +113,8 @@ def carte(video, segments, dest, nom="densite"):
                       "debut_s": round(a, 1),
                       "debut_segment_s": max(0.0, round(a - s["debut_s"], 1)),
                       "duree_s": round(d, 1)})
+    exclues = [p for p in figes if p["type_visuel"] in EXCLUS_R6]
+    figes = [p for p in figes if p["type_visuel"] not in EXCLUS_R6]
     fige4 = np.zeros(n, bool)
     for p in figes:
         a = int(round(p["debut_s"] * FPS))
@@ -136,7 +141,8 @@ def carte(video, segments, dest, nom="densite"):
                           "pixels_min": MIN_PX, "fige_au_dela_s": MAX_STILL},
               "duree_s": round(n / FPS, 1), "total_fige_s": total,
               "part_fige": round(total / max(n / FPS, 1e-6), 3),
-              "segments": par_seg, "plages": figes}
+              "segments": par_seg, "plages": figes,
+              "exclus_r6": list(EXCLUS_R6), "plages_exclues": exclues}
     (dest / f"{nom}.json").write_text(json.dumps(resume, ensure_ascii=False, indent=1),
                                       encoding="utf-8")
     for suffixe, rows in (("secondes", secondes), ("plages", figes)):

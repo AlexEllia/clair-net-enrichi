@@ -304,14 +304,8 @@ def _visible(anim):
     return abs(x) <= FW / 2 and abs(y) <= FH / 2
 
 
-def calendrier_nouveaute(seg, dur, ep_dir=None):
-    """[(debut, fin)] de tout ce qui arrive a l'ecran pendant le plan, tel que
-    le moteur le posera : revelations, etiquettes, overlays, mises en avant.
-
-    Ne compte pas : ce qui s'anime hors de l'image, ni l'argent qui circule
-    sur un lien de Flux deja trace (Courant) - il tient l'image en mouvement
-    mais n'apporte rien de nouveau. Un plan de chaine est compose par le
-    moteur seul : tout son mouvement compte, derive comprise."""
+def composer(seg, dur, ep_dir=None):
+    """Le calendrier du plan (Cues) tel que la scene le jouera, sans rendu."""
     import contextlib
     import io
     from briefs import resolve, with_voice
@@ -332,6 +326,14 @@ def calendrier_nouveaute(seg, dur, ep_dir=None):
                 target, fam = resolve(seg, dur, log=False)
                 COMPONENTS[fam](target, cues)
             add_overlays(seg, cues, visual)
+    return cues
+
+
+def calendrier_nouveaute(seg, dur, ep_dir=None):
+    """[(debut, fin)] de tout ce qui arrive a l'ecran pendant le plan, tel que
+    le moteur le posera : revelations, etiquettes, overlays, mises en avant,
+    argent qui circule. Ne compte pas : ce qui s'anime hors de l'image."""
+    cues = composer(seg, dur, ep_dir)
     out = []
     for t, anims, rt in cues.items:
         if t >= dur:
@@ -352,6 +354,11 @@ def check_nouveaute(segments, durations, ep_dir):
     lignes, fautes = [], []
     for s in segments:
         sid, visual = s["id"], s["type_visuel"]
+        if visual == "mention":
+            # Exception inscrite au catalogue : la carte de mention est une
+            # respiration, exclue de R6 au check comme en pixels.
+            lignes.append(f"  {sid:<4} {visual:<15} exclue de R6 (exception du catalogue)")
+            continue
         if visual == "ecran_fin":
             # Anime par construction jusqu'a la derniere image (courbe
             # parcourue, pictogrammes en derive) : ces mouvements continus ne
@@ -381,6 +388,168 @@ def check_nouveaute(segments, durations, ep_dir):
     return lignes, fautes
 
 
+def _boite(m):
+    return (float(m.get_left()[0]), float(m.get_right()[0]),
+            float(m.get_bottom()[1]), float(m.get_top()[1]))
+
+
+def _chevauche(a, b, marge=0.03):
+    """Deux boites (x0, x1, y0, y1) se recouvrent-elles de plus de `marge` ?"""
+    return (min(a[1], b[1]) - max(a[0], b[0]) > marge
+            and min(a[3], b[3]) - max(a[2], b[2]) > marge)
+
+
+def _objets(cues):
+    """[(objet, premier instant, animation)] de tout ce que le plan pose, les
+    groupes d'animations deplies. Les particules qui circulent (Courant) n'ont
+    pas de place fixe : leur chemin, deja compte, les represente."""
+    from components import Courant
+    out, vus = [], set()
+
+    def voir(a, t):
+        sous = getattr(a, "animations", None)
+        if sous:
+            for x in sous:
+                voir(x, t)
+            return
+        m = getattr(a, "mobject", None)
+        if m is None or isinstance(a, Courant):
+            return
+        out.append((m, t, a))
+
+    for t, anims, _ in sorted(cues.items, key=lambda c: c[0]):
+        for a in anims:
+            voir(a, t)
+    for m in cues.static:
+        out.append((m, 0.0, None))
+    return out
+
+
+def _nom_element(m):
+    x, y = m.get_center()[:2]
+    return f"{type(m).__name__} du graphique en ({x:.1f} ; {y:.1f})"
+
+
+def collisions(seg, dur, ep_dir=None):
+    """Fautes de placement d'un plan, jugees sur les boites englobantes de
+    tout ce que le moteur y pose :
+
+    - un encart « centre » qui sort de l'image, ou qui recouvre un element du
+      graphique, un libelle, ou un autre encart present en meme temps que lui ;
+    - un libelle (titre, nom d'axe, d'option, de noeud, de lien, legende,
+      source) qui sort de l'image, qui recouvre un autre libelle, ou, pour
+      Flux, un noeud, un montant ou le trace d'un lien.
+
+    Un encart est juge sur toute sa presence : de son arrivee a sa sortie en
+    fondu (ou a la fin du plan). Le reste du plan est tenu pour present du
+    debut a la fin : un encart ne passe pas non plus la ou un element viendra."""
+    from style import FW, FH
+    from scenes import Efface
+    cues = composer(seg, dur, ep_dir)
+    objets = _objets(cues)
+    sorties = {id(m): t for m, t, a in objets if isinstance(a, Efface)}
+    encarts, libelles, graphe, vus = [], [], [], set()
+    for m, t, a in objets:
+        if id(m) in vus or isinstance(a, Efface):
+            continue
+        vus.add(id(m))
+        if m.width < 1e-6 and m.height < 1e-6:
+            continue
+        role = getattr(m, "role", None)
+        if role == "encart":
+            encarts.append((m, t, sorties.get(id(m), dur)))
+        elif role == "libelle":
+            libelles.append(m)
+        else:
+            graphe.append(m)
+    fautes = []
+    bord = (-FW / 2, FW / 2, -FH / 2, FH / 2)
+
+    def hors(b):
+        return b[0] < bord[0] or b[1] > bord[1] or b[2] < bord[2] or b[3] > bord[3]
+
+    for i, (e, t0, t1) in enumerate(encarts):
+        b = _boite(e)
+        if hors(b):
+            fautes.append(f"encart {e.nom} sort de l'image")
+        touche = [g for g in graphe if _chevauche(b, _boite(g))]
+        if touche:
+            fautes.append(f"encart {e.nom} recouvre {len(touche)} element(s) du graphique, "
+                          f"dont {_nom_element(touche[0])}")
+        for l in libelles:
+            if _chevauche(b, _boite(l)):
+                fautes.append(f"encart {e.nom} recouvre le libelle {l.nom}")
+        for f, u0, u1 in encarts[i + 1:]:
+            if min(t1, u1) - max(t0, u0) > 1e-6 and _chevauche(b, _boite(f)):
+                fautes.append(f"encart {e.nom} recouvre l'encart {f.nom} "
+                              f"(ensemble de {max(t0, u0):.2f} a {min(t1, u1):.2f} s)")
+    for i, l in enumerate(libelles):
+        b = _boite(l)
+        if hors(b):
+            fautes.append(f"libelle {l.nom} sort de l'image")
+        for m in libelles[i + 1:]:
+            if _chevauche(b, _boite(m)):
+                fautes.append(f"libelle {l.nom} recouvre le libelle {m.nom}")
+        if l.nom.startswith(("noeud_", "lien_")):
+            noms = sorted({nom for nom, o in getattr(cues, "obstacles", []) if _chevauche(b, o)})
+            if noms:
+                fautes.append(f"libelle {l.nom} recouvre {', '.join(noms)}")
+    # Etiquettes de valeur : chacune au plus pres de ce qu'elle chiffre.
+    from components import ANCRE_MAX, ANCRE_TOL, dist_boite, dist_boites
+    etiquettes = getattr(cues, "etiquettes", [])
+    for lab, cible, serie, nom in etiquettes:
+        b = _boite(lab)
+        texte = getattr(lab, "text", "?")
+        d = dist_boites(b, cible)
+        if d > ANCRE_MAX + 1e-6:
+            fautes.append(f"etiquette « {texte} » de {nom} a {d:.2f} de son point "
+                          f"(maximum {ANCRE_MAX:.2f})")
+        for _, autre, _, nom2 in etiquettes:
+            if nom2 != nom and autre != cible and dist_boites(b, autre) < d - ANCRE_TOL:
+                fautes.append(f"etiquette « {texte} » de {nom} plus proche de {nom2} "
+                              f"({dist_boites(b, autre):.2f}) que de son point ({d:.2f})")
+        for k, pts in getattr(cues, "courbes", {}).items():
+            if isinstance(serie, int) and k != serie:
+                dk = min(dist_boite(b, p) for p in pts)
+                if dk < d - ANCRE_TOL:
+                    fautes.append(f"etiquette « {texte} » de {nom} plus proche de la courbe "
+                                  f"de la serie {k + 1} ({dk:.2f}) que de son point ({d:.2f})")
+    return fautes, len(encarts), len(libelles)
+
+
+def check_placement(segments, durations, ep_dir):
+    """Controle bloquant : aucun encart ni libelle ne recouvre quoi que ce
+    soit ni ne sort de l'image, a aucun instant (voir `collisions`). Les plans
+    de chaine, composes par le moteur sans overlay, n'en portent pas.
+    Renvoie (lignes du rapport, fautes)."""
+    lignes, fautes = [], []
+    for s in segments:
+        sid, visual = s["id"], s["type_visuel"]
+        if visual in CHAINE:
+            continue
+        kind = (s.get("manim_brief") or {}).get("composant", "manim") \
+            if visual == "manim" else visual
+        try:
+            f, n_e, n_l = collisions(s, durations[sid].audio, ep_dir)
+        except SystemExit:
+            # Composant que le moteur ne sait pas construire : le build s'y
+            # arretera de lui-meme ; rien a juger ici.
+            lignes.append(f"  {sid:<4} {kind:<15} non juge : composant non construit")
+            continue
+        lignes.append(f"  {sid:<4} {kind:<15} {n_e} encart(s), {n_l:2d} libelle(s)"
+                      + (f"   << REFUS ({len(f)})" if f else ""))
+        fautes += [f"{sid} ({kind}) : {x}" for x in f]
+    return lignes, fautes
+
+
+def refuser_placement(fautes):
+    raise SystemExit(f"REFUS : {len(fautes)} faute(s) de placement (encart ou libelle qui "
+                     f"recouvre un element ou sort de l'image, controle bloquant) :\n  "
+                     + "\n  ".join(fautes)
+                     + "\nRaccourcis le libelle ou deplace l'element (video/CATALOGUE.md, "
+                       "section 3).")
+
+
 def refuser_nouveaute(fautes):
     from briefs import MAX_STILL
     raise SystemExit(f"REFUS : {len(fautes)} intervalle(s) de plus de {MAX_STILL:.0f} s sans "
@@ -403,6 +572,10 @@ def check_density(final, tl, segments, dest):
     print(f"densite     : {dest / 'densite.png'}  (ecran fige > {densite.MAX_STILL:.0f} s : "
           f"{res['total_fige_s']:.0f} s sur {res['duree_s']:.0f} s, "
           f"{100 * res['part_fige']:.0f} %, {len(res['plages'])} plages)")
+    for p in res.get("plages_exclues") or []:
+        print(f"              hors R6 (exception du catalogue) : {p['segment']} "
+              f"({p['type_visuel']}), {p['duree_s']:.1f} s a partir de "
+              f"{p['debut_segment_s']:.1f} s")
     for p in res["plages"]:
         print(f"[ATTENTION] {p['segment']} ({p['type_visuel']}) : ecran fige {p['duree_s']:.1f} s "
               f"a partir de {p['debut_segment_s']:.1f} s", file=sys.stderr)
@@ -467,9 +640,20 @@ def main():
         print(f"\n  element nouveau : aucun intervalle de plus de {MAX_STILL:.0f} s, tout "
               f"type de plan (bloquant)")
         print("\n".join(lignes))
-        if fautes:
-            refuser_nouveaute(fautes)
-        print("  controle bloquant : passe")
+        lignes_p, fautes_p = check_placement(segments, durations, ep_dir)
+        print("\n  placement : aucun encart ni libelle ne recouvre un element ni ne sort de "
+              "l'image (bloquant)")
+        print("\n".join(lignes_p))
+        refus = []
+        for f, refuser in ((fautes, refuser_nouveaute), (fautes_p, refuser_placement)):
+            if f:
+                try:
+                    refuser(f)
+                except SystemExit as e:
+                    refus.append(str(e))
+        if refus:
+            raise SystemExit("\n".join(refus))
+        print("  controles bloquants : passes")
         return
 
 
