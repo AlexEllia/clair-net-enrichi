@@ -436,21 +436,26 @@ def _nom_element(m):
     return f"{type(m).__name__} du graphique en ({x:.1f} ; {y:.1f})"
 
 
-def collisions(seg, dur, ep_dir=None):
+def collisions(seg, dur, ep_dir=None, strict=True):
     """Fautes de placement d'un plan, jugees sur les boites englobantes de
     tout ce que le moteur y pose :
 
     - un encart « centre » qui sort de l'image, ou qui recouvre un element du
       graphique, un libelle, ou un autre encart present en meme temps que lui -
-      ou, en typographie, qui s'en approche, comme du bord de l'image, a
-      moins de MARGE_ENCART ;
+      ou qui s'en approche, comme du bord de l'image, a moins de
+      MARGE_ENCART (tous les plans) ;
     - un libelle (titre, nom d'axe, d'option, de noeud, de lien, legende,
       source) qui sort de l'image, qui recouvre un autre libelle, ou, pour
       Flux, un noeud, un montant ou le trace d'un lien.
 
     Un encart est juge sur toute sa presence : de son arrivee a sa sortie en
     fondu (ou a la fin du plan). Le reste du plan est tenu pour present du
-    debut a la fin : un encart ne passe pas non plus la ou un element viendra."""
+    debut a la fin : un encart ne passe pas non plus la ou un element viendra.
+
+    Renvoie (fautes, nombre d'encarts, nombre de libelles, remarques). Un
+    encart qui ne fait que serrer de trop pres (sans recouvrir) est une faute
+    si `strict` (script ecrit contre le catalogue actuel, plan d'essai), une
+    simple remarque sinon (script anterieur a la regle)."""
     from style import FW, FH
     from scenes import Efface
     cues = composer(seg, dur, ep_dir)
@@ -470,17 +475,19 @@ def collisions(seg, dur, ep_dir=None):
             libelles.append(m)
         else:
             graphe.append(m)
-    fautes = []
+    fautes, remarques = [], []
     bord = (-FW / 2, FW / 2, -FH / 2, FH / 2)
 
     def hors(b):
         return b[0] < bord[0] or b[1] > bord[1] or b[2] < bord[2] or b[3] > bord[3]
 
-    # La marge minimale ne vaut que pour la typographie, ou les textes sont
-    # grands et se suivent de pres ; ailleurs, seul le recouvrement est refuse.
+    # Marge minimale autour d'un encart, dans tous les plans.
     from components import MARGE_ENCART
-    marge = MARGE_ENCART if seg["type_visuel"] == "typo_cinetique" else 0.0
+    marge = MARGE_ENCART
     pres = f"serre de trop pres (moins de {MARGE_ENCART:.2f})".replace(".", ",")
+
+    def noter(v, msg):
+        (remarques if v == pres and not strict else fautes).append(msg)
 
     def verbe(b, c):
         """« recouvre », « serre de trop pres », ou None si la marge est libre."""
@@ -494,21 +501,21 @@ def collisions(seg, dur, ep_dir=None):
             fautes.append(f"encart {e.nom} sort de l'image")
         elif marge and hors((b[0] - marge + 1e-6, b[1] + marge - 1e-6,
                              b[2] - marge + 1e-6, b[3] + marge - 1e-6)):
-            fautes.append(f"encart {e.nom} {pres} le bord de l'image")
+            noter(pres, f"encart {e.nom} {pres} le bord de l'image")
         touche = [(v, g) for g in graphe for v in [verbe(b, _boite(g))] if v]
         if touche:
             v = "recouvre" if any(x == "recouvre" for x, _ in touche) else pres
-            fautes.append(f"encart {e.nom} {v} {len(touche)} element(s) du graphique, "
-                          f"dont {_nom_element(touche[0][1])}")
+            noter(v, f"encart {e.nom} {v} {len(touche)} element(s) du graphique, "
+                     f"dont {_nom_element(touche[0][1])}")
         for l in libelles:
             v = verbe(b, _boite(l))
             if v:
-                fautes.append(f"encart {e.nom} {v} le libelle {l.nom}")
+                noter(v, f"encart {e.nom} {v} le libelle {l.nom}")
         for f, u0, u1 in encarts[i + 1:]:
             v = verbe(b, _boite(f))
             if min(t1, u1) - max(t0, u0) > 1e-6 and v:
-                fautes.append(f"encart {e.nom} {v} l'encart {f.nom} "
-                              f"(ensemble de {max(t0, u0):.2f} a {min(t1, u1):.2f} s)")
+                noter(v, f"encart {e.nom} {v} l'encart {f.nom} "
+                         f"(ensemble de {max(t0, u0):.2f} a {min(t1, u1):.2f} s)")
     for i, l in enumerate(libelles):
         b = _boite(l)
         if hors(b):
@@ -545,10 +552,10 @@ def collisions(seg, dur, ep_dir=None):
                 if dk < d - ANCRE_TOL:
                     fautes.append(f"etiquette « {texte} » de {nom} plus proche de la courbe "
                                   f"de la serie {k + 1} ({dk:.2f}) que de son point ({d:.2f})")
-    return fautes, len(encarts), len(libelles)
+    return fautes, len(encarts), len(libelles), remarques
 
 
-def check_placement(segments, durations, ep_dir):
+def check_placement(segments, durations, ep_dir, strict=True):
     """Controle bloquant : aucun encart ni libelle ne recouvre quoi que ce
     soit ni ne sort de l'image, a aucun instant (voir `collisions`). Les plans
     de chaine, composes par le moteur sans overlay, n'en portent pas.
@@ -561,7 +568,7 @@ def check_placement(segments, durations, ep_dir):
         kind = (s.get("manim_brief") or {}).get("composant", "manim") \
             if visual == "manim" else visual
         try:
-            f, n_e, n_l = collisions(s, durations[sid].audio, ep_dir)
+            f, n_e, n_l, rq = collisions(s, durations[sid].audio, ep_dir, strict)
         except SystemExit:
             # Composant que le moteur ne sait pas construire : le build s'y
             # arretera de lui-meme ; rien a juger ici.
@@ -569,6 +576,7 @@ def check_placement(segments, durations, ep_dir):
             continue
         lignes.append(f"  {sid:<4} {kind:<15} {n_e} encart(s), {n_l:2d} libelle(s)"
                       + (f"   << REFUS ({len(f)})" if f else ""))
+        lignes += [f"       remarque : {x}" for x in rq]
         fautes += [f"{sid} ({kind}) : {x}" for x in f]
     return lignes, fautes
 
@@ -763,18 +771,19 @@ def main():
         print(f"\n  ecrit : {ep_dir / 'build' / 'timeline.json'}")
         print(f"          {ep_dir / 'build' / 'chapitres.txt'}")
         from briefs import MAX_STILL
+        # Un script ecrit contre le catalogue actuel en connait toutes les
+        # regles ; dans un script anterieur, les regles venues depuis (marge
+        # autour d'un encart, lien NEG sans `nature`) sont seulement signalees.
+        md5_script = str((script.get("meta") or {}).get("catalogue_md5") or "").strip().lower()
+        actuel = md5_script in _md5_variants((ROOT / "CATALOGUE.md").read_bytes())
         lignes, fautes = check_nouveaute(segments, durations, ep_dir)
         print(f"\n  element nouveau : aucun intervalle de plus de {MAX_STILL:.0f} s, tout "
               f"type de plan (bloquant)")
         print("\n".join(lignes))
-        lignes_p, fautes_p = check_placement(segments, durations, ep_dir)
+        lignes_p, fautes_p = check_placement(segments, durations, ep_dir, strict=actuel)
         print("\n  placement : aucun encart ni libelle ne recouvre un element ni ne sort de "
               "l'image (bloquant)")
         print("\n".join(lignes_p))
-        # Un script ecrit contre le catalogue actuel connait R10 : un lien NEG
-        # sans `nature` y est refuse ; dans un script anterieur, il est signale.
-        md5_script = str((script.get("meta") or {}).get("catalogue_md5") or "").strip().lower()
-        actuel = md5_script in _md5_variants((ROOT / "CATALOGUE.md").read_bytes())
         lignes_s, fautes_s = check_sens(segments, durations, ep_dir, strict=actuel)
         print("\n  sens : une perte en NEG avec son signe moins, un gain en ambre avec son "
               "signe plus (bloquant)")

@@ -84,7 +84,11 @@ boîtes englobantes de ce que le moteur posera :
 - un encart `centre` qui sort de l'image, ou qui recouvre un élément du
   graphique (barre, jauge, courbe, valeur, catégorie, axe), un libellé, ou
   un autre encart présent en même temps que lui — jugé de son arrivée à sa
-  sortie ;
+  sortie. **Marge minimale : 0,15 unité** (20 px en 1080p) : un encart qui,
+  sans rien recouvrir, s'approche à moins de 0,15 d'un élément, d'un libellé,
+  d'un autre encart ou du bord de l'image est refusé de même, dans tous les
+  plans (dans un script écrit contre une version antérieure du catalogue, il
+  est seulement signalé) ;
 - un libellé (titre, titre d'axe, nom d'option, de nœud, de lien, légende,
   source) qui sort de l'image ou recouvre un autre libellé ; pour `Flux`,
   un libellé qui recouvre un nœud, un montant ou le tracé d'un lien ;
@@ -257,10 +261,9 @@ suivi : laisse-lui le temps d'être lu avant le troisième suivant.
 ancien, qui sort en fondu, et ainsi de suite. Un plan à deux textes les
 écarte du même pas, autour du centre ; un texte seul reste au centre. Un texte
 plus haut que 1,90 unité est réduit pour tenir dans son emplacement. `make
-check` y applique le contrôle de placement, avec en plus une **marge minimale
-de 0,15 unité** (20 px en 1080p) : il refuse un texte qui recouvre ou serre de
-plus près un autre texte présent en même temps, le titre, la source ou le bord
-de l'image. Les plans `fond_anime` et `broll` gardent l'empilement d'avant.
+check` y applique le contrôle de placement et sa marge minimale de 0,15 unité :
+il refuse un texte qui recouvre ou serre de plus près un autre texte présent en
+même temps, le titre, la source ou le bord de l'image. Les plans `fond_anime` et `broll` gardent l'empilement d'avant.
 
 **Les libellés de `Flux`.** Le moteur cherche pour chaque nom de nœud ou de
 lien une place où il ne touche ni un nœud, ni un lien, ni un montant, ni un

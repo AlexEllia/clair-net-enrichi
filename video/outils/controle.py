@@ -30,7 +30,7 @@ def juger(seg, dur):
           f"{pire[1] - pire[0]:.2f} s (de {pire[0]:.2f} a {pire[1]:.2f} s)")
     fautes += [f"{b - a:.2f} s sans element nouveau, de {a:.2f} a {b:.2f} s"
                for a, b in trous if b - a > MAX_STILL]
-    f, n_e, n_l = build.collisions(seg, dur)
+    f, n_e, n_l, _ = build.collisions(seg, dur)
     print(f"  placement       : {n_e} encart(s), {n_l} libelle(s), {len(f)} faute(s)")
     fautes += f
     if seg["type_visuel"] == "manim":

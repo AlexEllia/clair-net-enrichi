@@ -98,9 +98,12 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
   textes : ±1,025 ; hauteur d'un texte plafonnée à 1,90. Le contrôle de
   placement s'applique à la typographie, avec une marge minimale de 0,15 unité
   (`MARGE_ENCART`, 20 px en 1080p) entre un texte et un autre texte, un
-  libellé ou le bord. La marge ne vaut que pour la typographie : étendue aux
-  encarts latéraux, elle refuserait EP004 S09 et S20 (encart à moins de 0,15
-  d'un nom de nœud). `fond_anime` et `broll` : empilement d'avant. *Pourquoi* :
+  libellé ou le bord. Depuis le 13/11/2026 (décision d'Alexandre), la marge
+  vaut pour **tous les plans** : encart latéral contre élément du graphique,
+  libellé, autre encart ou bord. Refus pour un script écrit contre le
+  catalogue actuel (`meta.catalogue_md5`), simple remarque pour un script
+  antérieur : EP004 S09 et S20 (encart à moins de 0,15 d'un nom de nœud) sont
+  signalés, à corriger quand l'épisode sera refait. `fond_anime` et `broll` : empilement d'avant. *Pourquoi* :
   sur le plan d'essai à six encarts, deux grands textes voisins se touchaient
   presque et le troisième arrivait à 0,04 unité de la source, sans que le
   contrôle le voie. Outils : `video/outils/planche.py` (plan d'essai `.json`),
