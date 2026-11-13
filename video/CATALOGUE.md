@@ -31,7 +31,8 @@ doit figurer dans les sources du segment. Vérifie ce que la valeur mesure :
 la voix le dit. Pour chaque valeur de `donnees` que la voix énonce, écris
 une révélation qui nomme cette valeur (`series_k_point_j` pour une courbe,
 `bar_g` pour une barre, `band_g` pour une bande, `value_g` pour une jauge,
-`link_k` pour un montant de flux, `capital`, `perte_k`, `cumul` et `reste`
+`link_k` pour un montant de flux, `depart`, `marche_k` et `arrivee` pour une
+`Cascade`, `capital`, `perte_k`, `cumul` et `reste`
 pour une `Erosion`), calée sur le mot qui l'énonce (section 2).
 Sinon le visuel n'illustre rien.
 
@@ -111,7 +112,7 @@ le cadre, la grille ou les axes : ils se construisent seuls avant la
 première donnée.
 
 **R9 — Pas de catégorie muette.** Sur une famille à catégories distinctes
-— `Bars`, `Areas` en bandes, `Comparaison` —, chaque ligne de `donnees` est une catégorie
+— `Bars`, `Areas` en bandes, `Comparaison`, `Cascade`, `Erosion` —, chaque ligne de `donnees` est une catégorie
 que la voix mentionne, et elle a sa révélation. Une catégorie que la voix ne
 mentionne pas ne figure pas dans `donnees` : elle s'afficherait pendant que
 la voix parle d'autre chose. Les courbes, elles, gardent leurs points
@@ -1118,6 +1119,105 @@ détachent une à une jusqu'à 8,94 s, pendant que le compteur descend à
 « sept mille huit cent », la valeur restante s'affirme. Plus longue attente :
 2,95 s, entre la colonne posée et la première tranche.
 
+#### `Cascade` — du brut au net
+
+Décomposer un résultat en étapes successives : rendement affiché → frais →
+impôts → inflation → ce qu'il reste. À prendre quand la voix **énumère
+plusieurs retraits ou ajouts** entre un chiffre de départ et un chiffre
+d'arrivée ; pour une seule perte, ou une perte répétée dans le temps, c'est
+`Erosion`.
+
+Un graphique en cascade, de gauche à droite. La première barre (le brut) est
+pleine. Chaque étape est une marche qui part du niveau précédent : elle
+descend, en `NEG`, pour une perte ; elle monte, en ambre, pour un gain (R10).
+Un fin trait pointillé relie chaque niveau à la marche suivante. La dernière
+barre (le net) se pose en plein, depuis zéro, dans la couleur du départ — en
+`NEG` si le résultat est négatif.
+
+**Pas de `donnees`** : tout est dans `depart`, `marches` et `arrivee`.
+
+**Paramètres** :
+
+| Paramètre | Obligatoire | Valeurs admises | Effet |
+|---|---|---|---|
+| `format` | **oui** | `"pct"`, `"euro"`, `"nombre"` | Écriture de toutes les valeurs. |
+| `depart` | **oui** | nombre, sourcé | La valeur de départ : la première barre. |
+| `marches` | **oui** | `[{"montant": v, "nature": "perte" \| "gain"}]`, 1 à 6 | Une marche par étape que la voix nomme (R9), dans l'ordre. `montant` en valeur positive ; `nature` est obligatoire : c'est elle qui donne le sens, la couleur et le signe (« −1,5 % », « +0,4 % »). |
+| `arrivee` | **oui** | nombre, sourcé | La valeur d'arrivée : la dernière barre. Le moteur ne la calcule pas (R3) ; il vérifie qu'elle est bien celle où mènent les marches, et **arrête le build** sinon (7 − 1,5 − 1,6 − 2 doit faire 1,9, à 0,011 près). |
+| `couleur` | non | `"INTEREST"` (défaut), `"CONTRIB"`, `"TEAL"` | Couleur de la barre de départ et d'arrivée : ambre pour un rendement ou un gain, bleu pour une somme versée. Jamais `NEG`. |
+
+**Éléments adressables dans `revelations`** — ce sont des barres, montées
+selon la règle « v3-phrase » de `Bars` :
+
+| Élément | Type | Remarque |
+|---|---|---|
+| `depart` | tracé (6 s au plus) | Monte dès le cadre posé et atteint sa hauteur sur son mot, où sa valeur s'écrit. |
+| `marche_k` | tracé (6 s au plus) | Ne part qu'au début de la phrase qui contient son propre déclencheur, atteint son niveau sur ce mot, où son montant signé s'écrit. Sous 0,6 s, elle surgit. |
+| `arrivee` | tracé (6 s au plus) | Même règle ; sa valeur s'écrit en grand. |
+
+Si plus de 4 s passeraient entre l'arrivée d'une marche et le départ de la
+suivante, la marche dont la voix parle encore est encadrée au milieu de
+l'attente, comme une barre de `Bars`.
+
+**Ancres d'overlay** (R7) : `depart`, `marche_k`, `arrivee` — le nom de
+chaque colonne, sous elle (« Rendement brut », « Frais ») ; tous les noms
+prennent la taille du plus contraint, donc **des noms courts** : une
+quinzaine de caractères à cinq colonnes, une dizaine à huit. `source_g` — la
+source de la colonne g, sous son nom, en fondu à la fin de sa croissance, une
+fois par source (g = 1 pour le départ, k + 1 pour la marche k, n + 2 pour
+l'arrivée) ; **une source par marche**, elles remplacent la source `bas`.
+
+Validée à l'écran le 13/11/2026 sur le plan d'essai
+`video/outils/essais/cascade.json`.
+
+**Exemple exemplaire** — du rendement affiché au rendement réel. **C'est
+celui-ci qu'il faut imiter.** Le chiffre de départ est dans la première
+phrase ; chaque étape a sa phrase, son nom et son chiffre ; l'arrivée est
+énoncée, pas déduite. Chiffres et sources fictifs. Les `t_rel_s` sont des
+estimations (3,94 syllabes/s) que le recalage remplacera.
+
+```json
+{
+  "vo_fr": "Votre placement affiche sept pour cent par an. Les frais en retirent un virgule cinq. Les impôts, un virgule six. Et l'inflation, deux points de plus. Il vous reste un virgule neuf pour cent de rendement réel.",
+  "type_visuel": "manim",
+  "manim_brief": {
+    "composant": "Cascade",
+    "format": "pct",
+    "depart": 7,
+    "marches": [
+      {"montant": 1.5, "nature": "perte"},
+      {"montant": 1.6, "nature": "perte"},
+      {"montant": 2, "nature": "perte"}
+    ],
+    "arrivee": 1.9,
+    "revelations": [
+      {"element": "depart", "t_rel_s": 1.78, "declencheur": "sept pour cent"},
+      {"element": "marche_1", "t_rel_s": 4.31, "declencheur": "un virgule cinq"},
+      {"element": "marche_2", "t_rel_s": 6.09, "declencheur": "un virgule six"},
+      {"element": "marche_3", "t_rel_s": 8.12, "declencheur": "deux points"},
+      {"element": "arrivee", "t_rel_s": 9.90, "declencheur": "un virgule neuf"}
+    ]
+  },
+  "overlay_texte": [
+    {"ancre": "depart", "t_rel_s": 0.0, "texte_fr": "Rendement brut", "declencheur": "Votre placement"},
+    {"ancre": "marche_1", "t_rel_s": 3.05, "texte_fr": "Frais", "declencheur": "Les frais"},
+    {"ancre": "marche_2", "t_rel_s": 5.33, "texte_fr": "Impôts", "declencheur": "Les impôts"},
+    {"ancre": "marche_3", "t_rel_s": 7.36, "texte_fr": "Inflation", "declencheur": "l'inflation"},
+    {"ancre": "arrivee", "t_rel_s": 9.14, "texte_fr": "Rendement réel", "declencheur": "Il vous reste"},
+    {"ancre": "source_1", "t_rel_s": 1.78, "texte_fr": "Source A, 2025"},
+    {"ancre": "source_2", "t_rel_s": 4.31, "texte_fr": "Source A, 2025"},
+    {"ancre": "source_3", "t_rel_s": 6.09, "texte_fr": "Source B, 2026"},
+    {"ancre": "source_4", "t_rel_s": 8.12, "texte_fr": "Source C, 2025"}
+  ]
+}
+```
+
+Ce que ça donne : la barre du brut monte et affiche « 7 % » sur « sept pour
+cent » ; chaque marche part au début de sa phrase et descend jusqu'à son
+chiffre, où « −1,5 % », « −1,6 % » puis « −2 % » s'écrivent en `NEG` ; la
+barre du réel se pose sur « un virgule neuf », avec « 1,9 % » en grand. Les
+sources A, B et C apparaissent chacune une fois, sous leur colonne. Plus
+longue attente : 2,74 s, après le dernier chiffre.
 ### Pas encore disponible — ne pas utiliser
 
 Tant qu'une famille ne figure pas dans la section *Disponibles*, un segment

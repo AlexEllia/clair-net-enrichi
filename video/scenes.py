@@ -350,6 +350,12 @@ def add_overlays(seg, cues, visual):
     ordre = sorted((a for a in by if re.fullmatch(r"(option|noeud|lien)_\d+", a)
                     or a in cues.anchor_align),
                    key=lambda a: (a.startswith("lien"), a))
+    # Noms d'une meme rangee (colonnes d'une Cascade) : une seule taille, celle
+    # du plus contraint, comme pour les sources.
+    k_noms = 1.0
+    if cues.meta.get("noms_meme_taille"):
+        k_noms = min([1.0] + [cues.anchor_widths.get(a, 4.0) / txt(o["texte_fr"], SZ_LABEL).width
+                              for a in ordre if a in cues.anchor_align for o in by[a]])
     for anchor in ordre:
         for o in by[anchor]:
             if anchor not in cues.points:
@@ -366,9 +372,13 @@ def add_overlays(seg, cues, visual):
                 t.move_to([x, y, 0])
             elif anchor in cues.anchor_align:
                 # Ancre posee telle quelle par le composant (Erosion : capital,
-                # perte_k, cumul), calee sur le bord qu'il indique.
+                # perte_k, cumul ; Cascade : depart, marche_k, arrivee), calee
+                # sur le bord qu'il indique.
                 t = txt(o["texte_fr"], SZ_LABEL, cues.anchor_colors.get(anchor, INK_SOFT))
-                _fit(t, cues.anchor_widths.get(anchor, 4.0))
+                if cues.meta.get("noms_meme_taille"):
+                    t.scale(k_noms)
+                else:
+                    _fit(t, cues.anchor_widths.get(anchor, 4.0))
                 t.move_to([x, y, 0], aligned_edge=cues.anchor_align[anchor])
             else:
                 t = _poser_libelle(cues, anchor, o["texte_fr"], SZ_LABEL,

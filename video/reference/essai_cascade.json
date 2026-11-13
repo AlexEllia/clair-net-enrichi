@@ -1,0 +1,248 @@
+{
+ "statut": "PLAN D'ESSAI VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
+ "courante": 1,
+ "versions": [
+  {
+   "version": 1,
+   "validee_le": "13/11/2026",
+   "motif": "famille Cascade validee a l'ecran par Alexandre le 13/11/2026",
+   "regle_cadre": "v2",
+   "regle_comparaison": "v2",
+   "regle_barres": "v3-phrase",
+   "vue_a_l_ecran": true,
+   "duree_s": 17.0,
+   "images": 510,
+   "pixels": {
+    "largeur": 960,
+    "hauteur": 540,
+    "md5": "a02483dc375ed805af9c91937e7d9e06"
+   },
+   "segment": {
+    "id": "essai_cascade",
+    "role": "essai",
+    "type_visuel": "manim",
+    "manim_brief": {
+     "composant": "Cascade",
+     "format": "pct",
+     "depart": 7,
+     "marches": [
+      {
+       "montant": 1.5,
+       "nature": "perte"
+      },
+      {
+       "montant": 1.6,
+       "nature": "perte"
+      },
+      {
+       "montant": 2,
+       "nature": "perte"
+      }
+     ],
+     "arrivee": 1.9,
+     "revelations": [
+      {
+       "element": "depart",
+       "t_rel_s": 2.5
+      },
+      {
+       "element": "marche_1",
+       "t_rel_s": 5.5
+      },
+      {
+       "element": "marche_2",
+       "t_rel_s": 8.5
+      },
+      {
+       "element": "marche_3",
+       "t_rel_s": 11.5
+      },
+      {
+       "element": "arrivee",
+       "t_rel_s": 14.5
+      }
+     ]
+    },
+    "overlay_texte": [
+     {
+      "ancre": "titre_haut",
+      "t_rel_s": 0.5,
+      "texte_fr": "Essai : du rendement brut au rendement réel"
+     },
+     {
+      "ancre": "depart",
+      "t_rel_s": 2.5,
+      "texte_fr": "Rendement brut"
+     },
+     {
+      "ancre": "marche_1",
+      "t_rel_s": 5.5,
+      "texte_fr": "Frais"
+     },
+     {
+      "ancre": "marche_2",
+      "t_rel_s": 8.5,
+      "texte_fr": "Impôts"
+     },
+     {
+      "ancre": "marche_3",
+      "t_rel_s": 11.5,
+      "texte_fr": "Inflation"
+     },
+     {
+      "ancre": "arrivee",
+      "t_rel_s": 14.5,
+      "texte_fr": "Rendement réel"
+     },
+     {
+      "ancre": "source_1",
+      "t_rel_s": 2.5,
+      "texte_fr": "Source d'essai A"
+     },
+     {
+      "ancre": "source_2",
+      "t_rel_s": 5.5,
+      "texte_fr": "Source d'essai B"
+     },
+     {
+      "ancre": "source_3",
+      "t_rel_s": 8.5,
+      "texte_fr": "Source d'essai C"
+     },
+     {
+      "ancre": "source_4",
+      "t_rel_s": 11.5,
+      "texte_fr": "Source d'essai D"
+     }
+    ]
+   },
+   "calendrier": [
+    [
+     0.0,
+     1.0,
+     "Create"
+    ],
+    [
+     0.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     1.2,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     1.2,
+     1.3,
+     "GrowBar"
+    ],
+    [
+     2.5,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     2.5,
+     0.4,
+     "FadeIn"
+    ],
+    [
+     3.0,
+     0.3,
+     "Create"
+    ],
+    [
+     3.0,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     3.0,
+     2.5,
+     "GrowBar"
+    ],
+    [
+     5.5,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     5.5,
+     0.4,
+     "FadeIn"
+    ],
+    [
+     6.0,
+     0.3,
+     "Create"
+    ],
+    [
+     6.0,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     6.0,
+     2.5,
+     "GrowBar"
+    ],
+    [
+     8.5,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     8.5,
+     0.4,
+     "FadeIn"
+    ],
+    [
+     9.0,
+     0.3,
+     "Create"
+    ],
+    [
+     9.0,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     9.0,
+     2.5,
+     "GrowBar"
+    ],
+    [
+     11.5,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     11.5,
+     0.4,
+     "FadeIn"
+    ],
+    [
+     12.0,
+     0.3,
+     "Create"
+    ],
+    [
+     12.0,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     12.0,
+     2.5,
+     "GrowBar"
+    ],
+    [
+     14.5,
+     0.3,
+     "FadeIn"
+    ]
+   ]
+  }
+ ]
+}

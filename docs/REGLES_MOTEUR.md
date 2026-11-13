@@ -140,6 +140,19 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
   d'overlay posées telles quelles (`cues.anchor_align`) : `capital`,
   `perte_k`, `cumul`. Chaque perte et le cumul passent le contrôle de sens.
   Essais : `video/outils/essais/erosion.json`, `erosion_trois_pertes.json`.
+- **Cascade** (13/11/2026 ; validée à l'écran le jour même sur le plan d'essai
+  `video/outils/essais/cascade.json`, sortie du verrou `PILOTES`, au
+  catalogue, référence `essai_cascade` figée au pixel près) : du brut au net. Barre de départ pleine, puis une
+  marche par étape depuis le niveau précédent (perte : descend, `NEG`, signe
+  moins ; gain : monte, ambre, signe plus), fin trait pointillé entre les
+  niveaux, barre d'arrivée pleine depuis zéro (en `NEG` si négative). `nature`
+  obligatoire sur chaque marche ; 6 marches au plus. R3 : `arrivee` est donnée
+  par le brief ; le moteur vérifie seulement qu'elle est celle où mènent les
+  marches (à 0,011 ou 0,1 % près) et arrête le build sinon. Calendrier des
+  barres (`BARS_RULE` v3-phrase, `_bars_after_voice`), mise en avant au
+  milieu d'une attente de plus de 4 s, source par colonne (`source_g`), noms
+  des colonnes en overlay (`depart`, `marche_k`, `arrivee`), tous à la taille
+  du plus contraint. Essai : `video/outils/essais/cascade.json`.
 - **Mention** (11/11/2026) : dérive de 2 % sur toute la durée du plan, portée par
   une seule animation (`Mention`) avec les deux fondus. *Pourquoi* : la dérive ne
   partait qu'après la seconde ligne, et seulement s'il restait plus de 4 s ; sur

@@ -1,0 +1,39 @@
+{
+ "_role": "Plan d'essai, hors episode : famille Cascade. 7 % brut -> -1,5 % de frais -> -1,6 % d'impots -> -2 % d'inflation -> 1,9 % reel. Chiffres d'essai, sources fictives. Sans voix : chaque barre attend l'etiquette de la precedente. Rendu par video/outils/planche.py, controle par video/outils/controle.py.",
+ "duree_s": 17.0,
+ "segment": {
+  "id": "essai_cascade",
+  "role": "essai",
+  "type_visuel": "manim",
+  "manim_brief": {
+   "composant": "Cascade",
+   "format": "pct",
+   "depart": 7,
+   "marches": [
+    {"montant": 1.5, "nature": "perte"},
+    {"montant": 1.6, "nature": "perte"},
+    {"montant": 2, "nature": "perte"}
+   ],
+   "arrivee": 1.9,
+   "revelations": [
+    {"element": "depart", "t_rel_s": 2.5},
+    {"element": "marche_1", "t_rel_s": 5.5},
+    {"element": "marche_2", "t_rel_s": 8.5},
+    {"element": "marche_3", "t_rel_s": 11.5},
+    {"element": "arrivee", "t_rel_s": 14.5}
+   ]
+  },
+  "overlay_texte": [
+   {"ancre": "titre_haut", "t_rel_s": 0.5, "texte_fr": "Essai : du rendement brut au rendement réel"},
+   {"ancre": "depart", "t_rel_s": 2.5, "texte_fr": "Rendement brut"},
+   {"ancre": "marche_1", "t_rel_s": 5.5, "texte_fr": "Frais"},
+   {"ancre": "marche_2", "t_rel_s": 8.5, "texte_fr": "Impôts"},
+   {"ancre": "marche_3", "t_rel_s": 11.5, "texte_fr": "Inflation"},
+   {"ancre": "arrivee", "t_rel_s": 14.5, "texte_fr": "Rendement réel"},
+   {"ancre": "source_1", "t_rel_s": 2.5, "texte_fr": "Source d'essai A"},
+   {"ancre": "source_2", "t_rel_s": 5.5, "texte_fr": "Source d'essai B"},
+   {"ancre": "source_3", "t_rel_s": 8.5, "texte_fr": "Source d'essai C"},
+   {"ancre": "source_4", "t_rel_s": 11.5, "texte_fr": "Source d'essai D"}
+  ]
+ }
+}

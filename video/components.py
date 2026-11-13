@@ -3257,6 +3257,188 @@ def Erosion(seg, cues):
     return VGroup(colonne, valeur, *[g[0] for g in groupes], *labels)
 
 
+# =============================================================================
+# Cascade  -  du brut au net (essai : video/outils/essais/cascade.json)
+# Parties : depart, marche_k, arrivee - des barres, montees « v3-phrase »
+# =============================================================================
+
+CASCADE_MARCHES_MAX = 6
+CASCADE_PAS_MAX = 2.6    # entraxe maximal de deux colonnes
+
+
+def Cascade(seg, cues):
+    """Graphique en cascade : un resultat decompose en etapes successives,
+    du brut au net.
+
+    Parametres du brief :
+      depart    la valeur de depart (le brut), sourcee
+      marches   [{"montant": v, "nature": "perte" | "gain"}], 6 au plus, une
+                par etape que la voix nomme (R9) ; `montant` positif, le
+                moteur ecrit le signe et choisit la couleur (R10)
+      arrivee   la valeur d'arrivee (le net), sourcee : le moteur ne la
+                calcule pas (R3), il verifie seulement qu'elle est bien celle
+                ou menent les marches
+      format    ecriture des valeurs : "pct", "euro", "nombre"   OBLIGATOIRE
+      couleur   celle de la barre de depart : "INTEREST" (defaut : un
+                rendement, un gain), "CONTRIB" (une somme versee), "TEAL"
+    Parties : depart, marche_1..n, arrivee. Chacune est une barre : elle
+    monte (ou descend, pour une perte) depuis le niveau precedent et atteint
+    sa valeur sur son mot, ou sa valeur s'ecrit ; regle des barres v3-phrase.
+    Ancres d'overlay : depart, marche_k, arrivee (le nom, sous la colonne) ;
+    source_g (la source, sous le nom ; g = 1 pour le depart, k + 1 pour la
+    marche k, n + 2 pour l'arrivee).
+    """
+    import nombres
+    sid = seg.get("id", "?")
+    mb = seg["manim_brief"]
+    for cle in ("depart", "marches", "arrivee", "format"):
+        if mb.get(cle) is None or mb.get(cle) == []:
+            raise SystemExit(f"{sid} : Cascade attend `{cle}` (depart, marches, arrivee, format)")
+    kind = mb["format"]
+    depart, arrivee = float(mb["depart"]), float(mb["arrivee"])
+    marches = mb["marches"]
+    if len(marches) > CASCADE_MARCHES_MAX:
+        raise SystemExit(f"{sid} : Cascade, {len(marches)} marches ({CASCADE_MARCHES_MAX} au plus)")
+    niveaux = [depart]
+    for i, m in enumerate(marches):
+        if m.get("nature") not in ("perte", "gain") or m.get("montant") is None:
+            raise SystemExit(f"{sid} : marches[{i}] attend `montant` et `nature` "
+                             f"(\"perte\" ou \"gain\")")
+        v = abs(float(m["montant"]))
+        niveaux.append(niveaux[-1] + (v if m["nature"] == "gain" else -v))
+    # R3 : l'arrivee est donnee, pas calculee. On verifie seulement que le
+    # dessin et le chiffre disent la meme chose.
+    tol = max(0.011, 0.001 * max(abs(x) for x in niveaux))
+    if abs(niveaux[-1] - arrivee) > tol:
+        raise SystemExit(f"{sid} : Cascade, les marches menent a {niveaux[-1]:g} et `arrivee` "
+                         f"vaut {arrivee:g} : corrige les valeurs dans les sources")
+    col0 = _PALETTE.get(mb.get("couleur", "INTEREST"), mb.get("couleur", INTEREST))
+    if ManimColor(col0) == ManimColor(NEG) and depart >= 0:
+        raise SystemExit(f"{sid} : Cascade, la barre de depart ne se trace pas en NEG, "
+                         f"reserve a ce qui est perdu")
+    col_fin = NEG if arrivee < 0 else col0
+
+    # --- geometrie -------------------------------------------------------
+    n = len(marches) + 2
+    gauche = X_LEFT + 0.5
+    droite = GRAPHE_DROITE if reserve_encarts(cues) else X_RIGHT - 0.5
+    pas = min((droite - gauche) / n, CASCADE_PAS_MAX)
+    x0 = (gauche + droite) / 2 - pas * (n - 1) / 2
+    bw = 0.62 * pas
+    ylo, yhi = min(niveaux + [arrivee, 0.0]), max(niveaux + [arrivee, 0.0])
+    negatif = ylo < 0
+    haut, bas = 1.75, (-1.05 if negatif else -1.55)
+    fr = Frame(0, 1, ylo, yhi, w=1.0, h=haut - bas, center=[0, (haut + bas) / 2, 0])
+    base = Line([x0 - pas / 2, fr.py(0), 0], [x0 + pas * (n - 0.5), fr.py(0), 0],
+                stroke_color=RULE, stroke_width=2.4)
+
+    def colonne(g, a, b, couleur):
+        """La barre de la colonne g, du niveau a au niveau b (elle part de a)."""
+        r = Rectangle(width=bw, height=max(abs(fr.wy(b - a)), 0.006), fill_color=couleur,
+                      fill_opacity=0.92, stroke_width=0)
+        r.move_to([x0 + g * pas, fr.py(a), 0], aligned_edge=DOWN if b >= a else UP)
+        return r, (DOWN if b >= a else UP)
+
+    bars, order, liaisons = {}, [], {}
+    y_nom = fr.py(ylo) - (0.62 if negatif else 0.20)
+
+    def poser(key, g, rect, edge, lab, sous=False):
+        if sous:
+            lab.next_to(rect, DOWN, buff=0.14)
+        else:
+            lab.next_to(rect, UP, buff=0.14)
+        bars[key] = (rect, lab, edge)
+        order.append(key)
+        cues.etiquette(lab, (rect.get_left()[0], rect.get_right()[0],
+                             rect.get_bottom()[1], rect.get_top()[1]), key, key)
+        cues.point(key, (x0 + g * pas, y_nom))
+        cues.anchor_align[key] = UP
+        cues.anchor_widths[key] = pas - 0.2
+        cues.point(f"source_{g + 1}", (x0 + g * pas, y_nom - 0.42))
+        cues.anchor_widths[f"source_{g + 1}"] = pas - 0.2
+
+    def liaison(g, niveau):
+        """Fin trait pointille, du bord de la colonne g - 1 a celui de la g."""
+        return DashedLine([x0 + (g - 1) * pas + bw / 2, fr.py(niveau), 0],
+                          [x0 + g * pas - bw / 2, fr.py(niveau), 0], dash_length=0.07,
+                          stroke_color=INK_SOFT, stroke_width=1.6)
+
+    rect, edge = colonne(0, 0.0, depart, col0)
+    poser("depart", 0, rect, edge, txt(nombres.fmt(depart, kind), SZ_BODY, INK, weight=SEMIBOLD),
+          sous=depart < 0)
+    for i, m in enumerate(marches):
+        key = f"marche_{i + 1}"
+        couleur = COULEUR_SENS[m["nature"]]
+        rect, edge = colonne(i + 1, niveaux[i], niveaux[i + 1], couleur)
+        lab = txt(montant_signe(m["montant"], m.get("format", kind), m["nature"]), SZ_BODY,
+                  couleur, weight=SEMIBOLD)
+        poser(key, i + 1, rect, edge, lab)
+        liaisons[key] = liaison(i + 1, niveaux[i])
+        cues.sens.append({"nom": key, "nature": m["nature"], "objets": [rect], "montant": lab})
+    rect, edge = colonne(n - 1, 0.0, arrivee, col_fin)
+    if arrivee < 0:
+        lab = txt(montant_signe(arrivee, kind, "perte"), SZ_TITLE, NEG, weight=SEMIBOLD)
+        cues.sens.append({"nom": "arrivee", "nature": "perte", "objets": [rect], "montant": lab})
+    else:
+        lab = txt(nombres.fmt(arrivee, kind), SZ_TITLE, INK, weight=SEMIBOLD)
+    poser("arrivee", n - 1, rect, edge, lab, sous=arrivee < 0)
+    liaisons["arrivee"] = liaison(n - 1, arrivee)
+
+    # --- calendrier : celui des barres (BARS_RULE) --------------------------
+    rev = Reveal(seg, cues, order, t0=1.6, rt=PUNCTUAL_MAX, margin=0.6)
+    _warn_unnamed(sid, order, rev)
+    times = _named_times(order, rev)
+    tracks = {k: [(1.0, times[k])] for k in order}
+    frame_end = _frame_end(tracks)
+    _build_frame(cues, base, [], [], frame_end)
+    cues.meta["frame_end"] = frame_end
+    elements = seg.get("_elements") or {}
+    decl = {elements.get(r["element"], r["element"]): r.get("declencheur")
+            for r in mb.get("revelations") or []}
+    runs, first_motion, surges = _bars_after_voice(sid, seg.get("_voix"), order, times,
+                                                   frame_end, decl)
+    cues.meta["first_data"] = first_motion
+    grown = {}
+    for g, k in enumerate(order):
+        rect, lab, edge = bars[k]
+        t0, t1 = runs[k][0][0][0], runs[k][0][-1][0]
+        cues.at(t0, GrowBar(rect, edge), rt=t1 - t0)
+        if k in liaisons:
+            # Le trait part du niveau precedent quand la marche se met en route.
+            cues.at(t0, Create(liaisons[k]), rt=min(LABEL_RT, t1 - t0))
+        arrive = t0 if k in surges else t1
+        rev.times[k] = arrive
+        cues.at(arrive, FadeIn(lab, scale=0.6), rt=LABEL_RT)
+        grown[k] = t1
+        cues.anchor_times[f"source_{g + 1}"] = t1
+        cues.anchor_times[k] = t0
+
+    # Attente de plus de 4 s entre deux marches : celle dont la voix parle
+    # encore est encadree au milieu de l'attente, comme une barre (voir Bars).
+    mises = []
+    for g, (prev, k) in enumerate(zip(order, order[1:])):
+        s_k = runs[k][0][0][0]
+        fin = rev.times[prev] + max(LABEL_RT, SOURCE_RT if f"source_{g + 1}" in cues.anchors
+                                    else 0.0)
+        if s_k - fin <= MAX_STILL_BARS:
+            continue
+        c = _mot_proche(seg.get("_voix"), (fin + s_k) / 2, fin + GAP, s_k - MIN_RT - GAP)
+        arrivees = [o for o in order if grown.get(o, 1e9) <= c]
+        if prev not in arrivees:
+            continue
+        box = SurroundingRectangle(VGroup(*bars[prev][:2]), color=INK, buff=0.08,
+                                   stroke_width=2.6, corner_radius=0.05)
+        autres = [m for o in arrivees if o != prev for m in bars[o][:2]]
+        retour = [Restyle(m, m.copy()) for m in autres]
+        cues.at(c, Create(box), *[_dim_to(m, 0.32) for m in autres],
+                rt=min(PUNCTUAL_MAX, s_k - c - GAP))
+        cues.at(s_k, FadeOut(box, introducer=True), *retour, rt=0.4)
+        mises.append((prev, round(c, 2), round(s_k, 2)))
+    cues.meta["mises_en_avant"] = mises
+    cues.meta["noms_meme_taille"] = True
+    return VGroup(*[VGroup(bars[k][0], bars[k][1]) for k in order], *liaisons.values())
+
+
 COMPONENTS = {
     "BarRace": BarRace,
     "StackedBars": StackedBars,
@@ -3271,4 +3453,5 @@ COMPONENTS = {
     "Comparaison": Comparaison,
     "Flux": Flux,
     "Erosion": Erosion,
+    "Cascade": Cascade,
 }
