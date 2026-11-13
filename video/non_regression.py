@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Non-regression des calendriers, sans rendu.
+"""Non-regression des calendriers, et des plans d'essai au pixel pres.
 
     python video/non_regression.py                 compare aux references
+    python video/non_regression.py --sans-rendu    idem, sans rendre les plans d'essai
+                                                   (calendriers seuls, rapide)
     python video/non_regression.py --fige          ecrit les references manquantes
                                                    (jamais celles des plans valides)
     python video/non_regression.py --nouvelle-version EP001b_S09 --motif "..."
@@ -11,6 +13,11 @@
     python video/non_regression.py --valider EP001c_S02 --motif "..."
                                                    fige la premiere version d'un plan
                                                    qui vient d'etre valide a l'ecran
+    python video/non_regression.py --valider essai_cascade --motif "..."
+    python video/non_regression.py --nouvelle-version essai_cascade --motif "..."
+                                                   les memes, pour un plan d'essai hors
+                                                   episode (video/outils/essais/) : sa
+                                                   reference fige aussi ses images
     ... [--derogation-r6 "motif"]                  l'une ou l'autre refuse un plan dont
                                                    l'ecran reste fige plus de 4 s
                                                    (R6, au calendrier), sauf derogation
@@ -30,8 +37,15 @@ Par ordre d'importance :
    en arriere. Pour revenir a une version archivee : ses regles (FRAME_RULE,
    COMPARAISON_RULE) dans
    components.py, et "courante" dans le fichier de reference.
-2. Les 12 plans manim de l'EP001.
-3. L'exemple a deux courbes.
+2. Les PLANS D'ESSAI VALIDES A L'ECRAN (video/outils/essais/<nom>.json,
+   reference video/reference/essai_<nom>.json) : c'est sur eux qu'une famille
+   nouvelle est validee. Leur reference est versionnee de la meme facon et
+   fige, en plus du calendrier, le plan lui-meme (segment et duree) et
+   l'empreinte md5 de ses images rendues en 960x540 : la version courante est
+   verifiee au pixel pres. Le fichier d'essai doit rester celui qui a ete
+   fige ; une version archivee reste verifiee sur son calendrier.
+3. Les 12 plans manim de l'EP001.
+4. L'exemple a deux courbes.
 
 Un calendrier est la liste (depart, duree, animations) que le composant et
 les overlays deposent, telle que la scene la jouera. Les constantes de
@@ -430,6 +444,180 @@ def first_version(name, motif, derogation=None):
         print(f"          {label:<34} {value}")
 
 
+# --- Plans d'essai hors episode ------------------------------------------------
+# Une famille nouvelle est validee a l'ecran sur un plan d'essai. Sa reference
+# fige le plan (segment, duree), son calendrier et l'empreinte de ses images.
+
+ESSAIS = HERE / "outils" / "essais"
+PIXELS = (960, 540)
+
+
+def _essai(name):
+    """(segment, duree) du fichier d'essai de la reference `essai_<nom>`."""
+    path = ESSAIS / f"{name[len('essai_'):]}.json"
+    if not path.exists():
+        raise SystemExit(f"{name} : plan d'essai introuvable ({path})")
+    e = json.loads(path.read_text(encoding="utf-8"))
+    return e["segment"], float(e["duree_s"])
+
+
+def _calendrier_essai(seg, dur):
+    """Calendrier d'un plan d'essai, quel que soit son type_visuel (un plan de
+    typographie n'a pas de manim_brief)."""
+    import build
+    cues = build.composer(seg, dur)
+    return sorted([round(t, 3), round(min(rt, dur - t), 3),
+                   "+".join(type(a).__name__ for a in anims)]
+                  for t, anims, rt in cues.items if t < dur)
+
+
+def _empreinte(seg, dur):
+    """md5 des images decodees du plan rendu en 960x540 : identique = chaque
+    image, pixel pour pixel. Rendu dans un dossier temporaire."""
+    import shutil
+    import subprocess
+    import tempfile
+    import build
+    tmp = Path(tempfile.mkdtemp(prefix="nr_essai_"))
+    try:
+        with contextlib.redirect_stderr(io.StringIO()):
+            plan = build.render_segment(seg, dur, tmp, tmp / "_manim", *PIXELS)
+        r = subprocess.run(["ffmpeg", "-v", "error", "-i", str(plan), "-map", "0:v",
+                            "-f", "md5", "-"], capture_output=True, text=True)
+        return r.stdout.strip().replace("MD5=", "")
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+def _essai_refus(name, seg, dur):
+    """Les controles bloquants de make check : un plan refuse ne se fige pas."""
+    sys.path.insert(0, str(HERE / "outils"))
+    import controle
+    with contextlib.redirect_stdout(io.StringIO()):
+        fautes = controle.juger(seg, dur)
+    if fautes:
+        raise SystemExit(f"{name} : refuse par les controles bloquants - " + " ; ".join(fautes))
+
+
+def _essai_version(n, motif, seg, dur, rows):
+    from build import FPS
+    return {"version": n, "validee_le": datetime.date.today().strftime("%d/%m/%Y"),
+            "motif": motif, **_regles_actuelles(), "vue_a_l_ecran": True,
+            "duree_s": dur, "images": round(dur * FPS),
+            "pixels": {"largeur": PIXELS[0], "hauteur": PIXELS[1], "md5": _empreinte(seg, dur)},
+            "segment": seg, "calendrier": rows}
+
+
+def essai_first(name, motif):
+    """Fige la premiere version d'un plan d'essai valide a l'ecran."""
+    path = REF / f"{name}.json"
+    if path.exists():
+        raise SystemExit(f"{name} : reference deja figee ; une modification approuvee passe "
+                         f"par --nouvelle-version")
+    seg, dur = _essai(name)
+    _essai_refus(name, seg, dur)
+    rows = _calendrier_essai(seg, dur)
+    v = _essai_version(1, motif, seg, dur, rows)
+    doc = {"statut": "PLAN D'ESSAI VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; "
+                     "une modification approuvee ajoute une version, n'en ecrase aucune.",
+           "courante": 1, "versions": [v]}
+    path.write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    print(f"{name} : v1 figee ({motif}) - {len(rows)} reperes, {v['images']} images, "
+          f"md5 {v['pixels']['md5']}")
+
+
+def essai_new(name, motif):
+    """Archive la version courante d'un plan d'essai et fige l'etat actuel."""
+    path = REF / f"{name}.json"
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    cur = doc["versions"][doc["courante"] - 1]
+    seg, dur = _essai(name)
+    _essai_refus(name, seg, dur)
+    rows = _calendrier_essai(seg, dur)
+    new = _essai_version(len(doc["versions"]) + 1, motif, seg, dur, rows)
+    if (rows == cur["calendrier"] and new["pixels"]["md5"] == cur["pixels"]["md5"]
+            and seg == cur["segment"]):
+        raise SystemExit(f"{name} : identique a la v{cur['version']} (calendrier et images), "
+                         f"rien a figer")
+    cur["archivee_le"] = new["validee_le"]
+    cur["archivee_pour"] = motif
+    doc["versions"].append(new)
+    doc["courante"] = new["version"]
+    path.write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    print(f"{name} : v{cur['version']} archivee ({motif}), v{new['version']} figee - "
+          f"md5 {new['pixels']['md5']}")
+
+
+def check_essai(name, rendre=True):
+    """Version courante : fichier d'essai inchange, calendrier, images au pixel
+    pres. Versions archivees : calendrier reproductible avec leurs regles."""
+    import components
+    doc = json.loads((REF / f"{name}.json").read_text(encoding="utf-8"))
+    now = {attr: getattr(components, attr) for _, attr, _ in REGLES}
+    cur = doc["versions"][doc["courante"] - 1]
+    ok, issues = True, []
+    try:
+        seg, dur = _essai(name)
+        if seg != cur["segment"] or abs(dur - cur["duree_s"]) > 1e-9:
+            issues.append("le fichier d'essai n'est plus celui qui a ete fige "
+                          "(--nouvelle-version apres accord)")
+    except SystemExit as e:
+        issues.append(str(e))
+    wrong = [f"{attr} = {cur[key]!r}" for key, attr, _ in REGLES
+             if key in cur and cur[key] != now[attr]]
+    if wrong:
+        issues.append(f"attend {', '.join(wrong)}")
+    else:
+        try:
+            rows = _calendrier_essai(cur["segment"], cur["duree_s"])
+        except SystemExit as e:
+            rows = None
+            issues.append(f"plan non construit - {e}")
+        if rows is not None and rows != cur["calendrier"]:
+            for a, b in zip(cur["calendrier"], rows):
+                if a != b:
+                    issues.append(f"ref {a}   ->   maintenant {b}")
+            if len(rows) != len(cur["calendrier"]):
+                issues.append(f"{len(cur['calendrier'])} reperes en reference, {len(rows)} "
+                              f"maintenant")
+        if rows is not None and rendre:
+            md5 = _empreinte(cur["segment"], cur["duree_s"])
+            if md5 != cur["pixels"]["md5"]:
+                issues.append(f"images differentes : md5 {md5} au lieu de "
+                              f"{cur['pixels']['md5']}")
+    if issues:
+        ok = False
+        print(f"ECART   !!! PLAN D'ESSAI VALIDE A L'ECRAN !!!  {name} v{cur['version']}")
+        for i in issues:
+            print(f"          {i}")
+    else:
+        print(f"ok      {name} v{cur['version']} : calendrier, {cur['images']} images"
+              + (" identiques au pixel pres" if rendre else " (non rendues)"))
+    for v in doc["versions"]:
+        if v is cur:
+            continue
+        for attr, r in _regles(v).items():
+            setattr(components, attr, r)
+        try:
+            rows = _calendrier_essai(v["segment"], v["duree_s"])
+        except SystemExit:
+            rows = None
+        finally:
+            for attr, r in now.items():
+                setattr(components, attr, r)
+        if rows != v["calendrier"]:
+            # Une modification approuvee du moteur peut changer le calendrier
+            # d'une version archivee : c'est pour cela qu'elle l'est. Signale,
+            # sans echec.
+            print(f"note    {name} v{v['version']} (archive du {v.get('archivee_le')}, "
+                  f"{v.get('archivee_pour')}) : calendrier d'alors non reproduit par le "
+                  f"moteur actuel")
+        else:
+            print(f"ok      {name} v{v['version']} (archive du {v.get('archivee_le')}) : "
+                  f"calendrier reproductible")
+    return ok
+
+
 def calendars_unvalidated():
     out = {}
     s, d, _ = _load("EP001")
@@ -450,6 +638,9 @@ def main():
             raise SystemExit("--motif obligatoire : pourquoi cette nouvelle version ?")
         derog = (args[args.index("--derogation-r6") + 1]
                  if "--derogation-r6" in args else None)
+        if name.startswith("essai_"):
+            essai_new(name, motif)
+            return
         new_version(name, motif, vue="--pas-vue" not in args, derogation=derog)
         return
     if "--valider" in args:
@@ -459,6 +650,9 @@ def main():
             raise SystemExit("--motif obligatoire : qu'est-ce qui a ete valide a l'ecran ?")
         derog = (args[args.index("--derogation-r6") + 1]
                  if "--derogation-r6" in args else None)
+        if name.startswith("essai_"):
+            essai_first(name, motif)
+            return
         first_version(name, motif, derogation=derog)
         return
     fige = "--fige" in args
@@ -478,6 +672,11 @@ def main():
 
     for name in LIBELLES:
         ok = check_validated(name) and ok
+
+    import nombres
+    nombres.set_locale("fr")
+    for path in sorted(REF.glob("essai_*.json")):
+        ok = check_essai(path.stem, rendre="--sans-rendu" not in args) and ok
 
     for name, rows in calendars_unvalidated().items():
         path = REF / f"{name}.json"

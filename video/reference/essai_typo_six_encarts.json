@@ -1,0 +1,126 @@
+{
+ "statut": "PLAN D'ESSAI VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
+ "courante": 1,
+ "versions": [
+  {
+   "version": 1,
+   "validee_le": "13/11/2026",
+   "motif": "plan d'essai valide a l'ecran par Alexandre le 13/11/2026",
+   "regle_cadre": "v2",
+   "regle_comparaison": "v2",
+   "regle_barres": "v3-phrase",
+   "vue_a_l_ecran": true,
+   "duree_s": 18.0,
+   "images": 540,
+   "pixels": {
+    "largeur": 960,
+    "hauteur": 540,
+    "md5": "31ab64121a9c5541361d13dc0e3942e0"
+   },
+   "segment": {
+    "id": "essai_typo_six_encarts",
+    "role": "essai",
+    "type_visuel": "typo_cinetique",
+    "overlay_texte": [
+     {
+      "ancre": "titre_haut",
+      "t_rel_s": 0.5,
+      "texte_fr": "Essai : six encarts"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 1.5,
+      "texte_fr": "Premier encart"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 4.0,
+      "texte_fr": "Deuxième : un texte plus long que les autres"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 6.5,
+      "texte_fr": "Troisième"
+     },
+     {
+      "ancre": "bas",
+      "t_rel_s": 7.5,
+      "texte_fr": "Plan d'essai du moteur, sans donnée ni source"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 9.0,
+      "texte_fr": "Quatrième, à la place du premier"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 11.5,
+      "texte_fr": "Cinquième"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 14.0,
+      "texte_fr": "Sixième et dernier"
+     }
+    ]
+   },
+   "calendrier": [
+    [
+     0.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     1.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     4.0,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     6.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     7.5,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     8.65,
+     0.35,
+     "Efface"
+    ],
+    [
+     9.0,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     11.15,
+     0.35,
+     "Efface"
+    ],
+    [
+     11.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     13.65,
+     0.35,
+     "Efface"
+    ],
+    [
+     14.0,
+     0.6,
+     "FadeIn"
+    ]
+   ]
+  }
+ ]
+}

@@ -1,0 +1,207 @@
+{
+ "statut": "PLAN D'ESSAI VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
+ "courante": 1,
+ "versions": [
+  {
+   "version": 1,
+   "validee_le": "13/11/2026",
+   "motif": "plan d'essai valide a l'ecran par Alexandre le 13/11/2026",
+   "regle_cadre": "v2",
+   "regle_comparaison": "v2",
+   "regle_barres": "v3-phrase",
+   "vue_a_l_ecran": true,
+   "duree_s": 14.0,
+   "images": 420,
+   "pixels": {
+    "largeur": 960,
+    "hauteur": 540,
+    "md5": "a3b9557b426a38029195196685612355"
+   },
+   "segment": {
+    "id": "essai_erosion_trois_pertes",
+    "role": "essai",
+    "type_visuel": "manim",
+    "manim_brief": {
+     "composant": "Erosion",
+     "capital": 10000,
+     "pertes": [
+      {
+       "montant": 150,
+       "reste": 9850
+      },
+      {
+       "montant": 450,
+       "reste": 9400
+      },
+      {
+       "montant": 2,
+       "format": "pct",
+       "reste": 9212
+      }
+     ],
+     "revelations": [
+      {
+       "element": "capital",
+       "t_rel_s": 1.5
+      },
+      {
+       "element": "perte_1",
+       "t_rel_s": 3.5
+      },
+      {
+       "element": "perte_2",
+       "t_rel_s": 6.0
+      },
+      {
+       "element": "perte_3",
+       "t_rel_s": 8.5
+      },
+      {
+       "element": "reste",
+       "t_rel_s": 11.5
+      }
+     ]
+    },
+    "overlay_texte": [
+     {
+      "ancre": "titre_haut",
+      "t_rel_s": 0.5,
+      "texte_fr": "Essai : trois pertes"
+     },
+     {
+      "ancre": "capital",
+      "t_rel_s": 1.5,
+      "texte_fr": "Capital"
+     },
+     {
+      "ancre": "perte_1",
+      "t_rel_s": 3.7,
+      "texte_fr": "Frais"
+     },
+     {
+      "ancre": "perte_2",
+      "t_rel_s": 6.2,
+      "texte_fr": "Impôt"
+     },
+     {
+      "ancre": "perte_3",
+      "t_rel_s": 8.7,
+      "texte_fr": "Inflation"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 4.5,
+      "texte_fr": "Chaque perte a son nom"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 10.0,
+      "texte_fr": "Ce qu'il reste"
+     },
+     {
+      "ancre": "bas",
+      "t_rel_s": 2.5,
+      "texte_fr": "Plan d'essai du moteur, sans donnée ni source"
+     }
+    ]
+   },
+   "calendrier": [
+    [
+     0.3,
+     1.2,
+     "Niveau+Compteur"
+    ],
+    [
+     0.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     1.5,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     2.5,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     3.5,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     3.5,
+     1.8,
+     "Detache"
+    ],
+    [
+     3.5,
+     1.8,
+     "Niveau+Compteur"
+    ],
+    [
+     3.7,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     4.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     6.0,
+     0.3,
+     "FadeIn+Create"
+    ],
+    [
+     6.0,
+     1.8,
+     "Detache"
+    ],
+    [
+     6.0,
+     1.8,
+     "Niveau+Compteur"
+    ],
+    [
+     6.2,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     8.5,
+     0.3,
+     "FadeIn+Create"
+    ],
+    [
+     8.5,
+     1.8,
+     "Detache"
+    ],
+    [
+     8.5,
+     1.8,
+     "Niveau+Compteur"
+    ],
+    [
+     8.7,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     10.0,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     11.5,
+     0.3,
+     "Restyle+Create"
+    ]
+   ]
+  }
+ ]
+}

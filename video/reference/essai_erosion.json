@@ -1,0 +1,241 @@
+{
+ "statut": "PLAN D'ESSAI VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
+ "courante": 1,
+ "versions": [
+  {
+   "version": 1,
+   "validee_le": "13/11/2026",
+   "motif": "plan d'essai valide a l'ecran par Alexandre le 13/11/2026",
+   "regle_cadre": "v2",
+   "regle_comparaison": "v2",
+   "regle_barres": "v3-phrase",
+   "vue_a_l_ecran": true,
+   "duree_s": 15.0,
+   "images": 450,
+   "pixels": {
+    "largeur": 960,
+    "hauteur": 540,
+    "md5": "f82ac84a835c9cc512899f87af2439ee"
+   },
+   "segment": {
+    "id": "essai_erosion",
+    "role": "essai",
+    "type_visuel": "manim",
+    "manim_brief": {
+     "composant": "Erosion",
+     "capital": 10000,
+     "format": "euro",
+     "pertes": [
+      {
+       "montant": 1.2,
+       "format": "pct",
+       "reste": 7855,
+       "annees": 20
+      }
+     ],
+     "cumul": {
+      "montant": 2145,
+      "format": "euro"
+     },
+     "revelations": [
+      {
+       "element": "capital",
+       "t_rel_s": 2.0
+      },
+      {
+       "element": "perte_1",
+       "t_rel_s": 4.0
+      },
+      {
+       "element": "cumul",
+       "t_rel_s": 10.4
+      },
+      {
+       "element": "reste",
+       "t_rel_s": 12.6
+      }
+     ]
+    },
+    "overlay_texte": [
+     {
+      "ancre": "titre_haut",
+      "t_rel_s": 0.5,
+      "texte_fr": "Essai : 1,2 % de frais par an, pendant 20 ans"
+     },
+     {
+      "ancre": "capital",
+      "t_rel_s": 2.0,
+      "texte_fr": "Capital placé"
+     },
+     {
+      "ancre": "perte_1",
+      "t_rel_s": 4.3,
+      "texte_fr": "de frais par an"
+     },
+     {
+      "ancre": "cumul",
+      "t_rel_s": 10.4,
+      "texte_fr": "en 20 ans"
+     },
+     {
+      "ancre": "bas",
+      "t_rel_s": 3.0,
+      "texte_fr": "Plan d'essai du moteur, valeurs de calcul"
+     }
+    ]
+   },
+   "calendrier": [
+    [
+     0.3,
+     1.7,
+     "Niveau+Compteur"
+    ],
+    [
+     0.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     2.0,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     3.0,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     4.0,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     4.0,
+     0.7,
+     "Detache"
+    ],
+    [
+     4.0,
+     6.0,
+     "Niveau+Compteur"
+    ],
+    [
+     4.279,
+     0.7,
+     "Detache"
+    ],
+    [
+     4.3,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     4.558,
+     0.7,
+     "Detache"
+    ],
+    [
+     4.837,
+     0.7,
+     "Detache"
+    ],
+    [
+     5.116,
+     0.7,
+     "Detache"
+    ],
+    [
+     5.395,
+     0.7,
+     "Detache"
+    ],
+    [
+     5.674,
+     0.7,
+     "Detache"
+    ],
+    [
+     5.953,
+     0.7,
+     "Detache"
+    ],
+    [
+     6.232,
+     0.7,
+     "Detache"
+    ],
+    [
+     6.511,
+     0.7,
+     "Detache"
+    ],
+    [
+     6.789,
+     0.7,
+     "Detache"
+    ],
+    [
+     7.068,
+     0.7,
+     "Detache"
+    ],
+    [
+     7.347,
+     0.7,
+     "Detache"
+    ],
+    [
+     7.626,
+     0.7,
+     "Detache"
+    ],
+    [
+     7.905,
+     0.7,
+     "Detache"
+    ],
+    [
+     8.184,
+     0.7,
+     "Detache"
+    ],
+    [
+     8.463,
+     0.7,
+     "Detache"
+    ],
+    [
+     8.742,
+     0.7,
+     "Detache"
+    ],
+    [
+     9.021,
+     0.7,
+     "Detache"
+    ],
+    [
+     9.3,
+     0.7,
+     "Detache"
+    ],
+    [
+     10.4,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     10.4,
+     1.5,
+     "Create+Create+Create+FadeIn"
+    ],
+    [
+     12.6,
+     0.3,
+     "Restyle+Create"
+    ]
+   ]
+  }
+ ]
+}

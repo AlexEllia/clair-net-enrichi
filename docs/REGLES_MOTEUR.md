@@ -192,6 +192,22 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
   aussi être validée sur un plan d'essai hors épisode (`video/outils/essais/`,
   `"_pilote": true` tant qu'elle est sous verrou), contrôlé par
   `video/outils/controle.py` et rendu par `video/outils/planche.py` : Erosion.
+- **Références des plans d'essai, au pixel près** (règle d'Alexandre du
+  13/11/2026) : tout plan d'essai validé à l'écran entre dans
+  `video/non_regression.py` au moment de sa validation —
+  `python video/non_regression.py --valider essai_<nom> --motif "…"` écrit
+  `video/reference/essai_<nom>.json`, qui fige le plan (segment et durée), son
+  calendrier, les règles du moteur et l'empreinte md5 de ses images rendues en
+  960×540. La suite re-rend chaque plan d'essai et compare au pixel près
+  (`--sans-rendu` : calendriers seuls, pour un contrôle rapide ; le contrôle
+  complet reste obligatoire avant un commit du moteur). Rien n'est jamais
+  écrasé : une modification approuvée passe par `--nouvelle-version
+  essai_<nom> --motif "…"`, qui archive la version courante, comme pour les
+  plans d'épisode ; un plan refusé par les contrôles bloquants ne se fige pas.
+  **À faire pour chaque future famille, au moment de sa validation.** Figés le
+  13/11/2026 : `essai_flux_nature`, `essai_erosion`,
+  `essai_erosion_trois_pertes`, `essai_typo_six_encarts`, puis
+  `essai_cascade` avec sa famille.
 
 **Application** : relire le catalogue avant de toucher une famille ; ne jamais
 réintroduire l'anticipation des barres ni une dérogation R6 sans accord ; ne
