@@ -347,7 +347,8 @@ def add_overlays(seg, cues, visual):
                Y_TOP - (0.42 if by.get("titre_haut") else -0.3))
     # Les noms des noeuds d'abord : ils ont moins de places possibles que
     # ceux des liens, qui les contournent ensuite.
-    ordre = sorted((a for a in by if re.fullmatch(r"(option|noeud|lien)_\d+", a)),
+    ordre = sorted((a for a in by if re.fullmatch(r"(option|noeud|lien)_\d+", a)
+                    or a in cues.anchor_align),
                    key=lambda a: (a.startswith("lien"), a))
     for anchor in ordre:
         for o in by[anchor]:
@@ -363,6 +364,12 @@ def add_overlays(seg, cues, visual):
                         weight=SEMIBOLD)
                 _fit(t, cues.anchor_widths.get(anchor, 4.0))
                 t.move_to([x, y, 0])
+            elif anchor in cues.anchor_align:
+                # Ancre posee telle quelle par le composant (Erosion : capital,
+                # perte_k, cumul), calee sur le bord qu'il indique.
+                t = txt(o["texte_fr"], SZ_LABEL, cues.anchor_colors.get(anchor, INK_SOFT))
+                _fit(t, cues.anchor_widths.get(anchor, 4.0))
+                t.move_to([x, y, 0], aligned_edge=cues.anchor_align[anchor])
             else:
                 t = _poser_libelle(cues, anchor, o["texte_fr"], SZ_LABEL,
                                    cues.anchor_colors.get(anchor, INK_SOFT), NORMAL,

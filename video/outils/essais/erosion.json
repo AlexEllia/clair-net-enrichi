@@ -1,0 +1,31 @@
+{
+ "_role": "Plan d'essai, hors episode : famille Erosion. 10 000 EUR qui perdent 1,2 % par an pendant 20 ans, cumul affiche. Valeurs de calcul : 10 000 x 0,988^20 = 7 855 ; perte cumulee 2 145. Rendu par video/outils/planche.py, controle par video/outils/controle.py.",
+ "duree_s": 15.0,
+ "segment": {
+  "id": "essai_erosion",
+  "role": "essai",
+  "type_visuel": "manim",
+  "manim_brief": {
+   "composant": "Erosion",
+   "capital": 10000,
+   "format": "euro",
+   "pertes": [
+    {"montant": 1.2, "format": "pct", "reste": 7855, "annees": 20}
+   ],
+   "cumul": {"montant": 2145, "format": "euro"},
+   "revelations": [
+    {"element": "capital", "t_rel_s": 2.0},
+    {"element": "perte_1", "t_rel_s": 4.0},
+    {"element": "cumul", "t_rel_s": 10.4},
+    {"element": "reste", "t_rel_s": 12.6}
+   ]
+  },
+  "overlay_texte": [
+   {"ancre": "titre_haut", "t_rel_s": 0.5, "texte_fr": "Essai : 1,2 % de frais par an, pendant 20 ans"},
+   {"ancre": "capital", "t_rel_s": 2.0, "texte_fr": "Capital placé"},
+   {"ancre": "perte_1", "t_rel_s": 4.3, "texte_fr": "de frais par an"},
+   {"ancre": "cumul", "t_rel_s": 10.4, "texte_fr": "en 20 ans"},
+   {"ancre": "bas", "t_rel_s": 3.0, "texte_fr": "Plan d'essai du moteur, valeurs de calcul"}
+  ]
+ }
+}

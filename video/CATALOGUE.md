@@ -31,7 +31,8 @@ doit figurer dans les sources du segment. Vérifie ce que la valeur mesure :
 la voix le dit. Pour chaque valeur de `donnees` que la voix énonce, écris
 une révélation qui nomme cette valeur (`series_k_point_j` pour une courbe,
 `bar_g` pour une barre, `band_g` pour une bande, `value_g` pour une jauge,
-`link_k` pour un montant de flux), calée sur le mot qui l'énonce (section 2).
+`link_k` pour un montant de flux, `capital`, `perte_k`, `cumul` et `reste`
+pour une `Erosion`), calée sur le mot qui l'énonce (section 2).
 Sinon le visuel n'illustre rien.
 
 **R5 — Première donnée tôt.** La première révélation de donnée tombe dans
@@ -123,7 +124,8 @@ sens, et un seul : bleu (`CONTRIB`) = ce que l'on verse ; ambre (`INTEREST`)
 n'apparaît jamais en ambre ni en bleu**, et son montant porte un signe
 moins (« −1,2 % ») ; le montant d'un gain porte un signe plus. Ce que la voix
 appelle une perte (frais, inflation, impôt, moins-value, retard) se déclare
-comme telle dans le brief : `"nature": "perte"` sur un lien de `Flux`. C'est
+comme telle dans le brief : une `Erosion` (la famille par défaut d'une perte),
+ou `"nature": "perte"` sur un lien de `Flux`. C'est
 le moteur qui écrit le signe et choisit la couleur ; n'écris ni l'un ni
 l'autre. **`make check` refuse** une perte déclarée dans une autre couleur
 que `NEG`, une perte dessinée autrement qu'en `NEG` ou dont le montant n'a
@@ -1021,6 +1023,101 @@ puis, sur « sept pour cent », une flèche ambre arrive sur l'épargne avec
 « +7 % ». Plus longue attente : 2,05 s, entre l'arrivée de l'épargne et les
 frais.
 
+#### `Erosion` — un capital qui fond
+
+Ce que des frais, l'inflation, l'impôt ou une moins-value **retirent** à une
+somme. **C'est la famille par défaut d'une perte** (R10) : dès que la voix dit
+qu'une somme diminue, c'est elle qu'il faut prendre, avant `Flux` ou `Bars`.
+
+Une colonne aux couleurs du capital, sa valeur écrite au-dessus. À chaque
+perte nommée par la voix, une tranche proportionnelle se détache du haut de la
+colonne, vire au `NEG`, glisse sur le côté avec son montant (« −1,2 % » ou
+« −340 € »), puis s'estompe à moitié et reste visible en fantôme. La colonne
+restante garde sa valeur affichée, qui défile en compteur jusqu'à ce qu'il
+reste.
+
+**Pas de `donnees`** : tout est dans `capital` et `pertes`.
+
+**Paramètres** :
+
+| Paramètre | Obligatoire | Valeurs admises | Effet |
+|---|---|---|---|
+| `capital` | **oui** | nombre positif, sourcé | La somme de départ : la hauteur entière de la colonne. |
+| `pertes` | **oui** | `[{"montant": v, "format": f, "reste": r, "annees": n}]`, 1 à 6 | Une entrée par perte que la voix nomme (R9), dans l'ordre. `montant` : ce que la voix énonce, en valeur positive ; le moteur l'écrit en `NEG` avec le signe moins. `format` : `"euro"`, `"pct"`, `"nombre"` (par défaut, celui de `capital`) ; un pourcentage **doit** écrire `"format": "pct"`. `reste` : **ce qu'il reste après cette perte**, dans l'unité de `capital` — obligatoire et sourcé (R3 : le moteur ne calcule rien) ; il règle la hauteur de la tranche et la valeur où le compteur s'arrête. `annees` (défaut 1) : voir la variante temporelle. |
+| `format` | non | `"euro"` (défaut), `"nombre"`, `"pct"` | Écriture de la valeur de la colonne. |
+| `couleur` | non | `"CONTRIB"` (défaut), `"INTEREST"`, `"TEAL"` | Couleur de la colonne : bleu pour ce que l'on a versé, ambre pour des gains. Jamais `NEG`, réservé à ce qui est perdu : le moteur le refuse. |
+| `cumul` | non | `{"montant": v, "format": f}` | Le total perdu, sourcé, écrit en grand à côté d'une accolade `NEG` qui embrasse toutes les tranches perdues. |
+
+**Variante temporelle : `annees` > 1.** La perte se répète chaque année : la
+tranche se détache année après année, en accéléré (une tranche par année,
+de plus en plus fine puisque chacune se prend sur ce qu'il reste), et le
+compteur descend avec elles. `montant` reste le taux ou la somme **d'une
+année** (« −1,2 % ») ; `reste` est ce qu'il reste **au bout des n années** ;
+le total se dit avec `cumul`. C'est ce qui montre un effet cumulé.
+
+**Éléments adressables dans `revelations`** :
+
+| Élément | Type | Remarque |
+|---|---|---|
+| `capital` | tracé (6 s au plus) | La colonne monte et atteint sa hauteur sur le mot qui énonce la somme ; sa valeur défile avec elle. Si ce mot tombe dans la première seconde, elle monte en 0,6 s à partir du mot. Première donnée du plan (R5). |
+| `perte_k` | tracé (6 s au plus) | Sur son mot, le montant s'écrit et la tranche commence à se détacher : 1,8 s au plus pour une tranche seule ; avec `annees`, jusqu'à 6 s, ou jusqu'à la révélation suivante. Une perte ne part jamais avant la fin de la précédente. |
+| `reste` | étiquette (0,3 s) | Facultatif. Sur le mot qui énonce ce qu'il reste, la valeur de la colonne s'affirme (agrandie, soulignée). À placer après la dernière perte. |
+| `cumul` | surgissement (1,5 s) | Exige `cumul`. L'accolade et le total surgissent sur le mot qui énonce le total perdu. |
+
+**Ancres d'overlay** (R7 : la scène n'écrit que des chiffres) : `capital`,
+sous la colonne (« Capital placé ») ; `perte_k`, à droite du montant de la
+perte k (« de frais par an », « Impôt ») — 2,4 unités de large au plus, soit
+une vingtaine de caractères ; `cumul`, sous le total (« en 20 ans »).
+
+`Erosion` n'a pas de cadre. Tant qu'une tranche se détache ou que le compteur
+défile, l'écran vit ; entre deux pertes d'une seule tranche, compte 1,8 s de
+mouvement puis moins de 4 s d'attente (R6). Avec des encarts `centre`, la
+colonne et les noms se resserrent à gauche de leur colonne.
+
+Validée à l'écran le 13/11/2026 sur le plan d'essai
+`video/outils/essais/erosion.json`.
+
+**Exemple exemplaire** — l'effet cumulé de frais annuels. **C'est celui-ci
+qu'il faut imiter.** La somme est dans la première phrase ; la perte part sur
+le mot qui énonce son taux et se détache pendant que la voix déroule les
+vingt ans ; le total et ce qu'il reste arrivent chacun sur leur chiffre.
+Valeurs de calcul : 10 000 × 0,988^20 = 7 855 ; 10 000 − 7 855 = 2 145. Les
+`t_rel_s` sont des estimations (3,94 syllabes/s) que le recalage remplacera.
+
+```json
+{
+  "vo_fr": "Vous placez dix mille euros dans un fonds. Chaque année, ce fonds prélève un virgule deux pour cent de frais. Au bout de vingt ans, ces frais vous ont coûté deux mille cent quarante-cinq euros. Il vous reste sept mille huit cent cinquante-cinq euros.",
+  "type_visuel": "manim",
+  "manim_brief": {
+    "composant": "Erosion",
+    "capital": 10000,
+    "pertes": [
+      {"montant": 1.2, "format": "pct", "reste": 7855, "annees": 20}
+    ],
+    "cumul": {"montant": 2145},
+    "revelations": [
+      {"element": "capital", "t_rel_s": 0.76, "declencheur": "dix mille euros"},
+      {"element": "perte_1", "t_rel_s": 4.31, "declencheur": "un virgule deux"},
+      {"element": "cumul", "t_rel_s": 9.14, "declencheur": "deux mille cent quarante-cinq"},
+      {"element": "reste", "t_rel_s": 11.93, "declencheur": "sept mille huit cent"}
+    ]
+  },
+  "overlay_texte": [
+    {"ancre": "capital", "t_rel_s": 0.76, "texte_fr": "Capital placé", "declencheur": "dix mille euros"},
+    {"ancre": "perte_1", "t_rel_s": 4.31, "texte_fr": "de frais par an", "declencheur": "un virgule deux"},
+    {"ancre": "bas", "t_rel_s": 5.33, "texte_fr": "Hypothèse de calcul : 1,2 % de frais par an, hors rendement", "declencheur": "pour cent de frais"},
+    {"ancre": "cumul", "t_rel_s": 9.14, "texte_fr": "en 20 ans", "declencheur": "deux mille cent quarante-cinq"}
+  ]
+}
+```
+
+Ce que ça donne : la colonne monte dès « dix mille euros » et affiche
+« 10 000 € » à 1,36 s ; sur « un virgule deux », « −1,2 % » s'écrit et vingt tranches se
+détachent une à une jusqu'à 8,94 s, pendant que le compteur descend à
+« 7 855 € » ; l'accolade et « −2 145 € » surgissent sur leur chiffre ; sur
+« sept mille huit cent », la valeur restante s'affirme. Plus longue attente :
+2,95 s, entre la colonne posée et la première tranche.
+
 ### Pas encore disponible — ne pas utiliser
 
 Tant qu'une famille ne figure pas dans la section *Disponibles*, un segment
@@ -1028,7 +1125,6 @@ qui la demande sera refusé.
 
 - **Aires** (`Areas`, mode `aires`) — aires superposées depuis zéro
   (versements et capital, par exemple). En attente : le moteur le refuse.
-
 ### Héritage EP001 — ne pas utiliser
 
 `BarRace`, `StackedBars`, `BarChart`, `StackedAreaChart`, `FunnelScatter`,

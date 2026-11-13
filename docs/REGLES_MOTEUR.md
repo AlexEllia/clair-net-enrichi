@@ -125,6 +125,21 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
   (0,25, comme sa pointe et ses particules). Les plans d'essai hors épisode passent les mêmes
   contrôles par `video/outils/controle.py`. *Pourquoi* : EP004 S17, « 1,2 %
   perdus » illustrés par un flux entrant.
+- **Erosion** (13/11/2026 ; validée à l'écran le jour même sur le plan d'essai
+  `video/outils/essais/erosion.json`, sortie du verrou `PILOTES`, au
+  catalogue) : un capital qui fond, famille par défaut d'une perte.
+  Colonne aux couleurs du capital (jamais `NEG`) ; à chaque perte, une tranche
+  proportionnelle se détache du haut, vire au `NEG`, glisse sur le côté avec
+  son montant signé, s'estompe à 50 % et reste en fantôme ; la valeur
+  restante défile en compteur. `annees` > 1 : une tranche par année, en
+  accéléré. R3 : `reste` (ce qu'il reste après chaque perte) et `cumul` sont
+  donnés par le brief, le moteur ne calcule rien ; entre deux valeurs
+  sourcées, le compteur et les tranches annuelles suivent un taux constant
+  (silhouette, comme le modèle d'épargne). Éléments : `capital`, `perte_k`
+  (tracés, 6 s au plus), `reste` (étiquette), `cumul` (surgissement). Ancres
+  d'overlay posées telles quelles (`cues.anchor_align`) : `capital`,
+  `perte_k`, `cumul`. Chaque perte et le cumul passent le contrôle de sens.
+  Essais : `video/outils/essais/erosion.json`, `erosion_trois_pertes.json`.
 - **Mention** (11/11/2026) : dérive de 2 % sur toute la durée du plan, portée par
   une seule animation (`Mention`) avec les deux fondus. *Pourquoi* : la dérive ne
   partait qu'après la seconde ligne, et seulement s'il restait plus de 4 s ; sur
@@ -173,7 +188,10 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
   (jamais dans script.json), la validation à l'écran par Alexandre, **puis
   seulement** la sortie du verrou, l'entrée au catalogue et
   `non_regression.py --valider`. Comparaison et Flux ont suivi ce chemin
-  (`799464d`, `75f232e`, `678b086`).
+  (`799464d`, `75f232e`, `678b086`). Depuis le 13/11/2026, une famille peut
+  aussi être validée sur un plan d'essai hors épisode (`video/outils/essais/`,
+  `"_pilote": true` tant qu'elle est sous verrou), contrôlé par
+  `video/outils/controle.py` et rendu par `video/outils/planche.py` : Erosion.
 
 **Application** : relire le catalogue avant de toucher une famille ; ne jamais
 réintroduire l'anticipation des barres ni une dérogation R6 sans accord ; ne

@@ -52,6 +52,10 @@ class Cues:
         self.anchor_widths = {}
         # ... et l'instant ou l'ancre apparait, pour un nom sans declencheur.
         self.anchor_times = {}
+        # Ancres posees telles quelles, sans recherche de place : le bord du
+        # libelle qui se cale sur le point (ORIGIN : centre ; LEFT : il part
+        # du point vers la droite).
+        self.anchor_align = {}
         # Geometrie de ce que nomme un libelle (noeud, lien), pour lui chercher
         # une autre place, et ce qu'un libelle ne doit pas recouvrir,
         # [(nom, (x0, x1, y0, y1))] : exportes par le composant, lus par les
@@ -2281,7 +2285,8 @@ def _opacity_to(m, value):
 # a l'ecran. Le script ne peut pas les demander (briefs.resolve les refuse) ;
 # seul video/pilote.py les rend, depuis un brief de video/pilotes/.
 # Comparaison et Flux : pilotes EP001c S02 et S12, valides le 17/10/2026,
-# entrees au catalogue.
+# entrees au catalogue. Erosion : plan d'essai video/outils/essais/erosion.json,
+# valide le 13/11/2026, entree au catalogue.
 # =============================================================================
 
 PILOTES = set()
@@ -2950,6 +2955,308 @@ def Flux(seg, cues):
     return VGroup(*[v[0] for v in nodes.values()], *[VGroup(p, t) for p, t, *_ in links.values()])
 
 
+# =============================================================================
+# Erosion  -  un capital qui fond (essai : video/outils/essais/erosion.json)
+# Parties : capital (trace), perte_k (trace), reste (etiquette), cumul (surgit)
+# =============================================================================
+
+EROSION_H = 4.0          # hauteur de la colonne du capital entier
+EROSION_Y0 = -2.45       # sa base
+EROSION_RT = 1.8         # une tranche seule se detache en 1,8 s au plus
+EROSION_TRANCHE = 0.7    # annee par annee : duree du geste de chaque tranche
+EROSION_FANTOME = 0.5    # opacite de la tranche perdue, une fois posee
+EROSION_PERTES_MAX = 6
+EROSION_PAS = 0.5        # ecart vertical minimal entre deux montants de perte
+
+
+class Niveau(Animation):
+    """La colonne suit sa hauteur `h(t)`, base fixe ; t en secondes du plan."""
+
+    def __init__(self, rect, h, t0, **kw):
+        self.h, self.t0 = h, float(t0)
+        self.base = rect.get_edge_center(DOWN).copy()
+        super().__init__(rect, rate_func=linear, introducer=True, **kw)
+
+    def interpolate_mobject(self, alpha):
+        m = self.mobject
+        m.become(self.starting_mobject)
+        m.stretch_to_fit_height(max(self.h(self.t0 + alpha * self.run_time), 1e-4))
+        m.move_to(self.base, aligned_edge=DOWN)
+
+
+class Compteur(Animation):
+    """Un nombre qui defile : `valeur(t)` s'ecrit a chaque image a la place
+    `centre(t)`. L'objet tel qu'il est construit porte la valeur finale, a sa
+    place finale : c'est lui que juge make check."""
+
+    def __init__(self, label, valeur, centre, ecrire, dessiner, t0, **kw):
+        self.valeur, self.centre, self.t0 = valeur, centre, float(t0)
+        # `ecrire(v)` rend le texte de la valeur v, `dessiner(texte)` son objet.
+        # L'objet final est garde tel quel : la derniere image, c'est lui.
+        self.ecrire, self.dessiner = ecrire, dessiner
+        self._vus = {label.text: label.copy()}
+        super().__init__(label, rate_func=linear, introducer=True, **kw)
+
+    def interpolate_mobject(self, alpha):
+        t = self.t0 + alpha * self.run_time
+        s = self.ecrire(self.valeur(t))
+        if s not in self._vus:
+            self._vus[s] = self.dessiner(s)
+        self.mobject.become(self._vus[s])
+        self.mobject.move_to(self.centre(t))
+
+
+class Detache(Animation):
+    """Une tranche quitte le haut de la colonne : elle vire a la couleur de la
+    perte, glisse sur le cote, puis s'estompe a moitie et reste en fantome.
+    L'objet tel qu'il est construit est le fantome, a sa place finale."""
+
+    def __init__(self, tranche, x_depart, couleur_depart, **kw):
+        self.x0, self.c0 = float(x_depart), couleur_depart
+        self.x1 = float(tranche.get_center()[0])
+        super().__init__(tranche, rate_func=linear, introducer=True, **kw)
+
+    def interpolate_mobject(self, alpha):
+        m = self.mobject
+        m.become(self.starting_mobject)
+        vire = rate_functions.smooth(float(np.clip(alpha / 0.30, 0, 1)))
+        glisse = rate_functions.smooth(float(np.clip((alpha - 0.30) / 0.50, 0, 1)))
+        fond = float(np.clip((alpha - 0.80) / 0.20, 0, 1))
+        m.set_fill(interpolate_color(ManimColor(self.c0), ManimColor(NEG), vire),
+                   opacity=1.0 - (1.0 - EROSION_FANTOME) * fond)
+        m.set_x(self.x0 + (self.x1 - self.x0) * glisse)
+
+
+def Erosion(seg, cues):
+    """Un capital qui fond : ce que des frais, l'inflation, l'impot ou une
+    moins-value retirent a une somme.
+
+    Parametres du brief :
+      capital   la somme de depart (sourcee, R3)
+      format    son ecriture : "euro" (defaut), "nombre", "pct"
+      couleur   celle de la colonne : "CONTRIB" (defaut), "INTEREST", "TEAL" ;
+                jamais NEG, reserve a ce qui est perdu
+      pertes    [{"montant": v, "format": "pct", "reste": r, "annees": n}],
+                6 au plus. `montant` s'ecrit precede du signe moins ; `reste`
+                est ce qu'il reste apres cette perte (source, R3 : le moteur
+                ne calcule rien) et regle la hauteur de la tranche ; `annees`
+                (defaut 1) detache la tranche annee apres annee.
+      cumul     {"montant": v, "format": "euro"} : le total perdu, ecrit a
+                cote d'une accolade qui embrasse les tranches perdues.
+    Parties : capital (la colonne monte et atteint sa hauteur sur son mot),
+    perte_k (la tranche se detache a partir de son mot, 6 s au plus ; son
+    montant s'ecrit sur le mot), reste (etiquette : la valeur restante
+    s'affirme), cumul (surgit).
+    Ancres d'overlay : capital (sous la colonne), perte_k (a droite du
+    montant), cumul (sous le total).
+    """
+    import nombres
+    sid = seg.get("id", "?")
+    mb = seg["manim_brief"]
+    if mb.get("capital") is None or not mb.get("pertes"):
+        raise SystemExit(f"{sid} : Erosion attend `capital` et au moins une entree de `pertes`")
+    capital = float(mb["capital"])
+    kind = mb.get("format", "euro")
+    pertes = mb["pertes"]
+    if capital <= 0:
+        raise SystemExit(f"{sid} : Erosion, `capital` doit etre positif")
+    if len(pertes) > EROSION_PERTES_MAX:
+        raise SystemExit(f"{sid} : Erosion, {len(pertes)} pertes ({EROSION_PERTES_MAX} au plus)")
+    col = _PALETTE.get(mb.get("couleur", "CONTRIB"), mb.get("couleur", CONTRIB))
+    if ManimColor(col) == ManimColor(NEG):
+        raise SystemExit(f"{sid} : Erosion, la colonne du capital ne se trace pas en NEG, "
+                         f"reserve a ce qui est perdu")
+    restes, prev = [], capital
+    for i, p in enumerate(pertes):
+        if p.get("reste") is None or p.get("montant") is None:
+            raise SystemExit(f"{sid} : pertes[{i}] attend `montant` et `reste` (ce qu'il reste "
+                             f"apres cette perte, source : le moteur ne calcule rien)")
+        r = float(p["reste"])
+        if not 0 <= r < prev:
+            raise SystemExit(f"{sid} : pertes[{i}].reste = {r:g} doit etre inferieur a ce qui "
+                             f"precede ({prev:g}) et positif")
+        if int(p.get("annees", 1)) < 1:
+            raise SystemExit(f"{sid} : pertes[{i}].annees d'au moins 1")
+        restes.append(r)
+        prev = r
+
+    # --- geometrie, de gauche a droite : colonne, fantomes, montants, noms,
+    # accolade et total. Le tout est centre dans la place libre.
+    reserve = reserve_encarts(cues)
+    noms = any(re.fullmatch(r"perte_\d+", a) for a in cues.anchors)
+    W = 1.5 if reserve else 2.0
+    large_nom = 1.6 if reserve else 2.4
+    labels = [txt(montant_signe(p["montant"], p.get("format", kind), "perte"), SZ_BODY, NEG,
+                  weight=SEMIBOLD) for p in pertes]
+    total = None
+    if mb.get("cumul"):
+        cu = mb["cumul"]
+        if cu.get("montant") is None:
+            raise SystemExit(f"{sid} : Erosion, `cumul` attend `montant` (source, R3)")
+        total = txt(montant_signe(cu["montant"], cu.get("format", kind), "perte"), SZ_TITLE,
+                    NEG, weight=SEMIBOLD)
+    w_lab = max(l.width for l in labels)
+    ecrire = lambda v: nombres.fmt(v, kind, 0 if kind == "euro" else None)
+    dessiner = lambda s: txt(s, SZ_TITLE, INK, weight=SEMIBOLD)
+    # La valeur restante s'ecrit au-dessus de la colonne, a hauteur des
+    # tranches perdues : celles-ci se posent assez loin pour ne pas la toucher,
+    # meme affirmee (x 1,3).
+    w_val = max(dessiner(ecrire(capital)).width, dessiner(ecrire(restes[-1])).width) * 1.3
+    x_fant = W + max(0.45, (w_val - W) / 2 + 0.25)     # centres, colonne en x = 0
+    x_lab = x_fant + W / 2 + 0.30           # bord gauche des montants
+    x_nom = x_lab + w_lab + 0.25            # bord gauche des noms
+    x_acc = x_nom + (large_nom + 0.25 if noms else 0.0) + 0.14
+    droite = x_acc + 0.2 + total.width if total is not None else x_acc - 0.14 - 0.25
+    xg, xd = X_LEFT + 0.3, (GRAPHE_DROITE if reserve else X_RIGHT - 0.3)
+    dx = max((xg + xd) / 2 - (droite - W / 2) / 2, xg + W / 2)
+    y0, H = EROSION_Y0, EROSION_H
+
+    def haut(v):
+        return H * v / capital
+
+    colonne = Rectangle(width=W, height=H, fill_color=col, fill_opacity=1, stroke_width=0)
+    colonne.move_to([dx, y0, 0], aligned_edge=DOWN)
+    valeur = dessiner(ecrire(restes[-1]))
+    valeur.move_to([dx, y0 + haut(restes[-1]) + 0.36, 0])
+    centre_valeur = lambda v: np.array([dx, y0 + haut(v) + 0.36, 0.0])
+    cues.point("capital", (dx, y0 - 0.40))
+    cues.anchor_align["capital"] = ORIGIN
+    cues.anchor_widths["capital"] = W + 1.4
+
+    # Tranches : celles de la perte k vont de restes[k] a ce qui precedait.
+    groupes, y_lab = [], None
+    for k, p in enumerate(pertes):
+        avant, apres = (capital if k == 0 else restes[k - 1]), restes[k]
+        n = int(p.get("annees", 1))
+        if n > 1 and apres > 0:
+            bornes = [avant * (apres / avant) ** (j / n) for j in range(n + 1)]
+        else:
+            bornes = [avant + (apres - avant) * j / n for j in range(n + 1)]
+        tranches = VGroup()
+        for j in range(n):
+            r = Rectangle(width=W, height=max(haut(bornes[j] - bornes[j + 1]), 1e-4),
+                          fill_color=NEG, fill_opacity=EROSION_FANTOME, stroke_width=0)
+            r.move_to([dx + x_fant, y0 + haut(bornes[j + 1]), 0], aligned_edge=DOWN)
+            tranches.add(r)
+        milieu = y0 + haut((avant + apres) / 2)
+        # Les montants ne se chevauchent pas : chacun a hauteur de sa tranche,
+        # ou juste sous le precedent, relie alors a sa tranche par un trait.
+        y = milieu if y_lab is None else min(milieu, y_lab - EROSION_PAS)
+        y_lab = y
+        lab = labels[k]
+        lab.move_to([dx + x_lab, y, 0], aligned_edge=LEFT)
+        rappel = None
+        if abs(y - milieu) > 0.12:
+            rappel = Line([dx + x_fant + W / 2 + 0.04, milieu, 0], [dx + x_lab - 0.06, y, 0],
+                          stroke_color=NEG, stroke_width=1.6)
+        groupes.append((tranches, bornes, lab, rappel, n))
+        cues.point(f"perte_{k + 1}", (dx + x_lab + lab.width + 0.25, y))
+        cues.anchor_align[f"perte_{k + 1}"] = LEFT
+        cues.anchor_widths[f"perte_{k + 1}"] = large_nom
+        cues.sens.append({"nom": f"perte_{k + 1}", "nature": "perte", "montant": lab,
+                          "objets": [tranches] + ([rappel] if rappel is not None else [])})
+
+    accolade = None
+    if total is not None:
+        bas = min(y0 + haut(restes[-1]), labels[-1].get_bottom()[1] - 0.05)
+        sommet = max(y0 + H, labels[0].get_top()[1] + 0.05)
+        bx = dx + x_acc
+        kw = dict(stroke_color=NEG, stroke_width=2.6)
+        accolade = VGroup(Line([bx, bas, 0], [bx, sommet, 0], **kw),
+                          Line([bx - 0.14, bas, 0], [bx, bas, 0], **kw),
+                          Line([bx - 0.14, sommet, 0], [bx, sommet, 0], **kw))
+        total.move_to([bx + 0.2, (bas + sommet) / 2, 0], aligned_edge=LEFT)
+        cues.point("cumul", (total.get_center()[0], total.get_bottom()[1] - 0.32))
+        cues.anchor_align["cumul"] = ORIGIN
+        cues.anchor_widths["cumul"] = max(total.width + 0.6, 2.0)
+        cues.sens.append({"nom": "cumul", "nature": "perte", "objets": [accolade],
+                          "montant": total})
+
+    # --- calendrier ----------------------------------------------------------
+    order = ["capital"] + [f"perte_{k + 1}" for k in range(len(pertes))]
+    extras = ["reste"] + (["cumul"] if total is not None else [])
+    rev = Reveal(seg, cues, order, extras=extras, t0=1.6, rt=EROSION_RT, margin=0.6)
+    _warn_unnamed(sid, order, rev)
+    times = _named_times(order, rev)
+    for k in order:
+        rev.default(k, times[k])
+
+    # Le capital : la colonne monte et atteint sa hauteur sur son mot ; sa
+    # valeur defile avec elle.
+    t_cap = rev.t("capital")
+    debut = max(t_cap - CONTINUOUS_MAX, min(0.3, t_cap))
+    if t_cap - debut < BAR_MIN_GROW:
+        debut, t_cap = t_cap, t_cap + BAR_MIN_GROW
+    monte = lambda t: capital * rate_functions.smooth(float(np.clip((t - debut) / (t_cap - debut),
+                                                                     0, 1)))
+    cues.at(debut, Niveau(colonne, lambda t: haut(monte(t)), debut),
+            Compteur(valeur, monte, lambda t: centre_valeur(monte(t)), ecrire, dessiner,
+                     debut),
+            rt=t_cap - debut)
+    cues.meta["frame_end"] = 0.0
+    cues.meta["first_data"] = debut
+
+    libre = t_cap
+    for k, (tranches, bornes, lab, rappel, n) in enumerate(groupes):
+        key = f"perte_{k + 1}"
+        t0 = max(rev.t(key), libre)
+        if rev.t(key) < libre - 1e-6:
+            print(f"[ATTENTION] {sid} : {key} demande a {rev.t(key):.2f} s alors que ce qui "
+                  f"precede finit a {libre:.2f} s : la tranche part a {libre:.2f} s",
+                  file=sys.stderr, flush=True)
+        rt = rev.run_time(key, CONTINUOUS_MAX if n > 1 else EROSION_RT)
+        rt = max(min(rt, cues.dur - t0), MIN_RT)
+        geste = min(rt, EROSION_TRANCHE) if n > 1 else rt
+        pas = (rt - geste) / (n - 1) if n > 1 else 0.0
+        departs = [t0 + j * pas for j in range(n)]
+        # L'information au mot : le montant s'ecrit quand la tranche part.
+        cues.at(t0, FadeIn(lab, scale=0.6), *([Create(rappel)] if rappel is not None else []),
+                rt=LABEL_RT)
+        for j, r in enumerate(tranches):
+            cues.at(departs[j], Detache(r, dx, col), rt=geste)
+
+        # La colonne cede chaque tranche une image apres son depart : aucun
+        # jour entre les deux. La valeur, elle, defile en continu.
+        def niveau(t, bornes=bornes, departs=departs):
+            partis = sum(1 for d in departs if t >= d + 1.5 / 30)
+            return haut(bornes[partis])
+
+        fin_compte = t0 + (rt - 0.7 * geste if n > 1 else 0.35 * rt)
+
+        def reste_a(t, bornes=bornes, t0=t0, fin=fin_compte, n=n):
+            u = float(np.clip((t - t0) / max(fin - t0, 1e-6), 0, 1))
+            a, b = bornes[0], bornes[-1]
+            return a * (b / a) ** u if (n > 1 and b > 0) else a + (b - a) * u
+
+        cues.at(t0, Niveau(colonne, niveau, t0),
+                Compteur(valeur, reste_a, lambda t, f=reste_a: centre_valeur(f(t)), ecrire,
+                         dessiner, t0),
+                rt=rt)
+        libre = t0 + rt
+
+    if "reste" in rev.fixed:
+        t_r = rev.t("reste")
+        if t_r < libre - 1e-6:
+            print(f"[ATTENTION] {sid} : reste a {t_r:.2f} s, avant la fin de la derniere perte "
+                  f"({libre:.2f} s) : la valeur restante s'affirme a {libre:.2f} s",
+                  file=sys.stderr, flush=True)
+            t_r = libre
+        if t_r < cues.dur:
+            grand = valeur.copy().scale(1.3)
+            grand.move_to(valeur.get_bottom(), aligned_edge=DOWN)
+            trait = Line(grand.get_corner(DL) + DOWN * 0.08, grand.get_corner(DR) + DOWN * 0.08,
+                         stroke_color=col, stroke_width=3)
+            cues.at(t_r, Restyle(valeur, grand), Create(trait), rt=LABEL_RT)
+    if total is not None:
+        rev.default("cumul", libre + 0.3)
+        t_c = max(rev.t("cumul"), 0.0)
+        if t_c < cues.dur:
+            cues.at(t_c, Create(accolade[0]), Create(accolade[1]), Create(accolade[2]),
+                    FadeIn(total, shift=RIGHT * 0.15),
+                    rt=max(min(rev.run_time("cumul", PUNCTUAL_MAX), cues.dur - t_c), MIN_RT))
+    return VGroup(colonne, valeur, *[g[0] for g in groupes], *labels)
+
+
 COMPONENTS = {
     "BarRace": BarRace,
     "StackedBars": StackedBars,
@@ -2963,4 +3270,5 @@ COMPONENTS = {
     "Areas": Areas,
     "Comparaison": Comparaison,
     "Flux": Flux,
+    "Erosion": Erosion,
 }

@@ -1,0 +1,35 @@
+{
+ "_role": "Plan d'essai, hors episode : famille Erosion, trois pertes nommees une a une, deux encarts, sans cumul. Valeurs d'essai, sans source : 10 000 -> 9 850 (frais) -> 9 400 (impot) -> 9 212 (inflation). Montre l'espacement des montants quand les tranches sont fines.",
+ "duree_s": 14.0,
+ "segment": {
+  "id": "essai_erosion_trois_pertes",
+  "role": "essai",
+  "type_visuel": "manim",
+  "manim_brief": {
+   "composant": "Erosion",
+   "capital": 10000,
+   "pertes": [
+    {"montant": 150, "reste": 9850},
+    {"montant": 450, "reste": 9400},
+    {"montant": 2, "format": "pct", "reste": 9212}
+   ],
+   "revelations": [
+    {"element": "capital", "t_rel_s": 1.5},
+    {"element": "perte_1", "t_rel_s": 3.5},
+    {"element": "perte_2", "t_rel_s": 6.0},
+    {"element": "perte_3", "t_rel_s": 8.5},
+    {"element": "reste", "t_rel_s": 11.5}
+   ]
+  },
+  "overlay_texte": [
+   {"ancre": "titre_haut", "t_rel_s": 0.5, "texte_fr": "Essai : trois pertes"},
+   {"ancre": "capital", "t_rel_s": 1.5, "texte_fr": "Capital"},
+   {"ancre": "perte_1", "t_rel_s": 3.7, "texte_fr": "Frais"},
+   {"ancre": "perte_2", "t_rel_s": 6.2, "texte_fr": "Impôt"},
+   {"ancre": "perte_3", "t_rel_s": 8.7, "texte_fr": "Inflation"},
+   {"ancre": "centre", "t_rel_s": 4.5, "texte_fr": "Chaque perte a son nom"},
+   {"ancre": "centre", "t_rel_s": 10.0, "texte_fr": "Ce qu'il reste"},
+   {"ancre": "bas", "t_rel_s": 2.5, "texte_fr": "Plan d'essai du moteur, sans donnée ni source"}
+  ]
+ }
+}
