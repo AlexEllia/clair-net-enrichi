@@ -1,0 +1,36 @@
+{
+ "_role": "Plan d'essai, hors episode : famille Distribution, cas d'une perte. Rendement sur un an d'une strategie, 1 600 periodes fictives rangees par tranches de 5 points de -20 a +40 ; 498 en perte (31,1 %), zone NEG ; mediane 4,6, cas du spectateur a 12. Un point = 4 periodes (400 points). Chiffres d'essai, sans source. Rendu par video/outils/planche.py, controle par video/outils/controle.py.",
+ "duree_s": 18.0,
+ "segment": {
+  "id": "essai_distribution",
+  "role": "essai",
+  "type_visuel": "manim",
+  "manim_brief": {
+   "composant": "Distribution",
+   "format": "pct",
+   "classes": {"debut": -20, "pas": 5,
+               "effectifs": [18, 60, 150, 270, 330, 290, 210, 130, 78, 40, 18, 6]},
+   "total": 1600,
+   "par_point": 4,
+   "unite": "périodes",
+   "part_negative": {"valeur": 31.1, "format": "pct"},
+   "mediane": {"valeur": 4.6},
+   "cas": {"valeur": 12},
+   "revelations": [
+    {"element": "points", "t_rel_s": 2.5},
+    {"element": "zone", "t_rel_s": 9.0},
+    {"element": "mediane", "t_rel_s": 12.0},
+    {"element": "cas", "t_rel_s": 15.0}
+   ]
+  },
+  "overlay_texte": [
+   {"ancre": "titre_haut", "t_rel_s": 0.5, "texte_fr": "Essai : rendement sur un an, toutes les périodes"},
+   {"ancre": "total", "t_rel_s": 2.5, "texte_fr": "périodes testées"},
+   {"ancre": "axe_x", "t_rel_s": 1.5, "texte_fr": "Rendement sur un an"},
+   {"ancre": "zone", "t_rel_s": 9.0, "texte_fr": "en perte"},
+   {"ancre": "mediane", "t_rel_s": 12.0, "texte_fr": "médiane"},
+   {"ancre": "cas", "t_rel_s": 15.0, "texte_fr": "votre année"},
+   {"ancre": "bas", "t_rel_s": 4.0, "texte_fr": "Plan d'essai du moteur, sans donnée ni source"}
+  ]
+ }
+}

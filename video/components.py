@@ -2286,7 +2286,8 @@ def _opacity_to(m, value):
 # seul video/pilote.py les rend, depuis un brief de video/pilotes/.
 # Comparaison et Flux : pilotes EP001c S02 et S12, valides le 17/10/2026,
 # entrees au catalogue. Erosion : plan d'essai video/outils/essais/erosion.json,
-# valide le 13/11/2026, entree au catalogue.
+# valide le 13/11/2026, entree au catalogue. Cascade, Grille et Distribution de
+# meme, sur leurs plans d'essai (13 et 14/11/2026).
 # =============================================================================
 
 PILOTES = set()
@@ -3593,6 +3594,292 @@ def Grille(seg, cues):
     return VGroup(*fonds, *[v[0] for v in vagues.values()], *labels)
 
 
+# =============================================================================
+# Distribution  -  la dispersion des resultats (essais : essais/distribution*.json)
+# Parties : points (trace), zone, mediane, cas (surgissements)
+# =============================================================================
+
+DISTRIBUTION_POINTS_MAX = 600    # points dessines, au plus
+DISTRIBUTION_CLASSES_MAX = 24
+DISTRIBUTION_CHUTE = 0.45        # duree de la chute d'un point, en secondes
+DISTRIBUTION_TEINTE = 0.14       # opacite de la zone des resultats negatifs
+
+
+class Chute(Animation):
+    """Des points tombent un a un du haut du graphique et s'empilent. L'objet
+    tel qu'il est construit est l'histogramme fini. `departs` : l'instant de
+    depart de chaque point, en secondes depuis le debut de l'animation."""
+
+    def __init__(self, points, departs, y_haut, **kw):
+        self.departs = [float(d) for d in departs]
+        self.y_haut = float(y_haut)
+        self.places = [p.get_center().copy() for p in points]
+        super().__init__(points, rate_func=linear, introducer=True, **kw)
+
+    def interpolate_mobject(self, alpha):
+        t = alpha * self.run_time
+        for p, d, c in zip(self.mobject.submobjects, self.departs, self.places):
+            u = float(np.clip((t - d) / DISTRIBUTION_CHUTE, 0.0, 1.0))
+            p.move_to([c[0], self.y_haut + (c[1] - self.y_haut) * u * u, 0])
+            p.set_fill(opacity=min(1.0, u * 6.0))
+
+
+def _signe_moins(s):
+    """Le vrai signe moins devant une valeur negative."""
+    return SIGNE_SENS["perte"] + s[1:] if s.startswith("-") else s
+
+
+def Distribution(seg, cues):
+    """La dispersion de tous les resultats possibles : des points tombent un
+    a un et s'empilent en histogramme.
+
+    Parametres du brief :
+      classes     {"debut": x0, "pas": p, "effectifs": [n1, n2, ...]} : les
+                  resultats ranges par tranche de largeur p a partir de x0 -
+                  des comptes sources (R3), 24 tranches au plus   OBLIGATOIRE
+      format      ecriture des valeurs de l'axe : "pct", "euro", "nombre"
+                                                                  OBLIGATOIRE
+      total       le nombre de resultats, ecrit en compteur ; doit etre la
+                  somme des effectifs                             OBLIGATOIRE
+      par_point   combien de resultats vaut un point (defaut 1) ; 600 points
+                  dessines au plus. Au-dela de 1, une legende discrete
+                  « 1 point = N <unite> » s'ecrit sous le compteur
+      unite       le nom des resultats, au pluriel (« periodes ») : obligatoire
+                  avec par_point > 1
+      seuil       en dessous, un resultat est negatif (defaut 0) ; doit etre
+                  une borne de tranche
+      zone_negative  true (defaut) : sous le seuil, une perte pour le
+                  spectateur (le rendement d'une strategie) - zone teintee,
+                  points et part en NEG ; false : l'autre option l'emporte
+                  (l'ecart entre deux options) - points et part en vert
+                  d'eau, sans teinte
+      part_negative  {"valeur": v, "format": "pct"} : la part des resultats
+                  sous le seuil, ecrite dans la zone
+      couleur     celle des resultats au-dessus du seuil : "INTEREST"
+                  (defaut), "CONTRIB", "TEAL"
+      mediane     {"valeur": v} : un trait pointille et sa valeur
+      cas         {"valeur": v} : le cas du spectateur, marque et chiffre
+    Parties : points (les points tombent a partir de son mot, 6 s au plus ;
+    le compteur defile jusqu'a `total`), zone, mediane, cas (surgissent).
+    Ancres d'overlay : total, zone, mediane, cas (le nom de chacun).
+    Le compteur et la legende des points ont leur colonne, a droite du
+    graphique : les points qui tombent ne passent jamais dessous.
+    """
+    import nombres
+    sid = seg.get("id", "?")
+    mb = seg["manim_brief"]
+    cl = mb.get("classes") or {}
+    for cle in ("debut", "pas", "effectifs"):
+        if cl.get(cle) is None:
+            raise SystemExit(f"{sid} : Distribution attend classes.{cle}")
+    if not mb.get("format") or mb.get("total") is None:
+        raise SystemExit(f"{sid} : Distribution attend `format` et `total`")
+    kind = mb["format"]
+    x0, pas = float(cl["debut"]), float(cl["pas"])
+    eff = [int(n) for n in cl["effectifs"]]
+    n_c = len(eff)
+    if not 2 <= n_c <= DISTRIBUTION_CLASSES_MAX or pas <= 0 or min(eff) < 0:
+        raise SystemExit(f"{sid} : Distribution, 2 a {DISTRIBUTION_CLASSES_MAX} tranches, "
+                         f"`pas` positif, effectifs positifs ou nuls")
+    total = int(mb["total"])
+    if sum(eff) != total:
+        raise SystemExit(f"{sid} : Distribution, `total` vaut {total} et les effectifs font "
+                         f"{sum(eff)} : corrige les valeurs dans les sources")
+    par = int(mb.get("par_point", 1))
+    nb = [int(round(n / par)) for n in eff]
+    unite = str(mb.get("unite") or "").strip()
+    if par > 1 and not unite:
+        raise SystemExit(f"{sid} : Distribution, `par_point` = {par} demande `unite`, le nom "
+                         f"des resultats au pluriel (« periodes ») : il s'ecrit dans la legende "
+                         f"« 1 point = {par} ... »")
+    if par < 1 or sum(nb) > DISTRIBUTION_POINTS_MAX:
+        raise SystemExit(f"{sid} : Distribution, {sum(nb)} points a dessiner "
+                         f"({DISTRIBUTION_POINTS_MAX} au plus) : augmente `par_point`")
+    x1 = x0 + n_c * pas
+    seuil = float(mb.get("seuil", 0.0))
+    perte = bool(mb.get("zone_negative", True))
+    # Sous le seuil : une perte pour le spectateur (NEG), ou l'autre option qui
+    # l'emporte (neutre, vert d'eau). La zone existe dans les deux cas.
+    col_sous = NEG if perte else TEAL
+    k_seuil = (seuil - x0) / pas
+    if abs(k_seuil - round(k_seuil)) > 1e-6 or not 0 <= round(k_seuil) <= n_c:
+        raise SystemExit(f"{sid} : Distribution, `seuil` ({seuil:g}) doit etre une borne de "
+                         f"tranche entre {x0:g} et {x1:g}")
+    k_seuil = int(round(k_seuil))
+    zone = True
+    col = _PALETTE.get(mb.get("couleur", "INTEREST"), mb.get("couleur", INTEREST))
+    if ManimColor(col) == ManimColor(NEG):
+        raise SystemExit(f"{sid} : Distribution, `couleur` ne peut pas etre NEG, reserve aux "
+                         f"resultats negatifs")
+    for cle in ("mediane", "cas"):
+        if mb.get(cle) and not x0 <= float(mb[cle].get("valeur", x0 - 1)) <= x1:
+            raise SystemExit(f"{sid} : Distribution, {cle}.valeur hors de l'axe "
+                             f"({x0:g} a {x1:g})")
+
+    # --- geometrie ---------------------------------------------------------
+    # A droite, une colonne pour le compteur, son nom et la legende des
+    # points, hors de la zone ou ils tombent. Le graphique remonte assez pour
+    # que le titre de l'axe tienne a 0,15 au moins de la source.
+    gauche = X_LEFT + 0.5
+    bord = GRAPHE_DROITE if reserve_encarts(cues) else X_RIGHT - 0.3
+    large_info = 2.7
+    droite = bord - large_info - 0.35
+    x_info = droite + 0.35
+    haut, bas = 1.45, -2.15
+    fr = Frame(x0, x1, 0, 1, w=droite - gauche, h=haut - bas,
+               center=[(gauche + droite) / 2, (haut + bas) / 2, 0])
+    cw = fr.wx(pas)
+    # Le plus gros point qui laisse tenir la plus haute pile sous la bande du
+    # haut, reservee a la part sous le seuil et a son nom (1,1 unite).
+    for r in (0.11, 0.095, 0.08, 0.07, 0.06, 0.05, 0.042, 0.035, 0.03, 0.025):
+        ecart = 2 * r * 1.16
+        par_rang = max(1, int(cw * 0.92 / ecart))
+        if int(np.ceil(max(nb) / par_rang)) * ecart <= (haut - bas) - 1.1:
+            break
+    points, classe_de = VGroup(), []
+    for c, n in enumerate(nb):
+        cx = fr.px(x0 + (c + 0.5) * pas)
+        sous = c < k_seuil
+        for j in range(n):
+            rang, place = divmod(j, par_rang)
+            dans_rang = min(par_rang, n - rang * par_rang)
+            x = cx + (place - (dans_rang - 1) / 2) * ecart
+            points.add(Dot([x, bas + 0.06 + r + rang * ecart, 0], radius=r,
+                           color=col_sous if sous else col, fill_opacity=1, stroke_width=0))
+            classe_de.append(c)
+
+    base = Line([gauche, bas, 0], [droite, bas, 0], stroke_color=RULE, stroke_width=2.4)
+    saut = max(1, int(np.ceil((n_c + 1) / 9)))
+    bornes = sorted({k for k in range(0, n_c + 1, saut)} | ({k_seuil} if zone else set()))
+    # Une graduation trop proche du seuil lui cede la place.
+    bornes = [k for k in bornes if k == k_seuil or not zone or abs(k - k_seuil) >= saut]
+    xlabels = []
+    for k in bornes:
+        lab = txt(_signe_moins(nombres.fmt(x0 + k * pas, kind)), SZ_SOURCE, MUTED)
+        lab.move_to([fr.px(x0 + k * pas), bas - 0.24 - lab.height / 2, 0])
+        xlabels.append(lab)
+    cues.point("axe_x", ((gauche + droite) / 2, bas - 0.95))
+
+    ecrire = lambda v: nombres.fmt(int(round(v)), "nombre", 0)
+    dessiner = lambda s: txt(s, SZ_TITLE, INK, weight=SEMIBOLD)
+    compte = dessiner(ecrire(total))
+    compte.move_to([x_info, haut - 0.25, 0], aligned_edge=LEFT)
+    cues.point("total", (x_info, haut - 0.78))
+    cues.anchor_align["total"] = LEFT
+    cues.anchor_widths["total"] = large_info
+    legende = None
+    if par > 1:
+        # Un point ne vaut pas un resultat : la legende le dit, discretement.
+        # « point » est le seul mot que le moteur ecrit ; l'unite vient du brief.
+        legende = txt(f"1 point = {nombres.num(par)} {unite}", SZ_SOURCE, MUTED)
+        if legende.width > large_info:
+            legende.scale_to_fit_width(large_info)
+        legende.move_to([x_info, haut - 1.30, 0], aligned_edge=LEFT)
+        legende.role, legende.nom = "libelle", f"legende des points « {legende.text} »"
+
+    teinte, part = None, None
+    if zone and k_seuil > 0:
+        if perte:
+            teinte = Rectangle(width=fr.px(seuil) - gauche, height=haut - bas, fill_color=NEG,
+                               fill_opacity=DISTRIBUTION_TEINTE, stroke_width=0)
+            teinte.move_to([gauche, bas, 0], aligned_edge=DL)
+        limite = DashedLine([fr.px(seuil), bas, 0], [fr.px(seuil), haut, 0], dash_length=0.08,
+                            stroke_color=NEG if perte else INK_SOFT, stroke_width=2.0)
+        sous_seuil = VGroup(*[p for p, c in zip(points, classe_de) if c < k_seuil])
+        if mb.get("part_negative"):
+            pn = mb["part_negative"]
+            part = txt(nombres.fmt(float(pn["valeur"]), pn.get("format", "pct")), SZ_TITLE,
+                       col_sous, weight=SEMIBOLD)
+            part.move_to([gauche + 0.20, haut - 0.30, 0], aligned_edge=LEFT)
+        cues.point("zone", (gauche + 0.20, haut - 0.80))
+        cues.anchor_align["zone"] = LEFT
+        cues.anchor_colors["zone"] = col_sous
+        cues.anchor_widths["zone"] = max(fr.px(seuil) - gauche - 0.3, 1.2)
+        if perte:
+            # La part des resultats negatifs est une frequence : sans signe.
+            cues.sens.append({"nom": "zone", "nature": "perte", "objets": [teinte, limite,
+                                                                            sous_seuil],
+                              "montant": part, "signe": False})
+
+    def repere(cle, niveau, plein):
+        """Trait vertical a la valeur, sa valeur ecrite au-dessus du graphique."""
+        v = float(mb[cle]["valeur"])
+        x = fr.px(v)
+        # Deux rangs a 0,60 : un nom qui monte en apparaissant (0,2) ne passe
+        # pas sur le rang du dessous.
+        y = haut + 0.32 + 0.60 * niveau
+        if plein:
+            trait = Line([x, bas, 0], [x, y - 0.22, 0], stroke_color=INK, stroke_width=3.0)
+        else:
+            trait = DashedLine([x, bas, 0], [x, y - 0.22, 0], dash_length=0.12,
+                               stroke_color=INK_SOFT, stroke_width=2.4)
+        lab = txt(_signe_moins(nombres.fmt(v, mb[cle].get("format", kind))), SZ_LABEL, INK,
+                  weight=SEMIBOLD)
+        a_droite = x <= (gauche + droite) / 2
+        lab.move_to([x, y, 0])
+        cues.point(cle, (lab.get_right()[0] + 0.15, y) if a_droite
+                   else (lab.get_left()[0] - 0.15, y))
+        cues.anchor_align[cle] = LEFT if a_droite else RIGHT
+        cues.anchor_widths[cle] = 2.6
+        cues.etiquette(lab, (x, x, y - 0.22, y - 0.22), cle, cle)
+        return trait, lab, x
+
+    extras = []
+    med = cas = None
+    if mb.get("mediane"):
+        med = repere("mediane", 0, False)
+        extras.append("mediane")
+    if mb.get("cas"):
+        proche = med is not None and abs(fr.px(float(mb["cas"]["valeur"])) - med[2]) < 3.6
+        cas = repere("cas", 1 if proche else 0, True)
+        extras.append("cas")
+    if zone and k_seuil > 0:
+        extras.insert(0, "zone")
+
+    # --- calendrier ----------------------------------------------------------
+    rev = Reveal(seg, cues, ["points"], extras=extras, t0=1.6, rt=CONTINUOUS_MAX, margin=0.6)
+    t0 = rev.t("points")
+    frame_end = _frame_end({"points": [(0.0, t0)]})
+    _build_frame(cues, base, [], xlabels, frame_end)
+    cues.meta["frame_end"] = frame_end
+    cues.meta["first_data"] = t0
+    rt = max(min(rev.run_time("points", CONTINUOUS_MAX), CONTINUOUS_MAX, cues.dur - t0), MIN_RT)
+    # Les points tombent dans un ordre tire une fois pour toutes (graine fixe) :
+    # la silhouette se dessine partout a la fois, comme les resultats arrivent.
+    ordre = np.random.default_rng(20261114).permutation(len(points))
+    etale = max(rt - DISTRIBUTION_CHUTE, 0.0)
+    departs = [0.0] * len(points)
+    for rang, i in enumerate(ordre):
+        departs[i] = etale * rang / max(len(points) - 1, 1)
+    # Dans une meme pile, celui du dessous tombe d'abord.
+    for c in range(n_c):
+        ids = [i for i, cc in enumerate(classe_de) if cc == c]
+        for i, d in zip(ids, sorted(departs[i] for i in ids)):
+            departs[i] = d
+    tombes = sorted(departs)
+
+    def compte_a(t):
+        arrives = np.searchsorted(tombes, t - t0 - DISTRIBUTION_CHUTE, side="right")
+        return total * arrives / max(len(points), 1) if t < t0 + rt - 1e-6 else total
+
+    centre = compte.get_center().copy()
+    cues.at(t0, Chute(points, departs, haut),
+            Compteur(compte, compte_a, lambda t: centre, ecrire, dessiner, t0), rt=rt)
+    if legende is not None:
+        cues.at(t0, FadeIn(legende), rt=0.5)
+    fin = t0 + rt
+    if zone and k_seuil > 0:
+        rev.default("zone", fin + 0.3)
+        anims = ([FadeIn(teinte)] if teinte is not None else []) + [Create(limite)] \
+            + ([FadeIn(part, scale=0.6)] if part else [])
+        rev.at("zone", *anims, rt=PUNCTUAL_MAX)
+    for cle, obj in (("mediane", med), ("cas", cas)):
+        if obj is not None:
+            rev.default(cle, rev.last + 0.4)
+            rev.at(cle, Create(obj[0]), FadeIn(obj[1], scale=0.6), rt=PUNCTUAL_MAX)
+    return VGroup(points, compte, *([legende] if legende is not None else []))
+
+
 COMPONENTS = {
     "BarRace": BarRace,
     "StackedBars": StackedBars,
@@ -3609,4 +3896,5 @@ COMPONENTS = {
     "Erosion": Erosion,
     "Cascade": Cascade,
     "Grille": Grille,
+    "Distribution": Distribution,
 }

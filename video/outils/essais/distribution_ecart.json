@@ -1,0 +1,34 @@
+{
+ "_role": "Plan d'essai, hors episode : famille Distribution, cas neutre. Ecart entre deux options (tout d'un coup moins etale) sur 1 600 periodes fictives, par tranches de 5 points de -20 a +40 ; sous zero, c'est l'autre option qui l'emporte (31,1 %) : zone_negative false, vert d'eau, sans teinte. Mediane 4,6. Un point = 4 periodes. Chiffres d'essai, sans source.",
+ "duree_s": 15.0,
+ "segment": {
+  "id": "essai_distribution_ecart",
+  "role": "essai",
+  "type_visuel": "manim",
+  "manim_brief": {
+   "composant": "Distribution",
+   "format": "pct",
+   "classes": {"debut": -20, "pas": 5,
+               "effectifs": [18, 60, 150, 270, 330, 290, 210, 130, 78, 40, 18, 6]},
+   "total": 1600,
+   "par_point": 4,
+   "unite": "périodes",
+   "zone_negative": false,
+   "part_negative": {"valeur": 31.1, "format": "pct"},
+   "mediane": {"valeur": 4.6},
+   "revelations": [
+    {"element": "points", "t_rel_s": 2.5},
+    {"element": "zone", "t_rel_s": 9.0},
+    {"element": "mediane", "t_rel_s": 12.0}
+   ]
+  },
+  "overlay_texte": [
+   {"ancre": "titre_haut", "t_rel_s": 0.5, "texte_fr": "Essai : tout d'un coup contre étalé"},
+   {"ancre": "total", "t_rel_s": 2.5, "texte_fr": "périodes testées"},
+   {"ancre": "axe_x", "t_rel_s": 1.5, "texte_fr": "Écart : tout d'un coup moins étalé"},
+   {"ancre": "zone", "t_rel_s": 9.0, "texte_fr": "étaler fait mieux"},
+   {"ancre": "mediane", "t_rel_s": 12.0, "texte_fr": "médiane"},
+   {"ancre": "bas", "t_rel_s": 4.0, "texte_fr": "Plan d'essai du moteur, sans donnée ni source"}
+  ]
+ }
+}

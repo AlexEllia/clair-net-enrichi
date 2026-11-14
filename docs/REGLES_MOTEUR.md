@@ -185,6 +185,29 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
   couleur seule est jugée, une fréquence ne porte pas de signe (`"signe":
   False` dans `cues.sens`). Éléments : `groupe_k` (surgissement), `valeur_k`
   (étiquette). Essais : `video/outils/essais/grille.json`, `grille_dix.json`.
+- **Distribution** (14/11/2026 ; validée à l'écran le jour même sur ses deux
+  plans d'essai, sortie du verrou `PILOTES`, au catalogue, références
+  `essai_distribution` et `essai_distribution_ecart` figées au pixel près) : la dispersion de tous les résultats (backtests,
+  risque). Des points tombent un à un et s'empilent en histogramme, un
+  compteur défile jusqu'à `total` ; zone des résultats négatifs teintée `NEG`
+  et points `NEG` sous le `seuil` (`zone_negative: false` quand ce n'est pas
+  une perte pour le spectateur) ; médiane en trait pointillé ; cas du
+  spectateur en trait plein. R3 : effectifs par tranche, `total`, médiane,
+  part négative viennent du brief ; le moteur vérifie que `total` est la somme
+  des effectifs et que le seuil est une borne de tranche. `par_point` : 600
+  points dessinés au plus. La chute tient en 6 s au plus (`CONTINUOUS_MAX`),
+  quel que soit le nombre de points, dans un ordre tiré à graine fixe (rendu
+  reproductible). Éléments : `points` (tracé), `zone`, `mediane`, `cas`
+  (surgissements). Compteur, son nom et légende des points dans une colonne à
+  droite du graphique, hors de la zone de chute ; bande haute du graphique
+  (1,1 unité) laissée libre pour la part sous le seuil. `par_point` > 1 :
+  légende « 1 point = N <unite> » (`unite` obligatoire, seule exception à R7
+  de la famille). Sens sous le seuil (précision d'Alexandre du 14/11/2026) :
+  `zone_negative: true` pour le rendement d'une stratégie (perte du
+  spectateur : teinte, points et part en `NEG`), `false` pour l'écart entre
+  deux options (vert d'eau, sans teinte). Essais :
+  `video/outils/essais/distribution.json` (perte),
+  `distribution_ecart.json` (neutre).
 - **Mention** (11/11/2026) : dérive de 2 % sur toute la durée du plan, portée par
   une seule animation (`Mention`) avec les deux fondus. *Pourquoi* : la dérive ne
   partait qu'après la seconde ligne, et seulement s'il restait plus de 4 s ; sur

@@ -32,7 +32,7 @@ la voix le dit. Pour chaque valeur de `donnees` que la voix énonce, écris
 une révélation qui nomme cette valeur (`series_k_point_j` pour une courbe,
 `bar_g` pour une barre, `band_g` pour une bande, `value_g` pour une jauge,
 `link_k` pour un montant de flux, `depart`, `marche_k` et `arrivee` pour une
-`Cascade`, `groupe_k` pour une `Grille`, `capital`, `perte_k`, `cumul` et `reste`
+`Cascade`, `groupe_k` pour une `Grille`, `points` pour une `Distribution`, `capital`, `perte_k`, `cumul` et `reste`
 pour une `Erosion`), calée sur le mot qui l'énonce (section 2).
 Sinon le visuel n'illustre rien.
 
@@ -1332,6 +1332,146 @@ Ce que ça donne : les dix calendriers éteints se posent pendant « Investir
 d'un coup a fait mieux » ; sur « près de sept fois », sept s'allument en ambre,
 un à un, jusqu'à 4,29 s ; « 68,9 % » s'écrit à droite sur « soixante-huit
 virgule neuf ». Plus longue attente : 2,49 s, après le chiffre exact.
+#### `Distribution` — la dispersion des résultats
+
+« Sur 1 600 périodes, voici tous les résultats possibles. » Pour un backtest,
+pour la notion de risque : montrer **tous** les résultats, pas seulement leur
+moyenne. Pour une seule fréquence tirée de ces résultats (« en perte dans
+22 % des cas »), c'est `Grille`.
+
+Des points tombent un à un, en accéléré, et s'empilent en histogramme
+au-dessus d'un axe gradué, pendant qu'un compteur défile jusqu'au nombre de
+résultats. Le compteur, son nom et la légende des points ont leur colonne, à
+droite du graphique : rien ne tombe derrière eux. Sous le `seuil`, la zone dit
+le sens (voir « Quel sens sous le seuil » ci-dessous) ; au-dessus, les points
+sont en ambre. La médiane est marquée d'un trait pointillé, et le cas du
+spectateur peut être mis en avant d'un trait plein.
+
+**Pas de `donnees`** : les résultats arrivent déjà rangés, dans `classes`.
+
+**Paramètres** :
+
+| Paramètre | Obligatoire | Valeurs admises | Effet |
+|---|---|---|---|
+| `classes` | **oui** | `{"debut": x0, "pas": p, "effectifs": [n1, n2, …]}`, 2 à 24 tranches | Les résultats rangés par tranches de largeur `pas` à partir de `debut` : `effectifs[0]` compte les résultats de `debut` à `debut + pas`, et ainsi de suite. Des comptes sourcés (R3), jamais une silhouette dessinée à l'œil. |
+| `format` | **oui** | `"pct"`, `"euro"`, `"nombre"` | Écriture des graduations, de la médiane et du cas. |
+| `total` | **oui** | entier, sourcé | Le nombre de résultats, écrit en compteur. Il doit être la somme des effectifs : sinon le build s'arrête. |
+| `par_point` | non | entier (défaut 1) | Combien de résultats vaut un point. 600 points dessinés au plus : pour 1 600 résultats, `4` (400 points). Le compteur, lui, va toujours jusqu'à `total`. Au-delà de 1, une légende discrète s'écrit sous le compteur : « 1 point = 4 périodes ». |
+| `unite` | avec `par_point` > 1 | le nom des résultats, au pluriel (`"périodes"`, `"années"`) | Le mot de la légende des points. Sans lui, `par_point` > 1 arrête le build. |
+| `seuil` | non | nombre (défaut 0), une borne de tranche | La limite de la zone : les résultats au-dessous. |
+| `zone_negative` | non | `true` (défaut), `false` | Le sens de ce qui est sous le seuil : `true`, une perte pour le spectateur (zone teintée, points et part en `NEG`) ; `false`, l'autre option qui l'emporte (points et part en vert d'eau, sans teinte). Voir ci-dessous. |
+| `part_negative` | non | `{"valeur": v, "format": "pct"}` | La part des résultats sous le seuil, sourcée, écrite en grand dans la zone, dans sa couleur, sans signe (c'est une fréquence). |
+| `couleur` | non | `"INTEREST"` (défaut), `"CONTRIB"`, `"TEAL"` | Couleur des résultats au-dessus du seuil. Jamais `NEG`. |
+| `mediane` | non | `{"valeur": v}` | Trait pointillé à cette valeur, et la valeur écrite au-dessus. Sourcée : le moteur ne la calcule pas. |
+| `cas` | non | `{"valeur": v}` | Le cas du spectateur : trait plein à cette valeur, et la valeur écrite au-dessus. |
+
+**Éléments adressables dans `revelations`** :
+
+| Élément | Type | Remarque |
+|---|---|---|
+| `points` | tracé (6 s au plus) | À partir de son mot, les points tombent et s'empilent, dans un ordre fixé une fois pour toutes ; le compteur défile jusqu'à `total`. La chute dure 6 s au plus, moins si une autre révélation vient avant : quel que soit le nombre de points, elle s'accélère pour tenir. Première donnée du plan (R5). |
+| `zone` | surgissement (1,5 s) | La limite du seuil, la teinte (pour une perte) et `part_negative` surgissent sur le mot qui parle des résultats sous le seuil. Sans révélation : 0,3 s après la fin de la chute. |
+| `mediane` | surgissement (1,5 s) | Exige `mediane`. |
+| `cas` | surgissement (1,5 s) | Exige `cas`. |
+
+**Ancres d'overlay** (R7) : `total`, sous le compteur (« périodes testées ») ;
+`zone`, sous la part, dans sa couleur (« en perte », « étaler fait mieux ») ;
+`mediane` et `cas`, à côté de leur valeur (« médiane », « votre cas ») ;
+`axe_x`, le titre de l'axe.
+
+**La légende des points** est le seul mot que le moteur écrit lui-même dans
+cette famille (exception à R7) : « 1 point = » est fixe, le nombre vient de
+`par_point` et le mot de `unite`. Elle s'écrit en petit, en gris, sous le nom
+du compteur, au départ de la chute.
+
+**Quel sens sous le seuil** (R10, même règle que `Grille`). `NEG` est réservé
+à un résultat **négatif pour le spectateur**.
+
+- `"zone_negative": true` (par défaut) — le **rendement d'une stratégie** :
+  sous zéro, le spectateur perd de l'argent. « Sur un an, ce placement a fini
+  en perte dans 31,1 % des périodes. » Zone teintée, points et « 31,1 % » en
+  `NEG`, nom de zone « en perte ».
+- `"zone_negative": false` — l'**écart entre deux options** : sous zéro,
+  personne ne perd, c'est l'autre option qui l'emporte. « Tout d'un coup
+  contre étalé : dans 31,1 % des périodes, étaler a fait mieux. » Points et
+  « 31,1 % » en vert d'eau, limite en gris, sans teinte, nom de zone « étaler
+  fait mieux ».
+
+Dans le doute : si la phrase ne dit pas que le spectateur perd, c'est
+`false`.
+
+L'axe et ses graduations sont du décor. Pendant la chute, l'écran vit ;
+ensuite, moins de 4 s entre deux révélations (R6).
+
+Validée à l'écran le 14/11/2026 sur les plans d'essai
+`video/outils/essais/distribution.json` (une perte) et
+`distribution_ecart.json` (deux options).
+
+**Exemple exemplaire** — toutes les périodes d'un backtest, deux options
+comparées. **C'est celui-ci qu'il faut imiter.** Le nombre de périodes est
+dans la première phrase et lance la chute ; la zone, la médiane et le cas
+arrivent chacun sur leur chiffre. L'écart est entre deux options : sous zéro,
+c'est l'autre qui l'emporte, donc `"zone_negative": false`. Chiffres
+d'exemple. Les `t_rel_s` sont des estimations
+(3,94 syllabes/s) que le recalage remplacera.
+
+```json
+{
+  "vo_fr": "Voici les mille six cents périodes testées, une par une. Chaque point est un écart entre les deux méthodes. Dans trente et un virgule un pour cent des cas, étaler a fait mieux. La médiane se situe à quatre virgule six points. Et si vous aviez commencé en deux mille dix, votre écart serait de douze points.",
+  "type_visuel": "manim",
+  "manim_brief": {
+    "composant": "Distribution",
+    "format": "pct",
+    "classes": {"debut": -20, "pas": 5,
+                "effectifs": [18, 60, 150, 270, 330, 290, 210, 130, 78, 40, 18, 6]},
+    "total": 1600,
+    "par_point": 4,
+    "unite": "périodes",
+    "zone_negative": false,
+    "part_negative": {"valeur": 31.1, "format": "pct"},
+    "mediane": {"valeur": 4.6},
+    "cas": {"valeur": 12},
+    "revelations": [
+      {"element": "points", "t_rel_s": 0.76, "declencheur": "mille six cents"},
+      {"element": "zone", "t_rel_s": 6.85, "declencheur": "trente et un virgule un"},
+      {"element": "mediane", "t_rel_s": 12.69, "declencheur": "quatre virgule six"},
+      {"element": "cas", "t_rel_s": 19.04, "declencheur": "douze points"}
+    ]
+  },
+  "overlay_texte": [
+    {"ancre": "total", "t_rel_s": 0.76, "texte_fr": "périodes testées", "declencheur": "mille six cents"},
+    {"ancre": "axe_x", "t_rel_s": 4.31, "texte_fr": "Écart entre les deux méthodes", "declencheur": "un écart"},
+    {"ancre": "zone", "t_rel_s": 9.39, "texte_fr": "étaler fait mieux", "declencheur": "étaler a fait mieux"},
+    {"ancre": "mediane", "t_rel_s": 10.91, "texte_fr": "médiane", "declencheur": "La médiane"},
+    {"ancre": "cas", "t_rel_s": 15.48, "texte_fr": "départ en 2010", "declencheur": "commencé en deux mille dix"}
+  ]
+}
+```
+
+Ce que ça donne : sur « mille six cents », les points se mettent à tomber et
+le compteur défile, avec « 1 point = 4 périodes » dessous ; l'histogramme est
+fini à 6,65 s, compteur à « 1 600 » ; la limite de zéro et « 31,1 % », en vert
+d'eau, surgissent sur leur chiffre, puis la médiane « 4,6 % », puis le trait
+du cas à « 12 % ». Plus longue attente : 3,06 s, entre le nom du cas et son
+chiffre.
+
+**Le même graphique pour une perte** — le rendement sur un an d'une
+stratégie. Seuls changent le sens de la zone et son nom :
+
+```json
+"manim_brief": {
+  "composant": "Distribution", "format": "pct",
+  "classes": {"debut": -20, "pas": 5, "effectifs": [18, 60, 150, 270, 330, 290, 210, 130, 78, 40, 18, 6]},
+  "total": 1600, "par_point": 4, "unite": "périodes",
+  "part_negative": {"valeur": 31.1, "format": "pct"},
+  "revelations": [ … ]
+},
+"overlay_texte": [ {"ancre": "zone", "texte_fr": "en perte", … } ]
+```
+
+`zone_negative` est absent : il vaut `true`. La zone est teintée, ses points
+et « 31,1 % » sont en `NEG`.
+
 ### Pas encore disponible — ne pas utiliser
 
 Tant qu'une famille ne figure pas dans la section *Disponibles*, un segment

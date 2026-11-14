@@ -1,0 +1,198 @@
+{
+ "statut": "PLAN D'ESSAI VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
+ "courante": 1,
+ "versions": [
+  {
+   "version": 1,
+   "validee_le": "14/11/2026",
+   "motif": "famille Distribution validee a l'ecran par Alexandre le 14/11/2026",
+   "regle_cadre": "v2",
+   "regle_comparaison": "v2",
+   "regle_barres": "v3-phrase",
+   "vue_a_l_ecran": true,
+   "duree_s": 15.0,
+   "images": 450,
+   "pixels": {
+    "largeur": 960,
+    "hauteur": 540,
+    "md5": "059b6466d2561b800d0b3a86f4ffe7ed"
+   },
+   "segment": {
+    "id": "essai_distribution_ecart",
+    "role": "essai",
+    "type_visuel": "manim",
+    "manim_brief": {
+     "composant": "Distribution",
+     "format": "pct",
+     "classes": {
+      "debut": -20,
+      "pas": 5,
+      "effectifs": [
+       18,
+       60,
+       150,
+       270,
+       330,
+       290,
+       210,
+       130,
+       78,
+       40,
+       18,
+       6
+      ]
+     },
+     "total": 1600,
+     "par_point": 4,
+     "unite": "périodes",
+     "zone_negative": false,
+     "part_negative": {
+      "valeur": 31.1,
+      "format": "pct"
+     },
+     "mediane": {
+      "valeur": 4.6
+     },
+     "revelations": [
+      {
+       "element": "points",
+       "t_rel_s": 2.5
+      },
+      {
+       "element": "zone",
+       "t_rel_s": 9.0
+      },
+      {
+       "element": "mediane",
+       "t_rel_s": 12.0
+      }
+     ]
+    },
+    "overlay_texte": [
+     {
+      "ancre": "titre_haut",
+      "t_rel_s": 0.5,
+      "texte_fr": "Essai : tout d'un coup contre étalé"
+     },
+     {
+      "ancre": "total",
+      "t_rel_s": 2.5,
+      "texte_fr": "périodes testées"
+     },
+     {
+      "ancre": "axe_x",
+      "t_rel_s": 1.5,
+      "texte_fr": "Écart : tout d'un coup moins étalé"
+     },
+     {
+      "ancre": "zone",
+      "t_rel_s": 9.0,
+      "texte_fr": "étaler fait mieux"
+     },
+     {
+      "ancre": "mediane",
+      "t_rel_s": 12.0,
+      "texte_fr": "médiane"
+     },
+     {
+      "ancre": "bas",
+      "t_rel_s": 4.0,
+      "texte_fr": "Plan d'essai du moteur, sans donnée ni source"
+     }
+    ]
+   },
+   "calendrier": [
+    [
+     0.0,
+     0.36,
+     "Create"
+    ],
+    [
+     0.225,
+     0.36,
+     "FadeIn"
+    ],
+    [
+     0.45,
+     0.36,
+     "FadeIn"
+    ],
+    [
+     0.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     0.675,
+     0.36,
+     "FadeIn"
+    ],
+    [
+     0.9,
+     0.36,
+     "FadeIn"
+    ],
+    [
+     1.125,
+     0.36,
+     "FadeIn"
+    ],
+    [
+     1.35,
+     0.36,
+     "FadeIn"
+    ],
+    [
+     1.5,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     1.575,
+     0.225,
+     "FadeIn"
+    ],
+    [
+     2.5,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     2.5,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     2.5,
+     6.0,
+     "Chute+Compteur"
+    ],
+    [
+     4.0,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     9.0,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     9.0,
+     1.5,
+     "Create+FadeIn"
+    ],
+    [
+     12.0,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     12.0,
+     1.5,
+     "Create+FadeIn"
+    ]
+   ]
+  }
+ ]
+}
