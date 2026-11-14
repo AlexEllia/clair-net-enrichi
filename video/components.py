@@ -3439,6 +3439,155 @@ def Cascade(seg, cues):
     return VGroup(*[VGroup(bars[k][0], bars[k][1]) for k in order], *liaisons.values())
 
 
+# =============================================================================
+# Grille  -  « x fois sur 10 » (essai : video/outils/essais/grille.json)
+# Parties : groupe_k (la vague, surgit), valeur_k (etiquette)
+# =============================================================================
+
+GRILLE_FORMES = {10: (2, 5), 20: (4, 5), 100: (10, 10)}    # taille -> (lignes, colonnes)
+GRILLE_PAS = {10: 1.25, 20: 0.95, 100: 0.38}               # entraxe des cases
+GRILLE_COULEURS = {"gain": INTEREST, "perte": NEG, "neutre": TEAL}
+GRILLE_ETEINT = 0.22     # opacite d'une case eteinte (gris de la charte)
+
+
+def Grille(seg, cues):
+    """Une frequence rendue visible : sur une grille de 10, 20 ou 100 cases,
+    celles du cas decrit s'allument une a une.
+
+    Parametres du brief :
+      taille    10, 20 ou 100 cases par grille                  OBLIGATOIRE
+      groupes   [{"cases": n, "valeur": v, "format": "pct", "nature": ...}],
+                un ou deux. `cases` : le nombre de cases allumees - ce que la
+                voix arrondit (« pres de sept fois sur dix » : 7 sur 10) ;
+                `valeur` : la valeur exacte, sourcee, ecrite a cote (68,9 %) ;
+                `nature` : "gain" (un succes, ambre), "perte" (un echec, une
+                perte, NEG) ou "neutre" (ni l'un ni l'autre, vert d'eau).
+      icone     un pictogramme du catalogue a la place des cercles
+    Parties : groupe_k - sur son mot, ses cases s'allument en vague (1,5 s au
+    plus) ; valeur_k - la valeur exacte (par defaut, sur le meme mot).
+    Les grilles eteintes sont du decor, posees des l'ouverture.
+    Ancres d'overlay : groupe_k (le nom du groupe, au-dessus de sa grille).
+    """
+    import nombres
+    from pictos import picto
+    from style import SZ_BIG
+    sid = seg.get("id", "?")
+    mb = seg["manim_brief"]
+    taille = mb.get("taille")
+    if taille not in GRILLE_FORMES:
+        raise SystemExit(f"{sid} : Grille, `taille` parmi {', '.join(map(str, GRILLE_FORMES))} "
+                         f"(recu {taille!r})")
+    groupes = mb.get("groupes") or []
+    if not 1 <= len(groupes) <= 2:
+        raise SystemExit(f"{sid} : Grille attend un ou deux `groupes`")
+    for i, g in enumerate(groupes):
+        if g.get("cases") is None or g.get("valeur") is None \
+                or g.get("nature") not in GRILLE_COULEURS:
+            raise SystemExit(f"{sid} : groupes[{i}] attend `cases`, `valeur` et `nature` "
+                             f"({', '.join(GRILLE_COULEURS)})")
+        n = g["cases"]
+        if int(n) != n or not 0 <= n <= taille:
+            raise SystemExit(f"{sid} : groupes[{i}].cases = {n!r}, entier de 0 a {taille}")
+        # R3 : le moteur n'arrondit pas. Il verifie seulement que les cases
+        # allumees sont bien l'arrondi de la valeur exacte, a la case pres.
+        if g.get("format", "pct") == "pct":
+            exact = float(g["valeur"]) / 100 * taille
+            if abs(exact - n) > 0.5 + 1e-9:
+                raise SystemExit(f"{sid} : groupes[{i}], {n} cases sur {taille} ne sont pas "
+                                 f"l'arrondi de {g['valeur']} % ({exact:.2f} cases)")
+
+    # --- geometrie ---------------------------------------------------------
+    lignes, colonnes = GRILLE_FORMES[taille]
+    deux = len(groupes) == 2
+    gauche = X_LEFT + 0.4
+    droite = GRAPHE_DROITE if reserve_encarts(cues) else X_RIGHT - 0.4
+    labels = [txt(nombres.fmt(float(g["valeur"]), g.get("format", "pct")),
+                  SZ_BIG if not deux else 72, GRILLE_COULEURS[g["nature"]], weight=SEMIBOLD)
+              for g in groupes]
+    pas = GRILLE_PAS[taille]
+    # Deux grilles : valeur sous chacune. Une seule : valeur a sa droite.
+    ecart = 1.3
+    if deux:
+        large = 2 * colonnes * pas + ecart
+    else:
+        large = colonnes * pas + 0.7 + labels[0].width
+    k = min(1.0, (droite - gauche) / large, 4.1 / (lignes * pas) if deux else 1.0)
+    pas *= k
+    w, h = colonnes * pas, lignes * pas
+    milieu = (gauche + droite) / 2
+    cy = 0.0 if deux else -0.45
+    if deux:
+        centres = [milieu - (w + ecart) / 2, milieu + (w + ecart) / 2]
+    else:
+        centres = [milieu - (0.7 + labels[0].width) / 2]
+
+    icone = mb.get("icone")
+
+    def case(x, y, couleur, eteinte):
+        if icone:
+            m = picto(icone, MUTED if eteinte else couleur, hauteur=pas * 0.70)
+            m.move_to([x, y, 0])
+            if eteinte:
+                _set_alpha(m, GRILLE_ETEINT + 0.2)
+            return m
+        return Dot([x, y, 0], radius=pas * 0.34, color=MUTED if eteinte else couleur,
+                   fill_opacity=GRILLE_ETEINT if eteinte else 1.0, stroke_width=0)
+
+    fonds, vagues, order = [], {}, []
+    for gi, g in enumerate(groupes):
+        cx = centres[gi]
+        couleur = GRILLE_COULEURS[g["nature"]]
+        places = [(cx - w / 2 + (c + 0.5) * pas, cy + h / 2 - (r + 0.5) * pas)
+                  for r in range(lignes) for c in range(colonnes)]
+        fond = VGroup(*[case(x, y, couleur, True) for x, y in places])
+        allumees = VGroup(*[case(x, y, couleur, False) for x, y in places[:int(g["cases"])]])
+        lab = labels[gi]
+        if deux:
+            lab.move_to([cx, cy - h / 2 - 0.30 - lab.height / 2, 0])
+        else:
+            lab.move_to([cx + w / 2 + 0.7 + lab.width / 2, cy, 0])
+        key = f"groupe_{gi + 1}"
+        fonds.append(fond)
+        vagues[key] = (allumees, lab)
+        order.append(key)
+        cues.point(key, (cx, cy + h / 2 + 0.42))
+        cues.anchor_align[key] = ORIGIN
+        cues.anchor_colors[key] = couleur if g["nature"] != "neutre" else INK_SOFT
+        cues.anchor_widths[key] = w + (ecart - 0.3 if deux else 1.0)
+        if g["nature"] != "neutre":
+            # Une frequence n'est pas un montant : sa couleur dit le sens, sans signe.
+            cues.sens.append({"nom": key, "nature": g["nature"], "objets": [allumees],
+                              "montant": lab, "signe": False})
+
+    # --- calendrier ----------------------------------------------------------
+    extras = [f"valeur_{i + 1}" for i in range(len(groupes))]
+    rev = Reveal(seg, cues, order, extras=extras, t0=1.6, rt=PUNCTUAL_MAX, margin=0.6)
+    _warn_unnamed(sid, order, rev)
+    times = _named_times(order, rev)
+    for key in order:
+        rev.default(key, times[key])
+    # Les grilles eteintes : le decor, pose pendant l'attente du premier mot.
+    frame_end = _frame_end({key: [(0.0, times[key])] for key in order})
+    if frame_end < MIN_RT:
+        cues.add(*fonds)
+    else:
+        for fond in fonds:
+            cues.at(0.0, FadeIn(fond, lag_ratio=0.0), rt=frame_end)
+    cues.meta["frame_end"] = frame_end
+    cues.meta["first_data"] = min(times.values())
+    for i, key in enumerate(order):
+        allumees, lab = vagues[key]
+        if len(allumees):
+            rev.at(key, FillPictos(allumees, [(0.0, 0.0), (1.0, 1.0)]), rt=PUNCTUAL_MAX)
+        # La valeur exacte s'ecrit sur le mot du groupe, sauf si la voix
+        # l'enonce plus tard (valeur_k).
+        vk = f"valeur_{i + 1}"
+        rev.default(vk, rev.t(key))
+        if rev.t(vk) < cues.dur:
+            cues.at(rev.t(vk), FadeIn(lab, scale=0.6), rt=LABEL_RT)
+    return VGroup(*fonds, *[v[0] for v in vagues.values()], *labels)
+
+
 COMPONENTS = {
     "BarRace": BarRace,
     "StackedBars": StackedBars,
@@ -3454,4 +3603,5 @@ COMPONENTS = {
     "Flux": Flux,
     "Erosion": Erosion,
     "Cascade": Cascade,
+    "Grille": Grille,
 }

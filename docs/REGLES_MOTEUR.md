@@ -153,6 +153,22 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
   milieu d'une attente de plus de 4 s, source par colonne (`source_g`), noms
   des colonnes en overlay (`depart`, `marche_k`, `arrivee`), tous à la taille
   du plus contraint. Essai : `video/outils/essais/cascade.json`.
+- **Grille** (13/11/2026 ; validée à l'écran le jour même sur le plan d'essai
+  `video/outils/essais/grille.json`, sortie du verrou `PILOTES`, au
+  catalogue, référence `essai_grille` figée au pixel près) : « x fois sur 10 », famille par défaut d'un arrondi
+  en fraction. Grille de 10, 20 ou 100 cases neutres (cercles ou pictogramme),
+  posée en décor ; sur le mot, les cases du cas s'allument une à une en vague
+  (1,5 s au plus) ; ambre pour un succès, vert d'eau si neutre ; `NEG` est
+  réservé à la fréquence d'un résultat négatif pour le spectateur (« en perte
+  dans 22 % des cas »), jamais à la fréquence de l'autre option d'une
+  comparaison (« étaler fait mieux »), qui est neutre (précision d'Alexandre
+  du 14/11/2026) ; valeur exacte en grand à côté. Un ou deux groupes
+  (deux grilles côte à côte). R3 : `cases` (l'arrondi de la voix) et `valeur`
+  (l'exacte) viennent du brief ; le moteur vérifie que l'un est l'arrondi de
+  l'autre à la case près et arrête le build sinon. Contrôle de sens : la
+  couleur seule est jugée, une fréquence ne porte pas de signe (`"signe":
+  False` dans `cues.sens`). Éléments : `groupe_k` (surgissement), `valeur_k`
+  (étiquette). Essais : `video/outils/essais/grille.json`, `grille_dix.json`.
 - **Mention** (11/11/2026) : dérive de 2 % sur toute la durée du plan, portée par
   une seule animation (`Mention`) avec les deux fondus. *Pourquoi* : la dérive ne
   partait qu'après la seconde ligne, et seulement s'il restait plus de 4 s ; sur

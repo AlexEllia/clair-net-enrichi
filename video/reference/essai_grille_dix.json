@@ -1,0 +1,99 @@
+{
+ "statut": "PLAN D'ESSAI VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
+ "courante": 1,
+ "versions": [
+  {
+   "version": 1,
+   "validee_le": "14/11/2026",
+   "motif": "famille Grille validee a l'ecran par Alexandre le 14/11/2026 ; seconde frequence neutre",
+   "regle_cadre": "v2",
+   "regle_comparaison": "v2",
+   "regle_barres": "v3-phrase",
+   "vue_a_l_ecran": true,
+   "duree_s": 8.0,
+   "images": 240,
+   "pixels": {
+    "largeur": 960,
+    "hauteur": 540,
+    "md5": "c9339527e1b3a4f85fd46cfcce58833d"
+   },
+   "segment": {
+    "id": "essai_grille_dix",
+    "role": "essai",
+    "type_visuel": "manim",
+    "manim_brief": {
+     "composant": "Grille",
+     "taille": 10,
+     "icone": "calendar",
+     "groupes": [
+      {
+       "cases": 7,
+       "valeur": 68.9,
+       "format": "pct",
+       "nature": "gain"
+      }
+     ],
+     "revelations": [
+      {
+       "element": "groupe_1",
+       "t_rel_s": 2.5
+      },
+      {
+       "element": "valeur_1",
+       "t_rel_s": 5.0
+      }
+     ]
+    },
+    "overlay_texte": [
+     {
+      "ancre": "titre_haut",
+      "t_rel_s": 0.5,
+      "texte_fr": "Essai : sept fois sur dix"
+     },
+     {
+      "ancre": "groupe_1",
+      "t_rel_s": 2.5,
+      "texte_fr": "Périodes où tout d'un coup fait mieux"
+     },
+     {
+      "ancre": "bas",
+      "t_rel_s": 4.0,
+      "texte_fr": "Plan d'essai du moteur, sans donnée ni source"
+     }
+    ]
+   },
+   "calendrier": [
+    [
+     0.0,
+     1.8,
+     "FadeIn"
+    ],
+    [
+     0.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     2.5,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     2.5,
+     1.5,
+     "FillPictos"
+    ],
+    [
+     4.0,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     5.0,
+     0.3,
+     "FadeIn"
+    ]
+   ]
+  }
+ ]
+}

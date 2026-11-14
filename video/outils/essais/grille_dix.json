@@ -1,0 +1,26 @@
+{
+ "_role": "Plan d'essai, hors episode : famille Grille, un seul groupe sur une grille de 10 pictogrammes : « pres de sept fois sur dix », valeur exacte 68,9 % a cote. Chiffres d'essai, sans source.",
+ "duree_s": 8.0,
+ "segment": {
+  "id": "essai_grille_dix",
+  "role": "essai",
+  "type_visuel": "manim",
+  "manim_brief": {
+   "composant": "Grille",
+   "taille": 10,
+   "icone": "calendar",
+   "groupes": [
+    {"cases": 7, "valeur": 68.9, "format": "pct", "nature": "gain"}
+   ],
+   "revelations": [
+    {"element": "groupe_1", "t_rel_s": 2.5},
+    {"element": "valeur_1", "t_rel_s": 5.0}
+   ]
+  },
+  "overlay_texte": [
+   {"ancre": "titre_haut", "t_rel_s": 0.5, "texte_fr": "Essai : sept fois sur dix"},
+   {"ancre": "groupe_1", "t_rel_s": 2.5, "texte_fr": "Périodes où tout d'un coup fait mieux"},
+   {"ancre": "bas", "t_rel_s": 4.0, "texte_fr": "Plan d'essai du moteur, sans donnée ni source"}
+  ]
+ }
+}

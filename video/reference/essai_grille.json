@@ -1,0 +1,129 @@
+{
+ "statut": "PLAN D'ESSAI VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
+ "courante": 1,
+ "versions": [
+  {
+   "version": 1,
+   "validee_le": "14/11/2026",
+   "motif": "famille Grille validee a l'ecran par Alexandre le 14/11/2026 ; seconde frequence neutre",
+   "regle_cadre": "v2",
+   "regle_comparaison": "v2",
+   "regle_barres": "v3-phrase",
+   "vue_a_l_ecran": true,
+   "duree_s": 11.0,
+   "images": 330,
+   "pixels": {
+    "largeur": 960,
+    "hauteur": 540,
+    "md5": "954cdc1e2a8eb65d94c44d67981bebed"
+   },
+   "segment": {
+    "id": "essai_grille",
+    "role": "essai",
+    "type_visuel": "manim",
+    "manim_brief": {
+     "composant": "Grille",
+     "taille": 100,
+     "groupes": [
+      {
+       "cases": 69,
+       "valeur": 68.9,
+       "format": "pct",
+       "nature": "gain"
+      },
+      {
+       "cases": 31,
+       "valeur": 31.1,
+       "format": "pct",
+       "nature": "neutre"
+      }
+     ],
+     "revelations": [
+      {
+       "element": "groupe_1",
+       "t_rel_s": 3.0
+      },
+      {
+       "element": "groupe_2",
+       "t_rel_s": 7.0
+      }
+     ]
+    },
+    "overlay_texte": [
+     {
+      "ancre": "titre_haut",
+      "t_rel_s": 0.5,
+      "texte_fr": "Essai : sur 100 périodes"
+     },
+     {
+      "ancre": "groupe_1",
+      "t_rel_s": 3.0,
+      "texte_fr": "Tout d'un coup fait mieux"
+     },
+     {
+      "ancre": "groupe_2",
+      "t_rel_s": 7.0,
+      "texte_fr": "Étaler fait mieux"
+     },
+     {
+      "ancre": "bas",
+      "t_rel_s": 5.0,
+      "texte_fr": "Plan d'essai du moteur, sans donnée ni source"
+     }
+    ]
+   },
+   "calendrier": [
+    [
+     0.0,
+     2.3,
+     "FadeIn"
+    ],
+    [
+     0.0,
+     2.3,
+     "FadeIn"
+    ],
+    [
+     0.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     3.0,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     3.0,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     3.0,
+     1.5,
+     "FillPictos"
+    ],
+    [
+     5.0,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     7.0,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     7.0,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     7.0,
+     1.5,
+     "FillPictos"
+    ]
+   ]
+  }
+ ]
+}

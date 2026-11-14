@@ -32,7 +32,7 @@ la voix le dit. Pour chaque valeur de `donnees` que la voix énonce, écris
 une révélation qui nomme cette valeur (`series_k_point_j` pour une courbe,
 `bar_g` pour une barre, `band_g` pour une bande, `value_g` pour une jauge,
 `link_k` pour un montant de flux, `depart`, `marche_k` et `arrivee` pour une
-`Cascade`, `capital`, `perte_k`, `cumul` et `reste`
+`Cascade`, `groupe_k` pour une `Grille`, `capital`, `perte_k`, `cumul` et `reste`
 pour une `Erosion`), calée sur le mot qui l'énonce (section 2).
 Sinon le visuel n'illustre rien.
 
@@ -1218,6 +1218,106 @@ chiffre, où « −1,5 % », « −1,6 % » puis « −2 % » s'écrivent en `NE
 barre du réel se pose sur « un virgule neuf », avec « 1,9 % » en grand. Les
 sources A, B et C apparaissent chacune une fois, sous leur colonne. Plus
 longue attente : 2,74 s, après le dernier chiffre.
+#### `Grille` — « x fois sur 10 »
+
+Une fréquence ou une probabilité. **C'est la famille par défaut d'un arrondi
+en fraction** (« près de sept fois sur dix », « une année sur cinq ») : elle
+rend visible ce que la voix arrondit, et la valeur exacte s'écrit à côté.
+
+Une grille de 10, 20 ou 100 cases neutres (cercles, ou un pictogramme du
+catalogue), posée dès l'ouverture. Sur le mot déclencheur, les cases du cas
+décrit s'allument une à une, en vague rapide (1,5 s au plus), de gauche à
+droite et de haut en bas. La couleur suit le sens (R10) : ambre pour un
+succès, `NEG` pour une perte ou un échec du spectateur, vert d'eau pour ce qui
+n'est ni l'un ni l'autre. La valeur exacte (« 68,9 % »)
+s'écrit en grand, dans la même couleur : à droite d'une grille seule, sous
+chaque grille quand il y en a deux.
+
+**Pas de `donnees`** : tout est dans `taille` et `groupes`.
+
+**Paramètres** :
+
+| Paramètre | Obligatoire | Valeurs admises | Effet |
+|---|---|---|---|
+| `taille` | **oui** | `10`, `20`, `100` | Nombre de cases de chaque grille : 2 × 5, 4 × 5, 10 × 10. Prends le dénominateur que dit la voix : « sept fois sur dix » → 10 ; un pourcentage énoncé tel quel → 100. |
+| `groupes` | **oui** | `[{"cases": n, "valeur": v, "format": f, "nature": s}]`, 1 ou 2 | Un groupe par fréquence que la voix énonce. `cases` : le nombre de cases allumées — **l'arrondi que dit la voix** (7 pour « sept fois sur dix »). `valeur` : **la valeur exacte**, sourcée, écrite à côté (68.9). `format` : `"pct"` par défaut. `nature`, obligatoire : `"gain"` (un succès, ambre), `"perte"` (un résultat négatif pour le spectateur, `NEG`), `"neutre"` (ni l'un ni l'autre, vert d'eau) — voir « Quelle `nature` » ci-dessous. |
+| `icone` | non | un pictogramme du catalogue (`calendar`, `user`, `coins`…) | Remplace les cercles. À réserver aux grilles de 10 et de 20 : à 100, il ne se lit plus. |
+
+Le moteur n'arrondit rien (R3) : il vérifie que `cases` est bien l'arrondi de
+`valeur` à la case près (68,9 % sur 10 cases : 6,89, donc 7 ; 6 ou 8
+**arrêtent le build**). Une fréquence n'est pas un montant : sa valeur
+s'écrit sans signe, c'est la couleur qui dit le sens.
+
+**Deux groupes** : deux grilles côte à côte, pour comparer deux fréquences
+(« tout d'un coup » contre « étalé »). Chacune a son mot, sa couleur et sa
+valeur ; la seconde reste éteinte jusqu'à son mot.
+
+**Quelle `nature`.** `NEG` est réservé à la fréquence d'un **résultat négatif
+pour le spectateur** : une perte, un échec. La fréquence de l'**autre option**
+d'une comparaison n'est pas une perte : elle est `"neutre"`.
+
+- `"perte"` — « Sur un an, un placement en actions finit **en perte dans
+  22 % des cas**. » Le spectateur y perd de l'argent :
+  `{"cases": 22, "valeur": 22, "nature": "perte"}`, sur une grille de 100.
+- `"neutre"` — « Investir d'un coup fait mieux 68,9 % du temps ; **étaler fait
+  mieux dans 31,1 % des cas**. » Personne ne perd, c'est l'autre option qui
+  l'emporte : `{"cases": 69, "valeur": 68.9, "nature": "gain"}` puis
+  `{"cases": 31, "valeur": 31.1, "nature": "neutre"}`.
+- `"gain"` — la fréquence d'un succès, d'un résultat favorable : « le
+  placement est gagnant sept fois sur dix ».
+
+Dans le doute entre `"perte"` et `"neutre"` : si la phrase ne dit pas que le
+spectateur perd ou échoue, c'est `"neutre"`.
+
+**Éléments adressables dans `revelations`** :
+
+| Élément | Type | Remarque |
+|---|---|---|
+| `groupe_k` | surgissement (1,5 s) | Sur son mot, les cases du groupe k s'allument en vague. Première donnée du plan (R5). |
+| `valeur_k` | étiquette (0,3 s) | Facultatif. La valeur exacte du groupe k. Sans révélation, elle s'écrit sur le mot du groupe, avec la vague ; nomme-la si la voix énonce le chiffre exact plus tard. |
+
+**Ancre d'overlay** (R7) : `groupe_k`, le nom du groupe, au-dessus de sa
+grille, dans sa couleur (« Investir d'un coup fait mieux ») — 30 caractères
+au plus.
+
+Les grilles éteintes sont du décor. Une fois la vague passée, rien ne bouge :
+moins de 4 s jusqu'à la révélation ou l'overlay suivant (R6).
+
+Validée à l'écran le 13/11/2026 sur le plan d'essai
+`video/outils/essais/grille.json`.
+
+**Exemple exemplaire** — l'arrondi de la voix, puis le chiffre exact. **C'est
+celui-ci qu'il faut imiter.** La voix dit « près de sept fois sur dix » : la
+grille a 10 cases et en allume 7 ; elle donne ensuite le chiffre exact, qui
+s'écrit sur son mot. Chiffres d'exemple. Les `t_rel_s` sont des estimations
+(3,94 syllabes/s) que le recalage remplacera.
+
+```json
+{
+  "vo_fr": "Investir d'un coup a fait mieux qu'étaler près de sept fois sur dix. Très exactement, dans soixante-huit virgule neuf pour cent des périodes.",
+  "type_visuel": "manim",
+  "manim_brief": {
+    "composant": "Grille",
+    "taille": 10,
+    "icone": "calendar",
+    "groupes": [
+      {"cases": 7, "valeur": 68.9, "format": "pct", "nature": "gain"}
+    ],
+    "revelations": [
+      {"element": "groupe_1", "t_rel_s": 2.79, "declencheur": "près de sept fois"},
+      {"element": "valeur_1", "t_rel_s": 5.84, "declencheur": "soixante-huit virgule neuf"}
+    ]
+  },
+  "overlay_texte": [
+    {"ancre": "groupe_1", "t_rel_s": 0.0, "texte_fr": "Investir d'un coup fait mieux", "declencheur": "Investir d'un coup"}
+  ]
+}
+```
+
+Ce que ça donne : les dix calendriers éteints se posent pendant « Investir
+d'un coup a fait mieux » ; sur « près de sept fois », sept s'allument en ambre,
+un à un, jusqu'à 4,29 s ; « 68,9 % » s'écrit à droite sur « soixante-huit
+virgule neuf ». Plus longue attente : 2,49 s, après le chiffre exact.
 ### Pas encore disponible — ne pas utiliser
 
 Tant qu'une famille ne figure pas dans la section *Disponibles*, un segment

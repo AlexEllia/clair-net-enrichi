@@ -639,7 +639,9 @@ def fautes_sens(seg, dur, ep_dir=None, strict=True):
         if vues != {voulu}:
             fautes.append(f"{nom} : {nature} dessine en {', '.join(sorted(vues))} au lieu de "
                           f"{voulu}")
-        if e["montant"] is not None:
+        # Le signe ne vaut que pour un montant : une frequence (Grille) dit son
+        # sens par sa seule couleur.
+        if e["montant"] is not None and e.get("signe", True):
             texte = getattr(e["montant"], "text", "")
             if not texte.startswith(SIGNE_SENS[nature]):
                 fautes.append(f"{nom} : montant « {texte} » sans signe "
