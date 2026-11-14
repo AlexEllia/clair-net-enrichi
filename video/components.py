@@ -3221,9 +3221,14 @@ def Erosion(seg, cues):
             partis = sum(1 for d in departs if t >= d + 1.5 / 30)
             return haut(bornes[partis])
 
-        fin_compte = t0 + (rt - 0.7 * geste if n > 1 else 0.35 * rt)
+        fin_compte = t0 + (rt - 0.7 * geste if n > 1 else rt)
+        # Une tranche seule : la valeur ne descend qu'une fois la tranche
+        # partie sur le cote (fin du glissement, 80 % du geste), sinon elle
+        # passerait sur elle. Annee par annee, les tranches sont fines et
+        # partent une a une : la valeur descend en continu.
+        debut_compte = t0 if n > 1 else t0 + 0.8 * rt
 
-        def reste_a(t, bornes=bornes, t0=t0, fin=fin_compte, n=n):
+        def reste_a(t, bornes=bornes, t0=debut_compte, fin=fin_compte, n=n):
             u = float(np.clip((t - t0) / max(fin - t0, 1e-6), 0, 1))
             a, b = bornes[0], bornes[-1]
             return a * (b / a) ** u if (n > 1 and b > 0) else a + (b - a) * u
@@ -3354,7 +3359,7 @@ def Cascade(seg, cues):
         cues.point(key, (x0 + g * pas, y_nom))
         cues.anchor_align[key] = UP
         cues.anchor_widths[key] = pas - 0.2
-        cues.point(f"source_{g + 1}", (x0 + g * pas, y_nom - 0.42))
+        cues.point(f"source_{g + 1}", (x0 + g * pas, y_nom - 0.50))
         cues.anchor_widths[f"source_{g + 1}"] = pas - 0.2
 
     def liaison(g, niveau):

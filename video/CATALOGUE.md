@@ -92,15 +92,29 @@ boîtes englobantes de ce que le moteur posera :
   plans (dans un script écrit contre une version antérieure du catalogue, il
   est seulement signalé) ;
 - un libellé (titre, titre d'axe, nom d'option, de nœud, de lien, légende,
-  source) qui sort de l'image ou recouvre un autre libellé ; pour `Flux`,
-  un libellé qui recouvre un nœud, un montant ou le tracé d'un lien ;
+  source) qui sort de l'image, ou qui recouvre un autre libellé **ou s'en
+  approche à moins de 0,15** ; pour `Flux`, un libellé qui recouvre un nœud,
+  un montant ou le tracé d'un lien ;
+- **un élément en mouvement qui passe sous un autre**, à n'importe quel
+  instant de son animation, et pas seulement à sa place finale : un point qui
+  tombe derrière un compteur, une valeur qui défile sur une colonne, une
+  tranche qui glisse sous un montant, un texte qui monte sur un autre en
+  apparaissant. Est en mouvement ce qui occupe une place qu'il n'aura plus à
+  la fin de son animation (ce qui grandit dans sa place finale, une barre, un
+  tracé, n'en est pas). Il est jugé contre tout ce qui est à l'écran au même
+  instant et visible (20 % d'opacité au moins), dès que l'un des deux est un
+  texte ; deux éléments graphiques peuvent se croiser (les points d'un
+  histogramme entre eux). L'argent qui circule suit le tracé de son lien,
+  déjà jugé ;
 - une étiquette de valeur plus proche d'un autre point, d'une autre barre ou
   de la courbe d'une autre série que de ce qu'elle chiffre, ou à plus de
   0,60 unité de sa cible (voir `LineChart`).
 
 Le moteur évite ces fautes de lui-même (section 3) ; quand il n'y arrive
 pas — pas de place autour d'un nœud, libellé trop long — le refus nomme le
-libellé : raccourcis-le, ou écarte les nœuds.
+libellé : raccourcis-le, ou écarte les nœuds. Dans un script écrit contre une
+version antérieure du catalogue, une faute venue d'une règle plus récente que
+lui (marge de 0,15, mouvement) est seulement signalée.
 
 **R7 — Pas de mots dans la scène.** Le graphe n'écrit que des chiffres et
 les symboles € et %, et ne dessine que les pictogrammes du catalogue. Tout mot

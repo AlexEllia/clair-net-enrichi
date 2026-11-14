@@ -109,6 +109,22 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
   contrôle le voie. Outils : `video/outils/planche.py` (plan d'essai `.json`),
   `video/outils/identique.py` (comparaison image par image d'un épisode),
   `video/outils/essais/`.
+- **Contrôle de placement en mouvement et marge entre libellés** (14/11/2026,
+  demande d'Alexandre ; `mouvements` et `collisions` dans build.py) : le plan
+  est rejoué sans rendu, chaque animation échantillonnée 12 fois par seconde ;
+  un élément en mouvement — qui occupe une place qu'il n'aura plus à la fin de
+  son animation — ne doit jamais passer sous un autre ni un autre sous lui,
+  dès que l'un des deux est un texte, tant qu'ils sont visibles (20 %
+  d'opacité). Toutes les familles. Et deux libellés ne s'approchent pas à
+  moins de 0,15 (`MARGE_ENCART`). Refus pour un script au catalogue actuel et
+  pour un plan d'essai, remarque pour un script antérieur (EP004 : six
+  remarques). *Pourquoi* : sur l'aperçu de Distribution, des points tombaient
+  derrière le compteur, et le titre de l'axe était à 0,11 de la source — la
+  marge ne valait que pour les encarts, les libellés n'étaient refusés qu'en
+  cas de recouvrement. Le nouveau contrôle a aussi trouvé, dans deux plans
+  d'essai déjà validés, la valeur d'Erosion qui descendait sur la tranche
+  avant son départ et un nom de Cascade à 0,14 de sa source : corrigés (la
+  valeur attend la fin du glissement ; source à 0,50 sous le nom).
 - **Code couleur de sens, R10** (12/11/2026, décision d'Alexandre) : `CONTRIB`
   (bleu) = ce que l'on verse, `INTEREST` (ambre) = ce que l'on gagne, `NEG`
   (#E2725B) = ce que l'on perd ; une perte n'apparaît jamais en ambre ni en

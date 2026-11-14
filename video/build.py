@@ -436,6 +436,155 @@ def _nom_element(m):
     return f"{type(m).__name__} du graphique en ({x:.1f} ; {y:.1f})"
 
 
+VISIBLE = 0.2          # sous 20 % d'opacite, un objet ne se voit pas (densite.py)
+ECHANTILLONS_S = 12    # images examinees par seconde d'animation
+
+
+def _est_texte(m):
+    """Un texte : libelle, encart, ou tout objet qui porte des lettres ou des
+    chiffres (valeur, compteur, montant)."""
+    from manim import Text, MarkupText
+    if getattr(m, "role", None) in ("libelle", "encart"):
+        return True
+    return any(isinstance(x, (Text, MarkupText)) for x in m.get_family())
+
+
+def _opacite(m):
+    o = 0.0
+    for sm in m.family_members_with_points():
+        o = max(o, float(sm.get_fill_opacity()))
+        if sm.get_stroke_width() > 1e-3:
+            o = max(o, float(sm.get_stroke_opacity()))
+    return o
+
+
+def _pieces(m, texte):
+    """Ce qui se juge separement : un texte d'un bloc ; un groupe graphique
+    piece par piece (les points d'un histogramme, les tranches d'une colonne)."""
+    if texte or len(m.submobjects) < 2 or m.has_points():
+        return [m]
+    return list(m.submobjects)
+
+
+def _deplier(a):
+    sous = getattr(a, "animations", None)
+    if sous:
+        return [x for y in sous for x in _deplier(y)]
+    return [a]
+
+
+def _nom_mobile(m, a=None):
+    if getattr(m, "nom", None):
+        return m.nom
+    texte = getattr(m, "text", None)
+    if texte:
+        return f"« {texte} »"
+    x, y = m.get_center()[:2]
+    de = f" ({type(a).__name__})" if a is not None else ""
+    return f"{type(m).__name__}{de} en ({x:.1f} ; {y:.1f})"
+
+
+def mouvements(seg, dur, ep_dir=None):
+    """Fautes de placement en mouvement : un element qui, pendant son
+    animation, passe sous un autre ou un autre sous lui - un point qui tombe
+    derriere un compteur, une valeur qui defile sur une colonne.
+
+    Le plan est rejoue sans rendu, chaque animation echantillonnee
+    (ECHANTILLONS_S par seconde). Un element est en mouvement quand il occupe
+    une place qu'il n'aura plus a la fin de son animation (chute, glissement,
+    compteur qui descend, texte qui monte en apparaissant) ; ce qui grandit
+    dans sa place finale (barre, trace) n'en est pas. Il est juge contre tout
+    ce qui est a l'ecran au meme instant, visible (20 % d'opacite au moins),
+    des que l'un des deux est un texte ; deux elements graphiques peuvent se
+    croiser. L'argent qui circule (Courant) suit son chemin, deja juge.
+    Renvoie [message], une faute par paire, a son premier instant."""
+    import contextlib
+    import io
+    import numpy as np
+    from components import Courant
+    with contextlib.redirect_stderr(io.StringIO()):
+        cues = composer(seg, dur, ep_dir)
+    etats = {}         # id(piece) -> {"m", "parent", "texte", "nom", "ech": [(t, boite, op)]}
+    mobiles = []       # (t, id piece, boite)
+
+    def fiche(piece, parent, texte, a):
+        f = etats.get(id(piece))
+        if f is None:
+            f = etats[id(piece)] = {"m": piece, "parent": id(parent), "texte": texte,
+                                    "nom": _nom_mobile(parent if texte else piece, a),
+                                    "ech": []}
+        return f
+
+    for m in cues.static:
+        texte = _est_texte(m)
+        for pc in _pieces(m, texte):
+            fiche(pc, m, texte, None)["ech"].append((0.0, _boite(pc), _opacite(pc)))
+
+    for t0, anims, rt in sorted(cues.items, key=lambda c: c[0]):
+        if t0 >= dur:
+            continue
+        rt = max(min(rt, dur - t0), 0.05)
+        for a in [x for y in anims for x in _deplier(y)]:
+            m = getattr(a, "mobject", None)
+            if m is None or isinstance(a, Courant):
+                continue
+            texte = _est_texte(m)
+            a.run_time = rt
+            alphas = np.linspace(0.0, 1.0, max(8, int(np.ceil(rt * ECHANTILLONS_S))) + 1)
+            serie = []
+            try:
+                a.begin()
+                for al in alphas:
+                    a.interpolate(float(al))
+                    serie.append((t0 + al * rt, [(pc, _boite(pc), _opacite(pc))
+                                                 for pc in _pieces(m, texte)]))
+            except Exception:
+                serie = [(t0, [(pc, _boite(pc), _opacite(pc)) for pc in _pieces(m, texte)])]
+            fin = {id(pc): b for pc, b, _ in serie[-1][1]}
+            for t, rangs in serie:
+                for pc, b, op in rangs:
+                    fiche(pc, m, texte, a)["ech"].append((t, b, op))
+                    f = fin.get(id(pc))
+                    if f is None or op < VISIBLE:
+                        continue
+                    dehors = (b[0] < f[0] - 0.02 or b[1] > f[1] + 0.02
+                              or b[2] < f[2] - 0.02 or b[3] > f[3] + 0.02)
+                    if dehors:
+                        mobiles.append((t, id(pc), b))
+
+    for f in etats.values():
+        f["ech"].sort(key=lambda e: e[0])
+        f["t"] = [e[0] for e in f["ech"]]
+
+    import bisect
+
+    def etat(f, t):
+        i = bisect.bisect_right(f["t"], t + 1e-9) - 1
+        return f["ech"][i] if i >= 0 else None
+
+    fautes, vues = [], set()
+    textes = [f for f in etats.values() if f["texte"]]
+    tous = list(etats.values())
+    for t, pid, b in mobiles:
+        f = etats[pid]
+        for g in (tous if f["texte"] else textes):
+            if g is f or g["parent"] == f["parent"]:
+                continue
+            e = etat(g, t)
+            if e is None or e[2] < VISIBLE:
+                continue
+            if not _chevauche(b, e[1]):
+                continue
+            cle = (f["nom"], g["nom"])
+            if cle in vues:
+                continue
+            vues.add(cle)
+            fautes.append(f"en mouvement, {f['nom']} passe sous {g['nom']} a {t:.2f} s"
+                          if not f["texte"] else
+                          f"en mouvement, {f['nom']} passe sur {g['nom']} a {t:.2f} s")
+    return fautes
+
+
 def collisions(seg, dur, ep_dir=None, strict=True):
     """Fautes de placement d'un plan, jugees sur les boites englobantes de
     tout ce que le moteur y pose :
@@ -445,8 +594,11 @@ def collisions(seg, dur, ep_dir=None, strict=True):
       ou qui s'en approche, comme du bord de l'image, a moins de
       MARGE_ENCART (tous les plans) ;
     - un libelle (titre, nom d'axe, d'option, de noeud, de lien, legende,
-      source) qui sort de l'image, qui recouvre un autre libelle, ou, pour
-      Flux, un noeud, un montant ou le trace d'un lien.
+      source) qui sort de l'image, qui recouvre un autre libelle ou s'en
+      approche a moins de MARGE_ENCART, ou, pour Flux, un noeud, un montant
+      ou le trace d'un lien ;
+    - un element qui, en mouvement, passe sous un autre ou un autre sous lui
+      (voir `mouvements`), pendant toute la duree de son animation.
 
     Un encart est juge sur toute sa presence : de son arrivee a sa sortie en
     fondu (ou a la fin du plan). Le reste du plan est tenu pour present du
@@ -481,7 +633,8 @@ def collisions(seg, dur, ep_dir=None, strict=True):
     def hors(b):
         return b[0] < bord[0] or b[1] > bord[1] or b[2] < bord[2] or b[3] > bord[3]
 
-    # Marge minimale autour d'un encart, dans tous les plans.
+    # Marge minimale autour d'un encart, et entre deux libelles, dans tous
+    # les plans.
     from components import MARGE_ENCART
     marge = MARGE_ENCART
     pres = f"serre de trop pres (moins de {MARGE_ENCART:.2f})".replace(".", ",")
@@ -521,8 +674,9 @@ def collisions(seg, dur, ep_dir=None, strict=True):
         if hors(b):
             fautes.append(f"libelle {l.nom} sort de l'image")
         for m in libelles[i + 1:]:
-            if _chevauche(b, _boite(m)):
-                fautes.append(f"libelle {l.nom} recouvre le libelle {m.nom}")
+            v = verbe(b, _boite(m))
+            if v:
+                noter(v, f"libelle {l.nom} {v} le libelle {m.nom}")
         if l.nom.startswith(("noeud_", "lien_")):
             noms = sorted({nom for nom, o in getattr(cues, "obstacles", []) if _chevauche(b, o)})
             if noms:
@@ -552,6 +706,9 @@ def collisions(seg, dur, ep_dir=None, strict=True):
                 if dk < d - ANCRE_TOL:
                     fautes.append(f"etiquette « {texte} » de {nom} plus proche de la courbe "
                                   f"de la serie {k + 1} ({dk:.2f}) que de son point ({d:.2f})")
+    # Pendant les animations : rien de ce qui bouge ne passe sous un autre.
+    for x in mouvements(seg, dur, ep_dir):
+        (fautes if strict else remarques).append(x)
     return fautes, len(encarts), len(libelles), remarques
 
 
