@@ -18,7 +18,7 @@ from style import (BG, BG_LIFT, INK, INK_SOFT, MUTED, RULE_SOFT, CONTRIB,
                    txt, fade_up)
 from components import (COMPONENTS, Cues, ENCART_RULE, ENCART_X, ENCART_W, ENCART_H,
                         ENCART_Y, ENCART_GAUCHE, GRAPHE_DROITE, ENCART_SORTIE, TYPO_PAS, TYPO_Y, TYPO_H,
-                        reserve_encarts)
+                        MARGE_ENCART, reserve_encarts)
 
 Z_BACK, Z_AMB, Z_PLOT, Z_OVER = -100, -50, 0, 50
 
@@ -251,6 +251,9 @@ def _places(cues, anchor, t):
     return out
 
 
+MONTEE_LIBELLE = 0.2   # un nom de noeud ou de lien monte de 0,2 en apparaissant
+
+
 def _poser_libelle(cues, anchor, texte, taille, couleur, graisse, poses, limites):
     """Le libelle d'un noeud ou d'un lien, la ou il ne recouvre rien.
 
@@ -259,14 +262,26 @@ def _poser_libelle(cues, anchor, texte, taille, couleur, graisse, poses, limites
     de l'autre cote du lien), puis les memes sur deux lignes. Le premier essai
     qui ne touche ni un noeud, ni un lien, ni un montant, ni un libelle deja
     pose, ni la colonne des encarts, ni le bord de l'image est retenu ; a
-    defaut, celui qui recouvre le moins. La taille des lettres ne change pas."""
+    defaut, celui qui recouvre le moins. La taille des lettres ne change pas.
+
+    Un libelle deja pose et la colonne des encarts se tiennent a MARGE_ENCART
+    (0,15) au moins, comme make check l'exige : il ne suffit pas de ne pas
+    les toucher.
+
+    Deux paliers : d'abord une place qui respecte aussi la marge ; a defaut,
+    une place qui au moins ne recouvre rien ; jamais un recouvrement echange
+    contre une marge. La montee du nom quand il apparait n'est pas jugee ici :
+    le placement ignore l'ordre d'arrivee des elements, et un critere sans lui
+    deplacerait des noms que make check accepte (EP001c S12, « Loyers »). Le
+    controle en mouvement de make check, lui, la juge et nomme le libelle."""
     v1 = ENCART_RULE == "v1"
     large = cues.anchor_widths.get(anchor, 4.0)
     textes = [texte]
     if " " in texte.strip() and not v1:
         textes.append(_wrap(texte, max(len(texte) // 2 + 2, 8)))
-    obstacles = [b for _, b in cues.obstacles] + poses
-    xg, xd, yb, yh = limites
+    obstacles = [b for _, b in cues.obstacles]
+    m = MARGE_ENCART - 1e-6
+    xg, xd, yb, yh, encarts = limites
     best = None
     for s_ in textes:
         lignes = s_.splitlines()
@@ -281,14 +296,38 @@ def _poser_libelle(cues, anchor, texte, taille, couleur, graisse, poses, limites
             if v1:
                 return t
             b = _boite(t)
-            cout = sum(_recouvre(b, o) for o in obstacles)
-            cout += 10 * (max(xg - b[0], 0) + max(b[1] - xd, 0)
-                          + max(yb - b[2], 0) + max(b[3] - yh, 0))
-            if cout <= 1e-9:
+            # Palier 1 : ce que make check refuse quel que soit le script -
+            # un recouvrement, une sortie du cadre.
+            dur = sum(_recouvre(b, o) for o in obstacles + poses)
+            dur += 10 * (max(xg - b[0], 0) + max(b[1] - xd, 0)
+                         + max(yb - b[2], 0) + max(b[3] - yh, 0))
+            # Palier 2 : la marge de 0,15, comme make check la juge.
+            large_b = (b[0] - m, b[1] + m, b[2] - m, b[3] + m)
+            doux = sum(_recouvre(large_b, o) for o in poses)
+            doux += sum(_recouvre(large_b, o) for o in encarts)
+            cout = (round(dur, 9), round(doux, 9))
+            if cout == (0.0, 0.0):
                 return t
-            if best is None or cout < best[0] - 1e-9:
+            if best is None or cout < best[0]:
                 best = (cout, t.copy())
     return best[1]
+
+
+def _boites_encarts(ctr):
+    """Boites des encarts lateraux (regle v2-zone), calculees comme la section
+    « centre » les posera : les noms de Flux s'en tiennent a la marge."""
+    if ENCART_RULE == "v1":
+        return []
+    out = []
+    for i, o in enumerate(ctr):
+        t = _fit(txt(_wrap_equilibre(o["texte_fr"], 18), SZ_BODY, INK, weight=SEMIBOLD),
+                 ENCART_W - 0.7)
+        w, h = t.width + 0.7, t.height + 0.6
+        if h > ENCART_H:
+            w, h = w * ENCART_H / h, ENCART_H
+        x, y = ENCART_X, ENCART_Y[i % 3]
+        out.append((x - w / 2, x + w / 2, y - h / 2, y + h / 2))
+    return out
 
 
 def add_overlays(seg, cues, visual):
@@ -342,9 +381,12 @@ def add_overlays(seg, cues, visual):
     # lien). Le composant n'ecrit aucun mot (R7) : ces noms passent ici.
     reserve = visual == "manim" and reserve_encarts(cues)
     poses = []
+    # A droite, la colonne des encarts : ne jamais y entrer ; et se tenir a la
+    # marge de 0,15 des encarts eux-memes quand c'est possible (dernier terme).
     limites = (-FW / 2 + 0.25, (ENCART_GAUCHE - 0.05) if reserve else FW / 2 - 0.25,
                Y_BOTTOM + (0.05 if by.get("bas") else -0.25),
-               Y_TOP - (0.42 if by.get("titre_haut") else -0.3))
+               Y_TOP - (0.42 if by.get("titre_haut") else -0.3),
+               _boites_encarts(by.get("centre", [])) if reserve else [])
     # Les noms des noeuds d'abord : ils ont moins de places possibles que
     # ceux des liens, qui les contournent ensuite.
     ordre = sorted((a for a in by if re.fullmatch(r"(option|noeud|lien)_\d+", a)
@@ -392,7 +434,7 @@ def add_overlays(seg, cues, visual):
             at = o["t_rel_s"]
             if not o.get("declencheur") and anchor in cues.anchor_times:
                 at = cues.anchor_times[anchor]
-            cues.at(cues.late(at, 0.8), fade_up(t, 0.2), rt=0.5)
+            cues.at(cues.late(at, 0.8), fade_up(t, MONTEE_LIBELLE), rt=0.5)
             out.add(t)
 
     # --- source_g : la source de chaque barre, sous sa categorie (Bars) ------

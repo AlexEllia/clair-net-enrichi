@@ -466,6 +466,23 @@ def _pieces(m, texte):
     return list(m.submobjects)
 
 
+def _zones(pc, texte):
+    """Ce qu'occupe vraiment une piece : sa boite, ou, pour un trait sans
+    remplissage (lien, ligne, arc), une suite de petites boites le long du
+    trait - la boite d'un trait en biais couvre surtout du vide."""
+    b = _boite(pc)
+    if texte or not pc.has_points() or (b[1] - b[0] < 0.3 or b[3] - b[2] < 0.3):
+        return [b]
+    if pc.get_fill_opacity() > 1e-3 or pc.get_stroke_width() <= 1e-3:
+        return [b]
+    e = 0.05
+    out = []
+    for f in [i / 24 for i in range(25)]:
+        q = pc.point_from_proportion(f)
+        out.append((q[0] - e, q[0] + e, q[1] - e, q[1] + e))
+    return out
+
+
 def _deplier(a):
     sous = getattr(a, "animations", None)
     if sous:
@@ -518,7 +535,8 @@ def mouvements(seg, dur, ep_dir=None):
     for m in cues.static:
         texte = _est_texte(m)
         for pc in _pieces(m, texte):
-            fiche(pc, m, texte, None)["ech"].append((0.0, _boite(pc), _opacite(pc)))
+            fiche(pc, m, texte, None)["ech"].append((0.0, _boite(pc), _opacite(pc),
+                                                     _zones(pc, texte)))
 
     for t0, anims, rt in sorted(cues.items, key=lambda c: c[0]):
         if t0 >= dur:
@@ -536,21 +554,23 @@ def mouvements(seg, dur, ep_dir=None):
                 a.begin()
                 for al in alphas:
                     a.interpolate(float(al))
-                    serie.append((t0 + al * rt, [(pc, _boite(pc), _opacite(pc))
+                    serie.append((t0 + al * rt, [(pc, _boite(pc), _opacite(pc),
+                                                  _zones(pc, texte))
                                                  for pc in _pieces(m, texte)]))
             except Exception:
-                serie = [(t0, [(pc, _boite(pc), _opacite(pc)) for pc in _pieces(m, texte)])]
-            fin = {id(pc): b for pc, b, _ in serie[-1][1]}
+                serie = [(t0, [(pc, _boite(pc), _opacite(pc), _zones(pc, texte))
+                               for pc in _pieces(m, texte)])]
+            fin = {id(pc): b for pc, b, _, _ in serie[-1][1]}
             for t, rangs in serie:
-                for pc, b, op in rangs:
-                    fiche(pc, m, texte, a)["ech"].append((t, b, op))
+                for pc, b, op, zs in rangs:
+                    fiche(pc, m, texte, a)["ech"].append((t, b, op, zs))
                     f = fin.get(id(pc))
                     if f is None or op < VISIBLE:
                         continue
                     dehors = (b[0] < f[0] - 0.02 or b[1] > f[1] + 0.02
                               or b[2] < f[2] - 0.02 or b[3] > f[3] + 0.02)
                     if dehors:
-                        mobiles.append((t, id(pc), b))
+                        mobiles.append((t, id(pc), zs))
 
     for f in etats.values():
         f["ech"].sort(key=lambda e: e[0])
@@ -565,7 +585,7 @@ def mouvements(seg, dur, ep_dir=None):
     fautes, vues = [], set()
     textes = [f for f in etats.values() if f["texte"]]
     tous = list(etats.values())
-    for t, pid, b in mobiles:
+    for t, pid, zm in mobiles:
         f = etats[pid]
         for g in (tous if f["texte"] else textes):
             if g is f or g["parent"] == f["parent"]:
@@ -573,7 +593,7 @@ def mouvements(seg, dur, ep_dir=None):
             e = etat(g, t)
             if e is None or e[2] < VISIBLE:
                 continue
-            if not _chevauche(b, e[1]):
+            if not any(_chevauche(x, y) for x in zm for y in e[3]):
                 continue
             cle = (f["nom"], g["nom"])
             if cle in vues:

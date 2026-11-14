@@ -66,6 +66,19 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
 - **Libellés de Flux** (12/11/2026) : chaque nom de nœud ou de lien est posé là où
   il ne touche rien (place habituelle, puis autres côtés, puis deux lignes), sans
   changer la taille des lettres. *Pourquoi* : EP004 S13, deux noms superposés.
+  Depuis le 14/11/2026 (`_poser_libelle`, scenes.py), le placement respecte
+  aussi la marge que `make check` exige d'un script au catalogue actuel :
+  0,15 au moins d'un autre libellé et des encarts eux-mêmes (leurs boîtes,
+  calculées comme la section « centre » les pose, `_boites_encarts`). Deux
+  paliers : une place qui respecte aussi la marge, sinon une place qui au
+  moins ne recouvre rien — jamais un recouvrement échangé contre une marge.
+  La montée du nom (0,2) n'est pas jugée au placement, qui ignore l'ordre
+  d'arrivée : essayée, elle déplaçait « Loyers » sur EP001c S12, que le
+  contrôle accepte ; le contrôle en mouvement la juge. *Pourquoi* : le script
+  refait de l'EP004 sera écrit contre le catalogue actuel. Effet sur l'EP004
+  actuel : S09, S13 et S20 n'ont plus de faute de marge (seuls ces trois
+  plans changent) ; reste S22, dont un nom monte sur deux nœuds qui
+  apparaissent au même instant, que le contrôle nomme.
 - **Contrôle bloquant de placement** (12/11/2026, `check_placement` dans build.py) :
   `make check` refuse tout encart ou libellé qui recouvre un élément, un autre
   encart ou libellé, ou sort de l'image ; jugé sans rendu, sur les boîtes

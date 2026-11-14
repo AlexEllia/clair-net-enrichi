@@ -283,11 +283,17 @@ il refuse un texte qui recouvre ou serre de plus près un autre texte présent e
 même temps, le titre, la source ou le bord de l'image. Les plans `fond_anime` et `broll` gardent l'empilement d'avant.
 
 **Les libellés de `Flux`.** Le moteur cherche pour chaque nom de nœud ou de
-lien une place où il ne touche ni un nœud, ni un lien, ni un montant, ni un
-autre libellé, ni la colonne des encarts : sa place habituelle d'abord, puis
-les autres côtés, puis les mêmes sur deux lignes. La taille des lettres ne
-change pas. Laisse de la place : 2 unités au moins entre deux nœuds empilés
-dont celui du haut porte un nom, et des noms courts (25 caractères).
+lien une place où il ne touche ni un nœud, ni un lien, ni un montant, et où
+il se tient à 0,15 au moins d'un autre libellé et des encarts,
+comme `make check` l'exige. Sa place habituelle d'abord,
+puis les autres côtés, puis les mêmes sur deux lignes. Faute d'une telle
+place, il prend une place qui au moins ne recouvre rien, et `make check`
+nomme alors le libellé trop serré : raccourcis-le, ou écarte les nœuds. Un
+nom qui monte (0,2) en apparaissant sur un nœud ou un lien déjà là est
+refusé de même (contrôle en mouvement) : même remède. La
+taille des lettres ne change pas. Laisse de la place : 2 unités au moins
+entre deux nœuds empilés dont celui du haut porte un nom, et des noms courts
+(25 caractères).
 
 ---
 
