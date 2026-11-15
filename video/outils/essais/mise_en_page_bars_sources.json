@@ -1,0 +1,77 @@
+{
+ "_role": "Plan d'essai, hors episode : Bars, valeurs toutes negatives et sources sur deux lignes, avec des encarts (cas d'EP004 S24) : l'axe part de zero, les barres restent dans le cadre, et le titre de l'axe passe sous la derniere ligne des sources. Chiffres et textes d'essai, sans source.",
+ "duree_s": 12.0,
+ "segment": {
+  "id": "essai_mise_en_page_bars_sources",
+  "role": "essai",
+  "type_visuel": "manim",
+  "manim_brief": {
+   "composant": "Bars",
+   "mode": "simple",
+   "donnees": [
+    [
+     5,
+     -18.6
+    ],
+    [
+     0,
+     -31.4
+    ]
+   ],
+   "axes": {
+    "unite_x": "years",
+    "unite_y": "percent"
+   },
+   "couleurs": [
+    "NEG"
+   ],
+   "revelations": [
+    {
+     "element": "bar_1",
+     "t_rel_s": 2.0
+    },
+    {
+     "element": "bar_2",
+     "t_rel_s": 5.0
+    }
+   ]
+  },
+  "overlay_texte": [
+   {
+    "ancre": "titre_haut",
+    "t_rel_s": 0.5,
+    "texte_fr": "Essai : barres négatives"
+   },
+   {
+    "ancre": "axe_x",
+    "t_rel_s": 0.8,
+    "texte_fr": "Années de détention"
+   },
+   {
+    "ancre": "axe_y",
+    "t_rel_s": 0.8,
+    "texte_fr": "Part prélevée"
+   },
+   {
+    "ancre": "source_1",
+    "t_rel_s": 2.0,
+    "texte_fr": "Source d'essai A, un texte assez long"
+   },
+   {
+    "ancre": "source_2",
+    "t_rel_s": 5.0,
+    "texte_fr": "Source d'essai B · un autre texte long"
+   },
+   {
+    "ancre": "centre",
+    "t_rel_s": 6.5,
+    "texte_fr": "Premier encart"
+   },
+   {
+    "ancre": "centre",
+    "t_rel_s": 8.7,
+    "texte_fr": "Second encart"
+   }
+  ]
+ }
+}

@@ -1,0 +1,261 @@
+{
+ "statut": "PLAN D'ESSAI VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
+ "courante": 1,
+ "versions": [
+  {
+   "version": 1,
+   "validee_le": "15/11/2026",
+   "motif": "mise en page corrigee (EP004 plan v4, mode strict), demandee par Alexandre le 15/11/2026",
+   "regle_cadre": "v2",
+   "regle_comparaison": "v2",
+   "regle_barres": "v3-phrase",
+   "vue_a_l_ecran": true,
+   "duree_s": 14.0,
+   "images": 420,
+   "pixels": {
+    "largeur": 960,
+    "hauteur": 540,
+    "md5": "9d5ead2076a6caf91bdb5461ab96ebfb"
+   },
+   "segment": {
+    "id": "essai_mise_en_page_erosion_encarts",
+    "role": "essai",
+    "type_visuel": "manim",
+    "manim_brief": {
+     "composant": "Erosion",
+     "capital": 100,
+     "format": "pct",
+     "pertes": [
+      {
+       "montant": 0.2,
+       "format": "pct",
+       "reste": 96,
+       "annees": 20
+      }
+     ],
+     "cumul": {
+      "montant": 4,
+      "format": "pct"
+     },
+     "revelations": [
+      {
+       "element": "capital",
+       "t_rel_s": 1.5
+      },
+      {
+       "element": "perte_1",
+       "t_rel_s": 3.0
+      },
+      {
+       "element": "cumul",
+       "t_rel_s": 9.5
+      },
+      {
+       "element": "reste",
+       "t_rel_s": 11.5
+      }
+     ]
+    },
+    "overlay_texte": [
+     {
+      "ancre": "capital",
+      "t_rel_s": 1.5,
+      "texte_fr": "Capital final, base 100"
+     },
+     {
+      "ancre": "perte_1",
+      "t_rel_s": 3.0,
+      "texte_fr": "de rendement par an"
+     },
+     {
+      "ancre": "cumul",
+      "t_rel_s": 9.5,
+      "texte_fr": "comme des frais d'entrée"
+     },
+     {
+      "ancre": "bas",
+      "t_rel_s": 2.5,
+      "texte_fr": "Plan d'essai du moteur, sans donnée ni source"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 4.5,
+      "texte_fr": "Moins que des frais"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 6.7,
+      "texte_fr": "Un encart sur deux lignes"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 8.9,
+      "texte_fr": "Autrement dit"
+     }
+    ]
+   },
+   "calendrier": [
+    [
+     0.3,
+     1.2,
+     "Niveau+Compteur"
+    ],
+    [
+     1.5,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     2.5,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     3.0,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     3.0,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     3.0,
+     0.7,
+     "Detache"
+    ],
+    [
+     3.0,
+     6.0,
+     "Niveau+Compteur"
+    ],
+    [
+     3.279,
+     0.7,
+     "Detache"
+    ],
+    [
+     3.558,
+     0.7,
+     "Detache"
+    ],
+    [
+     3.837,
+     0.7,
+     "Detache"
+    ],
+    [
+     4.116,
+     0.7,
+     "Detache"
+    ],
+    [
+     4.395,
+     0.7,
+     "Detache"
+    ],
+    [
+     4.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     4.674,
+     0.7,
+     "Detache"
+    ],
+    [
+     4.953,
+     0.7,
+     "Detache"
+    ],
+    [
+     5.232,
+     0.7,
+     "Detache"
+    ],
+    [
+     5.511,
+     0.7,
+     "Detache"
+    ],
+    [
+     5.789,
+     0.7,
+     "Detache"
+    ],
+    [
+     6.068,
+     0.7,
+     "Detache"
+    ],
+    [
+     6.347,
+     0.7,
+     "Detache"
+    ],
+    [
+     6.626,
+     0.7,
+     "Detache"
+    ],
+    [
+     6.7,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     6.905,
+     0.7,
+     "Detache"
+    ],
+    [
+     7.184,
+     0.7,
+     "Detache"
+    ],
+    [
+     7.463,
+     0.7,
+     "Detache"
+    ],
+    [
+     7.742,
+     0.7,
+     "Detache"
+    ],
+    [
+     8.021,
+     0.7,
+     "Detache"
+    ],
+    [
+     8.3,
+     0.7,
+     "Detache"
+    ],
+    [
+     8.9,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     9.5,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     9.5,
+     1.5,
+     "Create+Create+Create+FadeIn"
+    ],
+    [
+     11.5,
+     0.3,
+     "Restyle+Create"
+    ]
+   ]
+  }
+ ]
+}

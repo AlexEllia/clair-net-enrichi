@@ -1,0 +1,192 @@
+{
+ "statut": "PLAN D'ESSAI VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
+ "courante": 1,
+ "versions": [
+  {
+   "version": 1,
+   "validee_le": "15/11/2026",
+   "motif": "mise en page corrigee (EP004 plan v4, mode strict), demandee par Alexandre le 15/11/2026",
+   "regle_cadre": "v2",
+   "regle_comparaison": "v2",
+   "regle_barres": "v3-phrase",
+   "vue_a_l_ecran": true,
+   "duree_s": 12.0,
+   "images": 360,
+   "pixels": {
+    "largeur": 960,
+    "hauteur": 540,
+    "md5": "de66fc6c96c8498334e8ea34e640683f"
+   },
+   "segment": {
+    "id": "essai_mise_en_page_bars_sources",
+    "role": "essai",
+    "type_visuel": "manim",
+    "manim_brief": {
+     "composant": "Bars",
+     "mode": "simple",
+     "donnees": [
+      [
+       5,
+       -18.6
+      ],
+      [
+       0,
+       -31.4
+      ]
+     ],
+     "axes": {
+      "unite_x": "years",
+      "unite_y": "percent"
+     },
+     "couleurs": [
+      "NEG"
+     ],
+     "revelations": [
+      {
+       "element": "bar_1",
+       "t_rel_s": 2.0
+      },
+      {
+       "element": "bar_2",
+       "t_rel_s": 5.0
+      }
+     ]
+    },
+    "overlay_texte": [
+     {
+      "ancre": "titre_haut",
+      "t_rel_s": 0.5,
+      "texte_fr": "Essai : barres négatives"
+     },
+     {
+      "ancre": "axe_x",
+      "t_rel_s": 0.8,
+      "texte_fr": "Années de détention"
+     },
+     {
+      "ancre": "axe_y",
+      "t_rel_s": 0.8,
+      "texte_fr": "Part prélevée"
+     },
+     {
+      "ancre": "source_1",
+      "t_rel_s": 2.0,
+      "texte_fr": "Source d'essai A, un texte assez long"
+     },
+     {
+      "ancre": "source_2",
+      "t_rel_s": 5.0,
+      "texte_fr": "Source d'essai B · un autre texte long"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 6.5,
+      "texte_fr": "Premier encart"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 8.7,
+      "texte_fr": "Second encart"
+     }
+    ]
+   },
+   "calendrier": [
+    [
+     0.0,
+     0.2,
+     "Create"
+    ],
+    [
+     0.125,
+     0.2,
+     "AnimationGroup"
+    ],
+    [
+     0.25,
+     0.2,
+     "AnimationGroup"
+    ],
+    [
+     0.375,
+     0.2,
+     "AnimationGroup"
+    ],
+    [
+     0.5,
+     0.2,
+     "AnimationGroup"
+    ],
+    [
+     0.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     0.625,
+     0.2,
+     "AnimationGroup"
+    ],
+    [
+     0.75,
+     0.2,
+     "FadeIn"
+    ],
+    [
+     0.8,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     0.8,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     0.875,
+     0.125,
+     "FadeIn"
+    ],
+    [
+     1.2,
+     0.8,
+     "GrowBar"
+    ],
+    [
+     2.0,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     2.0,
+     0.4,
+     "FadeIn"
+    ],
+    [
+     2.5,
+     2.5,
+     "GrowBar"
+    ],
+    [
+     5.0,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     5.0,
+     0.4,
+     "FadeIn"
+    ],
+    [
+     6.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     8.7,
+     0.6,
+     "FadeIn"
+    ]
+   ]
+  }
+ ]
+}

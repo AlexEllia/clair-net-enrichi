@@ -1,0 +1,148 @@
+{
+ "statut": "PLAN D'ESSAI VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
+ "courante": 1,
+ "versions": [
+  {
+   "version": 1,
+   "validee_le": "15/11/2026",
+   "motif": "mise en page corrigee (EP004 plan v4, mode strict), demandee par Alexandre le 15/11/2026",
+   "regle_cadre": "v2",
+   "regle_comparaison": "v2",
+   "regle_barres": "v3-phrase",
+   "vue_a_l_ecran": true,
+   "duree_s": 12.0,
+   "images": 360,
+   "pixels": {
+    "largeur": 960,
+    "hauteur": 540,
+    "md5": "fcc12c1abc201592c9cc294eff71afad"
+   },
+   "segment": {
+    "id": "essai_mise_en_page_grille_encarts",
+    "role": "essai",
+    "type_visuel": "manim",
+    "manim_brief": {
+     "composant": "Grille",
+     "taille": 10,
+     "icone": "calendar",
+     "groupes": [
+      {
+       "cases": 7,
+       "valeur": 70.3,
+       "nature": "gain"
+      },
+      {
+       "cases": 3,
+       "valeur": 29.7,
+       "nature": "neutre"
+      }
+     ],
+     "revelations": [
+      {
+       "element": "groupe_1",
+       "t_rel_s": 1.5
+      },
+      {
+       "element": "groupe_2",
+       "t_rel_s": 3.5
+      }
+     ]
+    },
+    "overlay_texte": [
+     {
+      "ancre": "titre_haut",
+      "t_rel_s": 0.5,
+      "texte_fr": "Essai : grilles et encarts"
+     },
+     {
+      "ancre": "groupe_1",
+      "t_rel_s": 1.5,
+      "texte_fr": "Tout d'un coup finit devant"
+     },
+     {
+      "ancre": "groupe_2",
+      "t_rel_s": 3.5,
+      "texte_fr": "L'étalement fait mieux"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 5.0,
+      "texte_fr": "Bourse américaine, en dollars"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 7.2,
+      "texte_fr": "Gagnant connu dès l'année 1"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 9.4,
+      "texte_fr": "Troisième, sur deux lignes"
+     }
+    ]
+   },
+   "calendrier": [
+    [
+     0.0,
+     0.8,
+     "FadeIn"
+    ],
+    [
+     0.0,
+     0.8,
+     "FadeIn"
+    ],
+    [
+     0.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     1.5,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     1.5,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     1.5,
+     1.5,
+     "FillPictos"
+    ],
+    [
+     3.5,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     3.5,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     3.5,
+     1.5,
+     "FillPictos"
+    ],
+    [
+     5.0,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     7.2,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     9.4,
+     0.6,
+     "FadeIn"
+    ]
+   ]
+  }
+ ]
+}

@@ -138,6 +138,29 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
   d'essai déjà validés, la valeur d'Erosion qui descendait sur la tranche
   avant son départ et un nom de Cascade à 0,14 de sa source : corrigés (la
   valeur attend la fin du glissement ; source à 0,50 sous le nom).
+- **Mise en page avec encarts et sources longues** (15/11/2026, fautes
+  trouvées sur le plan v4 de l'EP004, jugé en mode strict) :
+  - Grille (S05, S21) : seules les grilles se réduisent, l'écart entre deux
+    grilles (ou la valeur d'une grille seule) compte dans la place ; le nom
+    d'un groupe ne déborde ni du cadre ni sur la colonne des encarts. Avant,
+    la grille de droite entrait de 0,3 dans la marge de l'encart.
+  - Erosion (S12) : faute de place, les noms des pertes passent sous leur
+    montant, puis se resserrent ; noms des pertes et du total sur deux lignes
+    plutôt que réduits ; le dessin s'arrête avant la colonne des encarts. Un
+    plan qui tenait déjà n'est pas touché. Avant, le total « −4 % » et son nom
+    passaient sous un encart.
+  - Bars (S24) : une source sur plusieurs lignes fait remonter le graphique
+    (0,30 par ligne en plus) et descendre le titre de l'axe ; l'axe part
+    toujours de zéro — des barres toutes négatives sortaient du cadre par le
+    haut et passaient sur le titre (défaut ancien, que le contrôle ne voit pas
+    : il ne juge un libellé contre le graphique que pour Flux).
+  - Flux (S17) : le placement des noms juge la montée du nom (0,2) contre le
+    montant de son lien, déjà écrit quand le nom apparaît ; s'il passerait
+    dessus, le nom prend une place plus loin (0,82 du tracé). Il passait sur le
+    montant. Les autres plans ne changent pas (EP001c S03 compris).
+  Plans d'essai figés : `essai_mise_en_page_grille_encarts`,
+  `_erosion_encarts`, `_bars_sources`, `_flux_montant` ; chacun est refusé par
+  le code d'avant et accepté par celui-ci.
 - **Quatrième nature : manque à gagner** (15/11/2026, décision d'Alexandre ;
   `MANQUE` dans style.py, motifs dans components.py) : un écart défavorable
   avec une autre option, sans perte réelle de capital (« étaler rapporte 2 %

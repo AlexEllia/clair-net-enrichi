@@ -246,12 +246,21 @@ def _places(cues, anchor, t):
         _, mid, n, montant = geo
         ext = abs(n[0]) * w / 2 + abs(n[1]) * h / 2
         out += [mid + n * ((0.62 if montant else 0.25) + ext),
+                mid + n * ((0.82 if montant else 0.25) + ext),
                 mid - n * (0.25 + ext),
                 mid + n * ((1.0 if montant else 0.6) + ext)]
     return out
 
 
 MONTEE_LIBELLE = 0.2   # un nom de noeud ou de lien monte de 0,2 en apparaissant
+
+
+def _recouvre_net(a, b, tol=0.03):
+    """Aire commune de deux boites qui se recouvrent de plus de `tol` dans
+    les deux sens (meme seuil que make check)."""
+    w = min(a[1], b[1]) - max(a[0], b[0])
+    h = min(a[3], b[3]) - max(a[2], b[2])
+    return w * h if w > tol and h > tol else 0.0
 
 
 def _poser_libelle(cues, anchor, texte, taille, couleur, graisse, poses, limites):
@@ -280,6 +289,7 @@ def _poser_libelle(cues, anchor, texte, taille, couleur, graisse, poses, limites
     if " " in texte.strip() and not v1:
         textes.append(_wrap(texte, max(len(texte) // 2 + 2, 8)))
     obstacles = [b for _, b in cues.obstacles]
+    montants = [b for nom, b in cues.obstacles if nom.startswith("montant du lien")]
     m = MARGE_ENCART - 1e-6
     xg, xd, yb, yh, encarts = limites
     best = None
@@ -301,9 +311,13 @@ def _poser_libelle(cues, anchor, texte, taille, couleur, graisse, poses, limites
             dur = sum(_recouvre(b, o) for o in obstacles + poses)
             dur += 10 * (max(xg - b[0], 0) + max(b[1] - xd, 0)
                          + max(yb - b[2], 0) + max(b[3] - yh, 0))
-            # Palier 2 : la marge de 0,15, comme make check la juge.
+            # Palier 2 : la marge de 0,15, comme make check la juge ; et le
+            # montant d'un lien, deja ecrit quand le nom apparait, que le nom
+            # ne doit pas croiser en montant (0,2 ; visible sur 80 % du chemin).
             large_b = (b[0] - m, b[1] + m, b[2] - m, b[3] + m)
             doux = sum(_recouvre(large_b, o) for o in poses)
+            monte = (b[0], b[1], b[2] - 0.8 * MONTEE_LIBELLE, b[3])
+            doux += sum(_recouvre_net(monte, o) for o in montants)
             doux += sum(_recouvre(large_b, o) for o in encarts)
             cout = (round(dur, 9), round(doux, 9))
             if cout == (0.0, 0.0):
@@ -416,12 +430,31 @@ def add_overlays(seg, cues, visual):
                 # Ancre posee telle quelle par le composant (Erosion : capital,
                 # perte_k, cumul ; Cascade : depart, marche_k, arrivee), calee
                 # sur le bord qu'il indique.
-                t = txt(o["texte_fr"], SZ_LABEL, cues.anchor_colors.get(anchor, INK_SOFT))
+                coul = cues.anchor_colors.get(anchor, INK_SOFT)
+                t = txt(o["texte_fr"], SZ_LABEL, coul)
+                large = cues.anchor_widths.get(anchor, 4.0)
+                cale = cues.anchor_align[anchor]
                 if cues.meta.get("noms_meme_taille"):
                     t.scale(k_noms)
+                    t.move_to([x, y, 0], aligned_edge=cale)
+                elif (anchor in cues.meta.get("noms_sur_deux_lignes", ()) and t.width > large
+                      and " " in o["texte_fr"].strip()):
+                    # Trop long pour sa place : sur deux lignes plutot qu'en
+                    # petit. Le bloc pend sous la ligne qu'il aurait occupee.
+                    haut_ligne = y + t.height / 2
+                    texte = o["texte_fr"].strip()
+                    for largeur in range(max(len(texte) // 2, 8), len(texte) + 1):
+                        lignes = _wrap_equilibre(texte, largeur)
+                        if len(lignes.splitlines()) <= 2:
+                            break
+                    t = VGroup(*[txt(l, SZ_LABEL, coul) for l in lignes.splitlines()])
+                    t.arrange(DOWN, buff=0.06, aligned_edge=LEFT if cale is LEFT else ORIGIN)
+                    _fit(t, large)
+                    bord = UL if cale is LEFT else (UR if cale is RIGHT else UP)
+                    t.move_to([x, haut_ligne, 0], aligned_edge=bord)
                 else:
-                    _fit(t, cues.anchor_widths.get(anchor, 4.0))
-                t.move_to([x, y, 0], aligned_edge=cues.anchor_align[anchor])
+                    _fit(t, large)
+                    t.move_to([x, y, 0], aligned_edge=cale)
             else:
                 t = _poser_libelle(cues, anchor, o["texte_fr"], SZ_LABEL,
                                    cues.anchor_colors.get(anchor, INK_SOFT), NORMAL,

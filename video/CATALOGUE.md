@@ -273,7 +273,9 @@ unique quand leur instant dépend de la voix.
   famille.
 - `source_g` : son instant est celui de la fin de croissance de la barre g,
   quel que soit le `t_rel_s` écrit. Une source identique à celle d'une barre
-  précédente ne se répète pas.
+  précédente ne se répète pas. Elle passe à la ligne tous les 22 caractères
+  environ ; le graphique remonte d'autant, et le titre de l'axe passe sous sa
+  dernière ligne.
 
 **Les encarts (`centre`).** Un encart ne recouvre jamais le graphique. Dès
 qu'un plan en porte un, le moteur lui réserve la colonne de droite (un tiers
@@ -301,7 +303,9 @@ check` y applique le contrôle de placement et sa marge minimale de 0,15 unité 
 il refuse un texte qui recouvre ou serre de plus près un autre texte présent en
 même temps, le titre, la source ou le bord de l'image. Les plans `fond_anime` et `broll` gardent l'empilement d'avant.
 
-**Les libellés de `Flux`.** Le moteur cherche pour chaque nom de nœud ou de
+**Les libellés de `Flux`.** Le nom d'un lien qui porte un montant ne passe
+pas sur ce montant en montant pour apparaître : s'il le ferait à sa place
+habituelle, il s'en écarte. Le moteur cherche pour chaque nom de nœud ou de
 lien une place où il ne touche ni un nœud, ni un lien, ni un montant, et où
 il se tient à 0,15 au moins d'un autre libellé et des encarts,
 comme `make check` l'exige. Sa place habituelle d'abord,
@@ -1112,6 +1116,13 @@ sous la colonne (« Capital placé ») ; `perte_k`, à droite du montant de la
 perte k (« de frais par an », « Impôt ») — 2,4 unités de large au plus, soit
 une vingtaine de caractères ; `cumul`, sous le total (« en 20 ans »).
 
+Avec des encarts `centre`, la place se réduit. Le dessin ne déborde jamais sur
+leur colonne : si la colonne, les montants, les noms, l'accolade et le total
+n'y tiennent pas, les noms des pertes passent **sous** leur montant, puis se
+resserrent ; un nom de perte ou du total trop long pour sa place passe sur
+deux lignes plutôt que de rétrécir, et le nom du total part alors du bord
+gauche du total. Garde des noms courts.
+
 `Erosion` n'a pas de cadre. Tant qu'une tranche se détache ou que le compteur
 défile, l'écran vit ; entre deux pertes d'une seule tranche, compte 1,8 s de
 mouvement puis moins de 4 s d'attente (R6). Avec des encarts `centre`, la
@@ -1327,7 +1338,10 @@ l'autre option l'emporte, c'est `"neutre"`.
 
 **Ancre d'overlay** (R7) : `groupe_k`, le nom du groupe, au-dessus de sa
 grille, dans sa couleur (« Investir d'un coup fait mieux ») — 30 caractères
-au plus.
+au plus. Avec des encarts, les grilles se réduisent pour tenir à gauche de
+leur colonne (l'écart entre deux grilles et la valeur d'une grille seule
+gardent leur taille), et le nom ne déborde pas de la place de sa grille : un
+nom long y est réduit.
 
 Les grilles éteintes sont du décor. Une fois la vague passée, rien ne bouge :
 moins de 4 s jusqu'à la révélation ou l'overlay suivant (R6).

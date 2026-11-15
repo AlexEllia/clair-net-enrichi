@@ -1807,7 +1807,9 @@ def Bars(seg, cues):
     repere = mb.get("repere")
     extra = [float(repere["valeur"])] if repere else []
     # Graduations a pas rond (1, 2, 2,5, 5 x 10^n), cinq intervalles environ.
-    raw_hi = max([max(tops)] + extra) * 1.12
+    # L'axe part toujours de zero : des barres toutes negatives partent de
+    # zero elles aussi, et sortaient du cadre par le haut (EP004 S24).
+    raw_hi = max([max(tops), 0.0] + extra) * 1.12
     raw_lo = min([0.0] + lows + extra) * 1.12
     ystep = _nice_step((raw_hi - raw_lo) / 5)
     yhi = float(np.ceil(raw_hi / ystep) * ystep)
@@ -1819,8 +1821,16 @@ def Bars(seg, cues):
     # entre son libelle et le titre d'axe. La source globale (« bas ») cede
     # sa place : l'aire remonte d'autant.
     sources = sorted(a for a in cues.anchors if re.fullmatch(r"source_\d+", a))
+    # Une source longue passe sur deux lignes ou plus (scenes, 22 caracteres
+    # par ligne) : l'aire remonte d'autant, et le titre de l'axe descend sous
+    # la derniere ligne.
+    from scenes import _wrap
+    lignes_src = max([len(_wrap(o["texte_fr"].strip(), 22).splitlines())
+                      for o in seg.get("overlay_texte") or []
+                      if re.fullmatch(r"source_\d+", o["ancre"])] or [1])
+    sup_src = SOURCE_LIGNE * (lignes_src - 1)
     if sources:
-        bottom = -1.95
+        bottom = -1.95 + sup_src
     right = 1.30 if mb.get("annotation") else 0.0
     enc = (PLOT_W / 2 - GRAPHE_DROITE) if reserve_encarts(cues) else 0.0
     fr = Frame(0.4, n_g + 0.6, ylo, yhi, w=PLOT_W - right - enc, h=top - bottom,
@@ -1834,7 +1844,7 @@ def Bars(seg, cues):
         lab.move_to(fr.pt(g + 1, ylo)).shift(DOWN * (0.24 + lab.height / 2))
     widest = max((m.width for m in ygrid if isinstance(m, Text)), default=0.0)
     xh = max(m.height for m in xlabels)
-    cues.frame_anchors(fr, below=0.24 + xh + 0.40 + (0.62 if sources else 0.0),
+    cues.frame_anchors(fr, below=0.24 + xh + 0.40 + (0.62 + sup_src if sources else 0.0),
                        left=0.22 + widest + 0.45)
     for g, lab in enumerate(xlabels):
         # Ancre par le haut : une source sur deux lignes descend, sans remonter
@@ -2220,6 +2230,7 @@ def _bar_release(align, prev_decl, decl, rule):
 
 
 MAX_STILL_BARS = 4.0    # attente au-dela de laquelle la barre commentee est mise en avant
+SOURCE_LIGNE = 0.30     # hauteur d'une ligne de source sous une barre (SZ_SOURCE)
 SOURCE_RT = 0.4         # fondu de la source d'une barre (scenes.add_overlays)
 
 
@@ -3272,11 +3283,48 @@ def Erosion(seg, cues):
     w_val = max(dessiner(ecrire(capital)).width, dessiner(ecrire(restes[-1])).width) * 1.3
     x_fant = W + max(0.45, (w_val - W) / 2 + 0.25)     # centres, colonne en x = 0
     x_lab = x_fant + W / 2 + 0.30           # bord gauche des montants
-    x_nom = x_lab + w_lab + 0.25            # bord gauche des noms
-    x_acc = x_nom + (large_nom + 0.25 if noms else 0.0) + 0.14
-    droite = x_acc + 0.2 + total.width if total is not None else x_acc - 0.14 - 0.25
     xg, xd = X_LEFT + 0.3, (GRAPHE_DROITE if reserve else X_RIGHT - 0.3)
+    nom_cumul = total is not None and "cumul" in cues.anchors
+
+    def disposition(dessous, ln):
+        """(x de l'accolade, bord droit du dessin, bord droit avec le nom du
+        total), colonne en x = 0. `dessous` : les noms des pertes sous leur
+        montant plutot qu'a sa droite."""
+        if dessous:
+            xa = x_lab + max(w_lab, ln) + 0.25 + 0.14
+        else:
+            xa = x_lab + w_lab + 0.25 + (ln + 0.25 if noms else 0.0) + 0.14
+        dr = xa + 0.2 + total.width if total is not None else xa - 0.14 - 0.25
+        dm = dr
+        if nom_cumul:
+            nom = max(total.width + 0.6, 2.0)
+            # Centre sous le total, ou, a l'etroit, depuis son bord gauche.
+            dm = max(dr, xa + 0.2 + (nom if dessous else total.width / 2 + nom / 2))
+        return xa, dr, dm
+
+    # Faute de place (encarts presents), les noms des pertes passent sous leur
+    # montant, puis se resserrent : le dessin ne deborde jamais sur la colonne
+    # des encarts. Un plan qui tient deja n'est pas touche.
+    noms_dessous = False
+    x_acc, droite, droite_max = disposition(False, large_nom)
+    if reserve and noms and droite_max + W / 2 > xd - xg:
+        noms_dessous = True
+        x_acc, droite, droite_max = disposition(True, large_nom)
+        if droite_max + W / 2 > xd - xg:
+            large_nom = max(1.0, large_nom - (droite_max + W / 2 - (xd - xg)))
+            x_acc, droite, droite_max = disposition(True, large_nom)
     dx = max((xg + xd) / 2 - (droite - W / 2) / 2, xg + W / 2)
+    if reserve:
+        # La colonne des encarts : le dessin, nom du total compris, s'arrete
+        # avant elle. Sans encart, rien a proteger, la mise en page d'avant.
+        dx = max(min(dx, xd - droite_max), xg + W / 2)
+    pas_lab = 1.25 if noms_dessous else EROSION_PAS     # nom sur deux lignes sous le montant
+    # A l'etroit, les noms des pertes et du total passent sur deux lignes
+    # plutot que de retrecir ; celui du capital, sous la colonne, reste sur
+    # une ligne (la source est juste dessous). Avec de la place, rien ne change.
+    if noms_dessous:
+        cues.meta["noms_sur_deux_lignes"] = ({f"perte_{k + 1}" for k in range(len(pertes))}
+                                             | {"cumul"})
     y0, H = EROSION_Y0, EROSION_H
 
     def haut(v):
@@ -3309,7 +3357,7 @@ def Erosion(seg, cues):
         milieu = y0 + haut((avant + apres) / 2)
         # Les montants ne se chevauchent pas : chacun a hauteur de sa tranche,
         # ou juste sous le precedent, relie alors a sa tranche par un trait.
-        y = milieu if y_lab is None else min(milieu, y_lab - EROSION_PAS)
+        y = milieu if y_lab is None else min(milieu, y_lab - pas_lab)
         y_lab = y
         lab = labels[k]
         lab.move_to([dx + x_lab, y, 0], aligned_edge=LEFT)
@@ -3318,7 +3366,8 @@ def Erosion(seg, cues):
             rappel = Line([dx + x_fant + W / 2 + 0.04, milieu, 0], [dx + x_lab - 0.06, y, 0],
                           stroke_color=NEG, stroke_width=1.6)
         groupes.append((tranches, bornes, lab, rappel, n))
-        cues.point(f"perte_{k + 1}", (dx + x_lab + lab.width + 0.25, y))
+        cues.point(f"perte_{k + 1}", (dx + x_lab, y - 0.45) if noms_dessous
+                   else (dx + x_lab + lab.width + 0.25, y))
         cues.anchor_align[f"perte_{k + 1}"] = LEFT
         cues.anchor_widths[f"perte_{k + 1}"] = large_nom
         cues.sens.append({"nom": f"perte_{k + 1}", "nature": "perte", "montant": lab,
@@ -3336,6 +3385,11 @@ def Erosion(seg, cues):
         total.move_to([bx + 0.2, (bas + sommet) / 2, 0], aligned_edge=LEFT)
         cues.point("cumul", (total.get_center()[0], total.get_bottom()[1] - 0.32))
         cues.anchor_align["cumul"] = ORIGIN
+        if noms_dessous:
+            # A l'etroit : le nom part du bord gauche du total, sans deborder
+            # sur l'accolade.
+            cues.point("cumul", (total.get_left()[0], total.get_bottom()[1] - 0.32))
+            cues.anchor_align["cumul"] = LEFT
         cues.anchor_widths["cumul"] = max(total.width + 0.6, 2.0)
         cues.sens.append({"nom": "cumul", "nature": "perte", "objets": [accolade],
                           "montant": total})
@@ -3689,7 +3743,15 @@ def Grille(seg, cues):
         large = 2 * colonnes * pas + ecart
     else:
         large = colonnes * pas + 0.7 + labels[0].width
-    k = min(1.0, (droite - gauche) / large, 4.1 / (lignes * pas) if deux else 1.0)
+    # Avec des encarts, seules les grilles se reduisent : l'ecart entre elles,
+    # ou la valeur a droite d'une grille seule, gardent leur taille et comptent
+    # dans la place, pour que rien n'entre dans la colonne des encarts. Sans
+    # encart, le calcul d'avant (il peut deborder un peu sur la marge
+    # exterieure, sans rien toucher).
+    encarts = reserve_encarts(cues)
+    fixe = (ecart if deux else 0.7 + labels[0].width) if encarts else 0.0
+    k = min(1.0, (droite - gauche - fixe) / (large - fixe),
+            4.1 / (lignes * pas) if deux else 1.0)
     pas *= k
     w, h = colonnes * pas, lignes * pas
     milieu = (gauche + droite) / 2
@@ -3737,7 +3799,11 @@ def Grille(seg, cues):
         cues.point(key, (cx, cy + h / 2 + 0.42))
         cues.anchor_align[key] = ORIGIN
         cues.anchor_colors[key] = couleur if g["nature"] != "neutre" else INK_SOFT
+        # Avec des encarts, le nom ne deborde pas sur leur colonne.
         cues.anchor_widths[key] = w + (ecart - 0.3 if deux else 1.0)
+        if encarts:
+            cues.anchor_widths[key] = min(cues.anchor_widths[key], 2 * (droite - cx) - 0.02,
+                                          2 * (cx - gauche) - 0.02)
         if g["nature"] != "neutre":
             # Une frequence n'est pas un montant : sa couleur dit le sens, sans signe.
             cues.sens.append({"nom": key, "nature": g["nature"], "objets": [allumees],

@@ -1,0 +1,68 @@
+{
+ "_role": "Plan d'essai, hors episode : Grille, deux grilles de 10 pictogrammes avec des encarts (cas d'EP004 S05 et S21) : l'ecart entre les grilles et leurs noms tiennent a gauche de la colonne des encarts, a 0,15 au moins. Chiffres et textes d'essai, sans source.",
+ "duree_s": 12.0,
+ "segment": {
+  "id": "essai_mise_en_page_grille_encarts",
+  "role": "essai",
+  "type_visuel": "manim",
+  "manim_brief": {
+   "composant": "Grille",
+   "taille": 10,
+   "icone": "calendar",
+   "groupes": [
+    {
+     "cases": 7,
+     "valeur": 70.3,
+     "nature": "gain"
+    },
+    {
+     "cases": 3,
+     "valeur": 29.7,
+     "nature": "neutre"
+    }
+   ],
+   "revelations": [
+    {
+     "element": "groupe_1",
+     "t_rel_s": 1.5
+    },
+    {
+     "element": "groupe_2",
+     "t_rel_s": 3.5
+    }
+   ]
+  },
+  "overlay_texte": [
+   {
+    "ancre": "titre_haut",
+    "t_rel_s": 0.5,
+    "texte_fr": "Essai : grilles et encarts"
+   },
+   {
+    "ancre": "groupe_1",
+    "t_rel_s": 1.5,
+    "texte_fr": "Tout d'un coup finit devant"
+   },
+   {
+    "ancre": "groupe_2",
+    "t_rel_s": 3.5,
+    "texte_fr": "L'étalement fait mieux"
+   },
+   {
+    "ancre": "centre",
+    "t_rel_s": 5.0,
+    "texte_fr": "Bourse américaine, en dollars"
+   },
+   {
+    "ancre": "centre",
+    "t_rel_s": 7.2,
+    "texte_fr": "Gagnant connu dès l'année 1"
+   },
+   {
+    "ancre": "centre",
+    "t_rel_s": 9.4,
+    "texte_fr": "Troisième, sur deux lignes"
+   }
+  ]
+ }
+}
