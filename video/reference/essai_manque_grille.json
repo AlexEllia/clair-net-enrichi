@@ -1,0 +1,97 @@
+{
+ "statut": "PLAN D'ESSAI VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
+ "courante": 1,
+ "versions": [
+  {
+   "version": 1,
+   "validee_le": "15/11/2026",
+   "motif": "nature manque a gagner validee a l'ecran par Alexandre le 15/11/2026",
+   "regle_cadre": "v2",
+   "regle_comparaison": "v2",
+   "regle_barres": "v3-phrase",
+   "vue_a_l_ecran": true,
+   "duree_s": 7.0,
+   "images": 210,
+   "pixels": {
+    "largeur": 960,
+    "hauteur": 540,
+    "md5": "7a08fa4b855aff6557e49c18043ffbf9"
+   },
+   "segment": {
+    "id": "essai_manque_grille",
+    "role": "essai",
+    "type_visuel": "manim",
+    "manim_brief": {
+     "composant": "Grille",
+     "taille": 10,
+     "groupes": [
+      {
+       "cases": 7,
+       "valeur": 68.9,
+       "nature": "gain"
+      },
+      {
+       "cases": 3,
+       "valeur": 31.1,
+       "nature": "manque_a_gagner"
+      }
+     ],
+     "revelations": [
+      {
+       "element": "groupe_1",
+       "t_rel_s": 1.5
+      },
+      {
+       "element": "groupe_2",
+       "t_rel_s": 3.5
+      }
+     ]
+    },
+    "overlay_texte": [
+     {
+      "ancre": "titre_haut",
+      "t_rel_s": 0.5,
+      "texte_fr": "Grille : manque à gagner"
+     }
+    ]
+   },
+   "calendrier": [
+    [
+     0.0,
+     0.8,
+     "FadeIn"
+    ],
+    [
+     0.0,
+     0.8,
+     "FadeIn"
+    ],
+    [
+     0.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     1.5,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     1.5,
+     1.5,
+     "FillPictos"
+    ],
+    [
+     3.5,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     3.5,
+     1.5,
+     "FillPictos"
+    ]
+   ]
+  }
+ ]
+}

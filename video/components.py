@@ -23,7 +23,7 @@ from manim import *
 import numpy as np
 
 from style import (BG, BG_LIFT, INK, INK_SOFT, MUTED, RULE, RULE_SOFT, CONTRIB, INTEREST,
-                   TEAL, NEG, WHITE_DIM, PLOT_W, PLOT_H, Y_TOP, X_LEFT, X_RIGHT,
+                   TEAL, NEG, MANQUE, WHITE_DIM, PLOT_W, PLOT_H, Y_TOP, X_LEFT, X_RIGHT,
                    SZ_TITLE, SZ_BODY, SZ_LABEL, SZ_SOURCE,
                    txt, fade_up, euro, pct)
 from plotting import (Frame, epargne_mensuelle, calibrate, compound_index,
@@ -528,7 +528,7 @@ def StackedBars(seg, cues):
 # Parties : le nom de serie du brief (price_only, gross_return...), puis values
 # =============================================================================
 
-_PALETTE = {"CONTRIB": CONTRIB, "INTEREST": INTEREST, "TEAL": TEAL, "NEG": NEG,
+_PALETTE = {"CONTRIB": CONTRIB, "INTEREST": INTEREST, "TEAL": TEAL, "NEG": NEG, "MANQUE": MANQUE,
             "WHITE_DIM": WHITE_DIM, "INK_SOFT": INK_SOFT}
 _LINE_COLORS = [INTEREST, CONTRIB, TEAL, NEG, WHITE_DIM]
 
@@ -1761,6 +1761,10 @@ def Bars(seg, cues):
       mise_en_avant  {"barre": g} ou {"barre": g, "serie": s}
       repere         {"valeur": v}  ligne horizontale a cette hauteur
       annotation     {"barre": g, "valeur": v, "format": "facteur"}
+      natures        le sens de chaque barre (R10) : une par categorie en mode
+                     simple, une par serie sinon - "gain", "perte",
+                     "manque_a_gagner", "neutre" (la couleur de la serie). Un
+                     manque a gagner est hachure.
     Parties : bar_g (serie 1) et bar_g_s ; highlight, reference, annotation.
 
     Une barre qui monte vers sa hauteur ne revele pas sa valeur tant qu'elle
@@ -1786,6 +1790,13 @@ def Bars(seg, cues):
     cols = [_PALETTE.get(c, c) for c in mb.get("couleurs", [])]
     cols += [CONTRIB, INTEREST, TEAL, NEG, WHITE_DIM][len(cols):]
     n_g = len(rows)
+    natures = mb.get("natures")
+    if natures is not None:
+        attendu = n_g if mode == "simple" else n_s
+        if len(natures) != attendu or any(n not in NATURES for n in natures):
+            raise SystemExit(f"{sid} : Bars, `natures` : {attendu} valeurs parmi "
+                             f"{', '.join(NATURES)} (une par "
+                             f"{'categorie' if mode == 'simple' else 'serie'})")
 
     if mode == "empilees":
         tops = [sum(max(v, 0) for v in r[1:]) for r in rows]
@@ -1850,11 +1861,15 @@ def Bars(seg, cues):
                 cx = g + 1
                 y0 = (base_pos if v >= 0 else base_neg) if mode == "empilees" else 0.0
             h = max(abs(fr.wy(v)), 0.006)
-            rect = Rectangle(width=bw, height=h, fill_color=cols[s_i], fill_opacity=0.92,
-                             stroke_width=0)
+            nat = (natures[g if mode == "simple" else s_i] if natures else "neutre")
+            rect = Rectangle(width=bw, height=h, fill_color=COULEUR_SENS.get(nat, cols[s_i]),
+                             fill_opacity=0.92, stroke_width=0)
             edge = DOWN if v >= 0 else UP
             rect.move_to(fr.pt(cx, y0), aligned_edge=edge)
-            lab = txt(nombres.fmt(v, yfmt), SZ_LABEL, INK, weight=SEMIBOLD)
+            if nat == "manque_a_gagner":
+                rect = Hachure.sur(rect, MANQUE)
+            ecrit = nombres.fmt(v, yfmt)
+            lab = txt(moins(ecrit) if nat != "neutre" else ecrit, SZ_LABEL, INK, weight=SEMIBOLD)
             if mode == "empilees":
                 lab.move_to(rect)
                 if lab.height > h * 0.8 or lab.width > bw * 1.4:
@@ -1865,6 +1880,10 @@ def Bars(seg, cues):
             cues.etiquette(lab, (rect.get_left()[0], rect.get_right()[0],
                                  rect.get_bottom()[1], rect.get_top()[1]), key, key)
             order.append(key)
+            if nat != "neutre":
+                # La valeur d'une barre est une donnee : sa couleur dit le sens.
+                cues.sens.append({"nom": key, "nature": nat, "objets": [rect], "montant": None,
+                                  "motif": [rect] if nat == "manque_a_gagner" else []})
             if mode == "empilees":
                 if v >= 0:
                     base_pos += v
@@ -2266,10 +2285,24 @@ class GrowBar(Animation):
         self.edge = edge
         self.anchor = rect.get_edge_center(edge).copy()
         self.full_h = rect.height
+        if isinstance(rect, Hachure):
+            self.full_h = rect.boite[3] - rect.boite[2]
+            self.anchor = np.array([0.0, {1: rect.boite[3], -1: rect.boite[2]}.get(
+                int(np.sign(edge[1])), (rect.boite[2] + rect.boite[3]) / 2), 0.0])
         super().__init__(rect, rate_func=rate_functions.smooth, introducer=True, **kw)
 
     def interpolate_mobject(self, alpha):
         m = self.mobject
+        if isinstance(m, Hachure):
+            # Les rayures ne s'etirent pas : la barre se redessine a sa hauteur
+            # du moment, sur une trame fixe.
+            h = max(self.full_h * alpha, 1e-4)
+            ay, sens = self.anchor[1], int(np.sign(self.edge[1]))
+            y0, y1 = (ay, ay + h) if sens < 0 else (ay - h, ay) if sens > 0 else (ay - h / 2,
+                                                                                   ay + h / 2)
+            x0, x1 = m.cadre[0], m.cadre[1]
+            m.cadrer(x0, x1, y0, y1, garder=True)
+            return
         m.become(self.starting_mobject)
         m.stretch_to_fit_height(max(self.full_h * alpha, 1e-4))
         m.move_to(self.anchor, aligned_edge=self.edge)
@@ -2509,6 +2542,10 @@ def Comparaison(seg, cues):
                      entre deux jauges ; `valeur` facultative, sourcee (R3)
       suite          {"option": k} : bande ouverte au-dessus de la derniere
                      jauge de k, sans borne ni valeur, ou l'argent monte
+      natures        [n1, n2] : le sens de chaque option (R10) - "gain",
+                     "perte", "manque_a_gagner", "neutre" (sa couleur) ; la
+                     nature l'emporte sur `couleurs`. Un manque a gagner a
+                     ses jauges hachurees et ses pictogrammes en pointilles.
     Parties : value_g, pictos_k, suite (traces), highlight, gap (surgissements).
     Ancres d'overlay : option_1, option_2 (nom de chaque option).
     """
@@ -2526,6 +2563,10 @@ def Comparaison(seg, cues):
         raise SystemExit(f"{sid} : Comparaison ne trace pas encore de valeur negative")
     cols = [_PALETTE.get(c, c) for c in mb.get("couleurs", [])]
     cols += [CONTRIB, INTEREST][len(cols):]
+    natures = mb.get("natures") or ["neutre", "neutre"]
+    if len(natures) != 2 or any(n not in NATURES for n in natures):
+        raise SystemExit(f"{sid} : Comparaison, `natures` : deux valeurs parmi {', '.join(NATURES)}")
+    cols = [COULEUR_SENS.get(n, c) for n, c in zip(natures, cols)]
     pics = mb.get("pictogrammes") or []
 
     # --- geometrie : deux colonnes, une ligne de base commune ----------------
@@ -2572,6 +2613,12 @@ def Comparaison(seg, cues):
             rect = Rectangle(width=bw, height=h, fill_color=cols[k - 1], fill_opacity=0.92,
                              stroke_width=0)
             rect.move_to([x, y0, 0], aligned_edge=DOWN)
+            if natures[k - 1] == "manque_a_gagner":
+                rect = Hachure.sur(rect, MANQUE)
+            if natures[k - 1] != "neutre":
+                cues.sens.append({"nom": f"value_{g + 1}", "nature": natures[k - 1],
+                                  "objets": [rect], "montant": None,
+                                  "motif": [rect] if natures[k - 1] == "manque_a_gagner" else []})
             lab = txt(nombres.fmt(v, fmt), SZ_BODY, INK, weight=SEMIBOLD)
             lab.next_to(rect, UP, buff=0.14)
             key = f"value_{g + 1}"
@@ -2592,6 +2639,8 @@ def Comparaison(seg, cues):
         icons = VGroup()
         for j in range(n):
             ic = picto(p["icone"], cols[k - 1], hauteur=size)
+            if natures[k - 1] == "manque_a_gagner":
+                ic = pointille(ic, MANQUE, pas=0.06)
             r, c = divmod(j, ncol)
             # Grille alignee a gauche, a 0,5 de la jauge : l'accolade d'un ecart y passe.
             ic.move_to([X[k] - 0.2 * kx + size / 2 + c * (size + gap),
@@ -2600,6 +2649,10 @@ def Comparaison(seg, cues):
             icons.add(ic)
         key = f"pictos_{i + 1}"
         pic_groups[key] = (icons, k)
+        if natures[k - 1] != "neutre":
+            cues.sens.append({"nom": key, "nature": natures[k - 1], "objets": [icons],
+                              "montant": None,
+                              "motif": [icons] if natures[k - 1] == "manque_a_gagner" else []})
         order.append(key)
         by_opt[k].add(icons)
         cues.point(key, icons.get_top())
@@ -2748,8 +2801,8 @@ def Comparaison(seg, cues):
 # Code couleur obligatoire : CONTRIB = ce que l'on verse, INTEREST = ce que
 # l'on gagne, NEG = ce que l'on perd. Une perte n'apparait jamais en ambre ni
 # en bleu ; son montant porte un signe moins, celui d'un gain un signe plus.
-NATURES = ("neutre", "gain", "perte")
-COULEUR_SENS = {"gain": INTEREST, "perte": NEG}
+NATURES = ("neutre", "gain", "perte", "manque_a_gagner")
+COULEUR_SENS = {"gain": INTEREST, "perte": NEG, "manque_a_gagner": MANQUE}
 SIGNE_SENS = {"gain": "+", "perte": "−"}   # le vrai signe moins, pas le trait d'union
 PERTE_RETRECIT = 0.88   # le noeud qui perd retrecit a l'arrivee du montant
 PERTE_PLANCHER = 0.70   # ... sans jamais passer sous 70 % de sa taille
@@ -2757,11 +2810,119 @@ PERTE_RT = 0.6
 
 
 def montant_signe(v, kind, nature):
-    """Le montant tel qu'il s'ecrit : signe du sens, puis la valeur absolue."""
+    """Le montant tel qu'il s'ecrit : signe du sens, puis la valeur absolue.
+    Un manque a gagner s'ecrit tel qu'il est donne : avec le signe moins s'il
+    est dit (valeur negative), sans signe sinon."""
     import nombres
+    if nature == "manque_a_gagner":
+        return moins(nombres.fmt(float(v), kind))
     if nature not in SIGNE_SENS:
         return nombres.fmt(float(v), kind)
     return SIGNE_SENS[nature] + nombres.fmt(abs(float(v)), kind)
+
+
+def moins(s):
+    """Le vrai signe moins devant une valeur negative, pas le trait d'union."""
+    return SIGNE_SENS["perte"] + s[1:] if s.startswith("-") else s
+
+
+# --- Le motif d'un manque a gagner ---------------------------------------------
+# Un manque a gagner est toujours reconnaissable sans sa couleur : en
+# pointilles pour un trait (lien, ligne), hachure pour une surface (barre,
+# case, zone). L'objet porte `motif`, que make check verifie.
+
+HACHURE_PAS = 0.16       # ecart entre deux rayures, perpendiculairement
+
+
+class Hachure(VGroup):
+    """Une surface hachuree : fond leger, contour et rayures a 45 degres, le
+    tout dans sa couleur. La trame est fixe dans l'image : une barre qui
+    grandit (GrowBar) se redessine sans que ses rayures glissent."""
+
+    def __init__(self, x0, x1, y0, y1, couleur, fond=0.28, rayures=1.0, contour=True, **kw):
+        super().__init__(**kw)
+        self.couleur, self.fond, self.rayures, self.trait = couleur, fond, rayures, contour
+        self.motif = "hachures"
+        self.boite = (x0, x1, y0, y1)
+        self.cadrer(x0, x1, y0, y1)
+
+    @classmethod
+    def sur(cls, m, couleur, **kw):
+        """La hachure qui occupe la place de `m` (un rectangle deja pose)."""
+        return cls(m.get_left()[0], m.get_right()[0], m.get_bottom()[1], m.get_top()[1],
+                   couleur, **kw)
+
+    def cadrer(self, x0, x1, y0, y1, garder=False):
+        """Redessine la surface sur la boite (x0, x1, y0, y1)."""
+        self.cadre = (x0, x1, y0, y1)
+        if not garder:
+            self.boite = (x0, x1, y0, y1)
+        w, h = max(x1 - x0, 1e-4), max(y1 - y0, 1e-4)
+        fond = Rectangle(width=w, height=h, fill_color=self.couleur, fill_opacity=self.fond,
+                         stroke_color=self.couleur, stroke_width=2.0 if self.trait else 0,
+                         stroke_opacity=self.rayures)
+        fond.move_to([(x0 + x1) / 2, (y0 + y1) / 2, 0])
+        parts = [fond]
+        pas = HACHURE_PAS * np.sqrt(2)          # le long de la verticale
+        for k in range(int(np.ceil((y0 - x1) / pas)), int(np.floor((y1 - x0) / pas)) + 1):
+            c = k * pas                           # rayure y = x + c
+            xa, xb = max(x0, y0 - c), min(x1, y1 - c)
+            if xb - xa > 0.01:
+                parts.append(Line([xa, xa + c, 0], [xb, xb + c, 0], stroke_color=self.couleur,
+                                  stroke_width=2.2, stroke_opacity=self.rayures))
+        self.remove(*self.submobjects)
+        self.add(*parts)
+        return self
+
+
+def disque_hachure(x, y, r, couleur):
+    """Une case ronde hachuree : contour et rayures, sans fond (FillPictos
+    l'allume par l'opacite du trait)."""
+    parts = [Circle(radius=r, stroke_color=couleur, stroke_width=2.4).move_to([x, y, 0])]
+    pas = HACHURE_PAS * 0.8
+    for k in range(-int(r / pas), int(r / pas) + 1):
+        d = k * pas
+        demi = np.sqrt(max(r * r - d * d, 0.0))
+        if demi < 0.02:
+            continue
+        # Perpendiculaire a la rayure (direction (1, 1)) : (-1, 1) / racine 2.
+        cx, cy = x - d / np.sqrt(2), y + d / np.sqrt(2)
+        e = demi / np.sqrt(2)
+        parts.append(Line([cx - e, cy - e, 0], [cx + e, cy + e, 0], stroke_color=couleur,
+                          stroke_width=2.0))
+    g = VGroup(*parts)
+    g.motif = "hachures"
+    return g
+
+
+def pointille(m, couleur=None, pas=0.16):
+    """Le meme trait, en pointilles. Un pictogramme : chacun de ses traits
+    (ses points restent des points)."""
+    if m.has_points() and not isinstance(m, Dot):
+        try:
+            longueur = m.get_arc_length()
+        except Exception:
+            longueur = 2.0
+        d = DashedVMobject(m, num_dashes=max(4, int(longueur / pas)), dashed_ratio=0.55)
+        if couleur is not None:
+            d.set_stroke(couleur)
+        d.motif = "pointilles"
+        return d
+    g = VGroup(*[sm if isinstance(sm, Dot) else pointille(sm, couleur, pas)
+                 for sm in m.submobjects])
+    g.motif = "pointilles"
+    return g
+
+
+def a_motif(m):
+    """L'objet porte-t-il le motif d'un manque a gagner ? Un groupe le porte
+    quand tous ses elements le portent (les points d'un pictogramme exceptes)."""
+    if getattr(m, "motif", None) in ("hachures", "pointilles"):
+        return True
+    if isinstance(m, DashedLine):
+        return True
+    enfants = [c for c in m.submobjects if not isinstance(c, Dot)]
+    return bool(enfants) and all(a_motif(c) for c in enfants)
 
 
 def Flux(seg, cues):
@@ -2830,7 +2991,7 @@ def Flux(seg, cues):
         cues.anchor_geo[f"noeud_{i + 1}"] = ("noeud", np.array([x, y, 0.0]), R)
         cues.obstacles.append((f"node_{i + 1}", (x - R, x + R, y - R, y + R)))
 
-    links = {}
+    links, guides = {}, {}
     for i, ln in enumerate(links_spec):
         a, b = nodes[f"node_{int(ln['de'])}"][1], nodes[f"node_{int(ln['vers'])}"][1]
         col = _PALETTE.get(ln.get("couleur", "CONTRIB"), ln.get("couleur", CONTRIB))
@@ -2844,15 +3005,19 @@ def Flux(seg, cues):
         bend = float(ln.get("courbure", 0.0))
         path = ArcBetweenPoints(p0, p1, angle=bend) if abs(bend) > 1e-3 else Line(p0, p1)
         path.set_stroke(col, width=3.2, opacity=0.6)
+        guide = path                       # le chemin de l'argent et des libelles
+        if nature == "manque_a_gagner":
+            path = pointille(path, col)
+        guides[f"link_{i + 1}"] = guide
         tip = ArrowTriangleFilledTip(color=col, fill_opacity=0.9, length=0.24, width=0.24)
-        end_dir = path.point_from_proportion(1.0) - path.point_from_proportion(0.97)
+        end_dir = guide.point_from_proportion(1.0) - guide.point_from_proportion(0.97)
         tip.rotate(np.arctan2(end_dir[1], end_dir[0]) - tip.tip_angle)
-        tip.move_to(path.point_from_proportion(1.0) - tip.get_tip_point() + tip.get_center())
+        tip.move_to(guide.point_from_proportion(1.0) - tip.get_tip_point() + tip.get_center())
         k = int(ln.get("intensite", 1))
         if not 1 <= k <= 3:
             raise SystemExit(f"{sid} : liens[{i}].intensite de 1 a 3")
         dots = _particles(3 + 3 * k, 0.05 + 0.02 * k, col)
-        mid = path.point_from_proportion(0.5)
+        mid = guide.point_from_proportion(0.5)
         bulge = mid - (p0 + p1) / 2
         if np.linalg.norm(bulge) > 0.05:
             # Lien courbe : montant et nom du cote exterieur de la courbure.
@@ -2870,7 +3035,8 @@ def Flux(seg, cues):
         order.append(key)
         if nature != "neutre":
             cues.sens.append({"nom": key, "nature": nature, "objets": [path, tip, dots],
-                              "montant": label})
+                              "montant": label,
+                              "motif": [path] if nature == "manque_a_gagner" else []})
         cues.point(f"lien_{i + 1}", mid + normal * (0.80 if label is not None else 0.42))
         cues.anchor_colors[f"lien_{i + 1}"] = col
         cues.anchor_widths[f"lien_{i + 1}"] = 3.0
@@ -2881,7 +3047,7 @@ def Flux(seg, cues):
                                    (label.get_left()[0], label.get_right()[0],
                                     label.get_bottom()[1], label.get_top()[1])))
         for f in np.linspace(0.1, 0.9, 9):
-            q = path.point_from_proportion(float(f))
+            q = guide.point_from_proportion(float(f))
             cues.obstacles.append((f"link_{i + 1}", (q[0] - 0.06, q[0] + 0.06,
                                                      q[1] - 0.06, q[1] + 0.06)))
 
@@ -2933,8 +3099,9 @@ def Flux(seg, cues):
             level = _schedule([(t_hl, 1.0), (t_hl + PUNCTUAL_MAX, 0.25)])
         start = t0 + rt
         if start < cues.dur:
-            fn = lambda p, path=path: path.point_from_proportion(p)
-            length = path.get_arc_length() if hasattr(path, "get_arc_length") else 4.0
+            guide = guides[k]
+            fn = lambda p, guide=guide: guide.point_from_proportion(p)
+            length = guide.get_arc_length() if hasattr(guide, "get_arc_length") else 4.0
             cues.at(start, Courant(dots, fn, start, 1.5 / max(length, 1.0), level=level),
                     rt=max(cues.dur - start, MIN_RT))
 
@@ -3307,9 +3474,10 @@ def Cascade(seg, cues):
         raise SystemExit(f"{sid} : Cascade, {len(marches)} marches ({CASCADE_MARCHES_MAX} au plus)")
     niveaux = [depart]
     for i, m in enumerate(marches):
-        if m.get("nature") not in ("perte", "gain") or m.get("montant") is None:
+        if m.get("nature") not in ("perte", "gain", "manque_a_gagner") \
+                or m.get("montant") is None:
             raise SystemExit(f"{sid} : marches[{i}] attend `montant` et `nature` "
-                             f"(\"perte\" ou \"gain\")")
+                             f"(\"perte\", \"gain\" ou \"manque_a_gagner\")")
         v = abs(float(m["montant"]))
         niveaux.append(niveaux[-1] + (v if m["nature"] == "gain" else -v))
     # R3 : l'arrivee est donnee, pas calculee. On verifie seulement que le
@@ -3338,11 +3506,13 @@ def Cascade(seg, cues):
     base = Line([x0 - pas / 2, fr.py(0), 0], [x0 + pas * (n - 0.5), fr.py(0), 0],
                 stroke_color=RULE, stroke_width=2.4)
 
-    def colonne(g, a, b, couleur):
+    def colonne(g, a, b, couleur, hachure=False):
         """La barre de la colonne g, du niveau a au niveau b (elle part de a)."""
         r = Rectangle(width=bw, height=max(abs(fr.wy(b - a)), 0.006), fill_color=couleur,
                       fill_opacity=0.92, stroke_width=0)
         r.move_to([x0 + g * pas, fr.py(a), 0], aligned_edge=DOWN if b >= a else UP)
+        if hachure:
+            r = Hachure.sur(r, couleur)
         return r, (DOWN if b >= a else UP)
 
     bars, order, liaisons = {}, [], {}
@@ -3375,12 +3545,14 @@ def Cascade(seg, cues):
     for i, m in enumerate(marches):
         key = f"marche_{i + 1}"
         couleur = COULEUR_SENS[m["nature"]]
-        rect, edge = colonne(i + 1, niveaux[i], niveaux[i + 1], couleur)
+        manque = m["nature"] == "manque_a_gagner"
+        rect, edge = colonne(i + 1, niveaux[i], niveaux[i + 1], couleur, hachure=manque)
         lab = txt(montant_signe(m["montant"], m.get("format", kind), m["nature"]), SZ_BODY,
                   couleur, weight=SEMIBOLD)
         poser(key, i + 1, rect, edge, lab)
         liaisons[key] = liaison(i + 1, niveaux[i])
-        cues.sens.append({"nom": key, "nature": m["nature"], "objets": [rect], "montant": lab})
+        cues.sens.append({"nom": key, "nature": m["nature"], "objets": [rect], "montant": lab,
+                          "motif": [rect] if manque else []})
     rect, edge = colonne(n - 1, 0.0, arrivee, col_fin)
     if arrivee < 0:
         lab = txt(montant_signe(arrivee, kind, "perte"), SZ_TITLE, NEG, weight=SEMIBOLD)
@@ -3452,7 +3624,7 @@ def Cascade(seg, cues):
 
 GRILLE_FORMES = {10: (2, 5), 20: (4, 5), 100: (10, 10)}    # taille -> (lignes, colonnes)
 GRILLE_PAS = {10: 1.25, 20: 0.95, 100: 0.38}               # entraxe des cases
-GRILLE_COULEURS = {"gain": INTEREST, "perte": NEG, "neutre": TEAL}
+GRILLE_COULEURS = {"gain": INTEREST, "perte": NEG, "manque_a_gagner": MANQUE, "neutre": TEAL}
 GRILLE_ETEINT = 0.22     # opacite d'une case eteinte (gris de la charte)
 
 
@@ -3529,13 +3701,17 @@ def Grille(seg, cues):
 
     icone = mb.get("icone")
 
-    def case(x, y, couleur, eteinte):
+    def case(x, y, couleur, eteinte, manque=False):
         if icone:
             m = picto(icone, MUTED if eteinte else couleur, hauteur=pas * 0.70)
             m.move_to([x, y, 0])
             if eteinte:
                 _set_alpha(m, GRILLE_ETEINT + 0.2)
+            elif manque:
+                m = pointille(m, couleur, pas=0.06)
             return m
+        if manque and not eteinte:
+            return disque_hachure(x, y, pas * 0.34, couleur)
         return Dot([x, y, 0], radius=pas * 0.34, color=MUTED if eteinte else couleur,
                    fill_opacity=GRILLE_ETEINT if eteinte else 1.0, stroke_width=0)
 
@@ -3546,7 +3722,9 @@ def Grille(seg, cues):
         places = [(cx - w / 2 + (c + 0.5) * pas, cy + h / 2 - (r + 0.5) * pas)
                   for r in range(lignes) for c in range(colonnes)]
         fond = VGroup(*[case(x, y, couleur, True) for x, y in places])
-        allumees = VGroup(*[case(x, y, couleur, False) for x, y in places[:int(g["cases"])]])
+        manque = g["nature"] == "manque_a_gagner"
+        allumees = VGroup(*[case(x, y, couleur, False, manque)
+                            for x, y in places[:int(g["cases"])]])
         lab = labels[gi]
         if deux:
             lab.move_to([cx, cy - h / 2 - 0.30 - lab.height / 2, 0])
@@ -3563,7 +3741,8 @@ def Grille(seg, cues):
         if g["nature"] != "neutre":
             # Une frequence n'est pas un montant : sa couleur dit le sens, sans signe.
             cues.sens.append({"nom": key, "nature": g["nature"], "objets": [allumees],
-                              "montant": lab, "signe": False})
+                              "montant": lab, "signe": False,
+                              "motif": [allumees] if manque else []})
 
     # --- calendrier ----------------------------------------------------------
     extras = [f"valeur_{i + 1}" for i in range(len(groupes))]
@@ -3697,10 +3876,20 @@ def Distribution(seg, cues):
                          f"({DISTRIBUTION_POINTS_MAX} au plus) : augmente `par_point`")
     x1 = x0 + n_c * pas
     seuil = float(mb.get("seuil", 0.0))
-    perte = bool(mb.get("zone_negative", True))
-    # Sous le seuil : une perte pour le spectateur (NEG), ou l'autre option qui
-    # l'emporte (neutre, vert d'eau). La zone existe dans les deux cas.
-    col_sous = NEG if perte else TEAL
+    # Sous le seuil : une perte pour le spectateur (NEG), un manque a gagner
+    # (MANQUE, zone hachuree), ou l'autre option qui l'emporte (neutre, vert
+    # d'eau). `zone_negative` : true = perte, false = neutre.
+    sous = mb.get("sous_seuil")
+    if sous is None:
+        sous = "perte" if mb.get("zone_negative", True) else "neutre"
+    elif "zone_negative" in mb:
+        raise SystemExit(f"{sid} : Distribution, `sous_seuil` et `zone_negative` ensemble : "
+                         f"garde `sous_seuil`")
+    if sous not in ("perte", "manque_a_gagner", "neutre"):
+        raise SystemExit(f"{sid} : Distribution, `sous_seuil` parmi perte, manque_a_gagner, "
+                         f"neutre (recu {sous!r})")
+    perte = sous == "perte"
+    col_sous = {"perte": NEG, "manque_a_gagner": MANQUE, "neutre": TEAL}[sous]
     k_seuil = (seuil - x0) / pas
     if abs(k_seuil - round(k_seuil)) > 1e-6 or not 0 <= round(k_seuil) <= n_c:
         raise SystemExit(f"{sid} : Distribution, `seuil` ({seuil:g}) doit etre une borne de "
@@ -3739,13 +3928,13 @@ def Distribution(seg, cues):
     points, classe_de = VGroup(), []
     for c, n in enumerate(nb):
         cx = fr.px(x0 + (c + 0.5) * pas)
-        sous = c < k_seuil
+        dessous = c < k_seuil
         for j in range(n):
             rang, place = divmod(j, par_rang)
             dans_rang = min(par_rang, n - rang * par_rang)
             x = cx + (place - (dans_rang - 1) / 2) * ecart
             points.add(Dot([x, bas + 0.06 + r + rang * ecart, 0], radius=r,
-                           color=col_sous if sous else col, fill_opacity=1, stroke_width=0))
+                           color=col_sous if dessous else col, fill_opacity=1, stroke_width=0))
             classe_de.append(c)
 
     base = Line([gauche, bas, 0], [droite, bas, 0], stroke_color=RULE, stroke_width=2.4)
@@ -3783,8 +3972,12 @@ def Distribution(seg, cues):
             teinte = Rectangle(width=fr.px(seuil) - gauche, height=haut - bas, fill_color=NEG,
                                fill_opacity=DISTRIBUTION_TEINTE, stroke_width=0)
             teinte.move_to([gauche, bas, 0], aligned_edge=DL)
+        if sous == "manque_a_gagner":
+            teinte = Hachure(gauche, fr.px(seuil), bas, haut, MANQUE, fond=0.05, rayures=0.30,
+                             contour=False)
         limite = DashedLine([fr.px(seuil), bas, 0], [fr.px(seuil), haut, 0], dash_length=0.08,
-                            stroke_color=NEG if perte else INK_SOFT, stroke_width=2.0)
+                            stroke_color=col_sous if sous != "neutre" else INK_SOFT,
+                            stroke_width=2.0)
         sous_seuil = VGroup(*[p for p, c in zip(points, classe_de) if c < k_seuil])
         if mb.get("part_negative"):
             pn = mb["part_negative"]
@@ -3795,11 +3988,12 @@ def Distribution(seg, cues):
         cues.anchor_align["zone"] = LEFT
         cues.anchor_colors["zone"] = col_sous
         cues.anchor_widths["zone"] = max(fr.px(seuil) - gauche - 0.3, 1.2)
-        if perte:
-            # La part des resultats negatifs est une frequence : sans signe.
-            cues.sens.append({"nom": "zone", "nature": "perte", "objets": [teinte, limite,
-                                                                            sous_seuil],
-                              "montant": part, "signe": False})
+        if sous != "neutre":
+            # La part des resultats sous le seuil est une frequence : sans signe.
+            cues.sens.append({"nom": "zone", "nature": sous, "objets": [teinte, limite,
+                                                                         sous_seuil],
+                              "montant": part, "signe": False,
+                              "motif": [teinte, limite] if sous == "manque_a_gagner" else []})
 
     def repere(cle, niveau, plein):
         """Trait vertical a la valeur, sa valeur ecrite au-dessus du graphique."""

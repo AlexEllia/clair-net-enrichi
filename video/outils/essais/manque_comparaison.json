@@ -1,0 +1,55 @@
+{
+ "_role": "Plan d'essai, hors episode : nature manque_a_gagner (R10) dans Comparaison - deux options, un gain et un manque a gagner : jauge hachuree, pictogrammes en pointilles. Chiffres d'essai, sans source.",
+ "duree_s": 9.0,
+ "segment": {
+  "id": "essai_manque_comparaison",
+  "role": "essai",
+  "type_visuel": "manim",
+  "manim_brief": {
+   "composant": "Comparaison",
+   "unite": "percent",
+   "donnees": [
+    [
+     1,
+     7
+    ],
+    [
+     2,
+     5
+    ]
+   ],
+   "natures": [
+    "gain",
+    "manque_a_gagner"
+   ],
+   "pictogrammes": [
+    {
+     "option": 2,
+     "icone": "calendar",
+     "nombre": 4
+    }
+   ],
+   "revelations": [
+    {
+     "element": "value_1",
+     "t_rel_s": 2.0
+    },
+    {
+     "element": "value_2",
+     "t_rel_s": 4.0
+    },
+    {
+     "element": "pictos_1",
+     "t_rel_s": 6.0
+    }
+   ]
+  },
+  "overlay_texte": [
+   {
+    "ancre": "titre_haut",
+    "t_rel_s": 0.5,
+    "texte_fr": "Comparaison : manque à gagner"
+   }
+  ]
+ }
+}

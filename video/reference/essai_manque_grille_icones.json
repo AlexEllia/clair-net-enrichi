@@ -1,0 +1,74 @@
+{
+ "statut": "PLAN D'ESSAI VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
+ "courante": 1,
+ "versions": [
+  {
+   "version": 1,
+   "validee_le": "15/11/2026",
+   "motif": "nature manque a gagner validee a l'ecran par Alexandre le 15/11/2026",
+   "regle_cadre": "v2",
+   "regle_comparaison": "v2",
+   "regle_barres": "v3-phrase",
+   "vue_a_l_ecran": true,
+   "duree_s": 6.0,
+   "images": 180,
+   "pixels": {
+    "largeur": 960,
+    "hauteur": 540,
+    "md5": "a6604b3cfbe448c8bf3da28914725954"
+   },
+   "segment": {
+    "id": "essai_manque_grille_icones",
+    "role": "essai",
+    "type_visuel": "manim",
+    "manim_brief": {
+     "composant": "Grille",
+     "taille": 10,
+     "icone": "calendar",
+     "groupes": [
+      {
+       "cases": 3,
+       "valeur": 31.1,
+       "nature": "manque_a_gagner"
+      }
+     ],
+     "revelations": [
+      {
+       "element": "groupe_1",
+       "t_rel_s": 1.5
+      }
+     ]
+    },
+    "overlay_texte": [
+     {
+      "ancre": "titre_haut",
+      "t_rel_s": 0.5,
+      "texte_fr": "Grille : pictogrammes"
+     }
+    ]
+   },
+   "calendrier": [
+    [
+     0.0,
+     0.8,
+     "FadeIn"
+    ],
+    [
+     0.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     1.5,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     1.5,
+     1.5,
+     "FillPictos"
+    ]
+   ]
+  }
+ ]
+}

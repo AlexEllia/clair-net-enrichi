@@ -133,21 +133,40 @@ la voix parle d'autre chose. Les courbes, elles, gardent leurs points
 intermédiaires : ils sont sur le chemin du tracé. Le build signale toute
 barre, bande ou jauge sans révélation.
 
-**R10 — L'image dit le sens que dit la voix.** Trois couleurs portent un
-sens, et un seul : bleu (`CONTRIB`) = ce que l'on verse ; ambre (`INTEREST`)
-= ce que l'on gagne ; `NEG` (#E2725B) = ce que l'on perd. **Une perte
-n'apparaît jamais en ambre ni en bleu**, et son montant porte un signe
-moins (« −1,2 % ») ; le montant d'un gain porte un signe plus. Ce que la voix
-appelle une perte (frais, inflation, impôt, moins-value, retard) se déclare
-comme telle dans le brief : une `Erosion` (la famille par défaut d'une perte),
-ou `"nature": "perte"` sur un lien de `Flux`. C'est
-le moteur qui écrit le signe et choisit la couleur ; n'écris ni l'un ni
-l'autre. **`make check` refuse** une perte déclarée dans une autre couleur
-que `NEG`, une perte dessinée autrement qu'en `NEG` ou dont le montant n'a
-pas son signe moins, et de même un gain hors de l'ambre ou sans signe plus.
-`NEG` dit toujours une perte : un lien tracé en `NEG` sans `nature` est
-refusé lui aussi (dans un script écrit contre une version antérieure du
-catalogue, il est seulement signalé).
+**R10 — L'image dit le sens que dit la voix.** Ce qu'un élément dit au
+spectateur — il gagne, il perd, il gagne moins qu'ailleurs, ou rien de tout
+cela — se déclare dans le brief par sa **nature**, et c'est le moteur qui
+en tire la couleur, le motif et le signe. Quatre natures :
+
+| Nature | Ce que dit la voix | Couleur | Motif | Signe du montant | Exemple |
+|---|---|---|---|---|---|
+| `"gain"` | ce que l'on gagne | ambre (`INTEREST`, #F2B33D) | plein | « + », écrit par le moteur | « les intérêts vous rapportent 7 % » |
+| `"perte"` | de l'argent qui **sort réellement** : frais, impôt, inflation, moins-value | `NEG` (#E2725B) | plein | « − », écrit par le moteur | « les frais vous prennent 1,2 % par an » |
+| `"manque_a_gagner"` | un **écart défavorable avec une autre option**, sans perte réelle de capital | `MANQUE` (#BD6700, orange brûlé) | **pointillés** (lien, trait) ou **hachures** (barre, case, zone), toujours | tel qu'il est dit : « −2 % » si la voix dit le moins, sans signe sinon | « étaler rapporte 2 % de moins que tout placer d'un coup » |
+| `"neutre"` | ni l'un ni l'autre : un versement, un transfert, l'autre option qui l'emporte | celle de l'élément (bleu `CONTRIB` = ce que l'on verse, vert d'eau `TEAL` sinon) | plein | tel quel | « vous versez 200 € par mois » |
+
+**Une perte n'apparaît jamais en ambre ni en bleu.** Ne confonds pas perte et
+manque à gagner : il y a perte quand le capital du spectateur diminue ; il y a
+manque à gagner quand il augmente moins qu'avec l'autre option. Dans le doute,
+demande-toi si l'argent sort : s'il sort, c'est une perte ; s'il rentre, mais
+moins, c'est un manque à gagner. Le manque à gagner porte **toujours son
+motif**, pour se reconnaître sans la couleur (daltonisme, écran terne) : son
+orange se distingue de l'ambre et du rouge d'abord par sa luminance, et sous
+deutéranopie il se rapproche de `NEG` — le motif fait la différence.
+
+Familles et nature : `Flux` (`nature` d'un lien), `Bars` (`natures`),
+`Comparaison` (`natures`), `Grille` (`nature` d'un groupe), `Distribution`
+(`sous_seuil`), `Cascade` (`nature` d'une marche). `Erosion` est réservée aux
+pertes réelles : un manque à gagner n'y entre pas. N'écris ni la couleur ni le
+signe d'un gain ou d'une perte : la nature les impose.
+
+**`make check` refuse** un élément dont le dessin contredit sa nature : une
+perte hors de `NEG` ou sans son signe moins, un gain hors de l'ambre ou sans
+son signe plus, un manque à gagner hors de `MANQUE` ou **sans son motif**, et
+un brief qui déclare une nature et une `couleur` contraire. `NEG` dit toujours
+une perte : un lien tracé en `NEG` sans `nature` est refusé lui aussi (dans un
+script écrit contre une version antérieure du catalogue, il est seulement
+signalé).
 
 ---
 
@@ -467,6 +486,7 @@ ligne = barres simples. Les valeurs négatives descendent sous zéro.
 | `axes.unite_y` | **oui** | comme `LineChart` | Format des valeurs (axe vertical et étiquettes). |
 | `axes.unite_x` | non | `"percent…"`, `"EUR…"`, ou autre | Format des catégories : `1,7 %` pour `percent…`, nombre nu sinon. |
 | `couleurs` | non | comme `LineChart` | Une par série. |
+| `natures` | non | une par catégorie en `simple`, une par série sinon : `"gain"`, `"perte"`, `"manque_a_gagner"`, `"neutre"` | Le sens de chaque barre (R10) : ambre, `NEG`, `MANQUE` **hachurée**, ou la couleur de la série. La valeur reste la donnée ; négative, elle s'écrit avec le vrai signe moins. |
 | `mise_en_avant` | non | `{"barre": g}` ou `{"barre": g, "serie": s}` | Encadre une barre et estompe les autres. |
 | `repere` | non | `{"valeur": 50}` | Ligne horizontale pointillée à cette hauteur, avec sa valeur. La valeur vient des sources (R3). |
 | `annotation` | non | `{"barre": g, "valeur": 3, "format": "facteur"}` | Un chiffre écrit au-dessus d'une catégorie (« ×3 »). La valeur vient des sources (R3). |
@@ -704,6 +724,7 @@ voulu. Les valeurs sont positives ou nulles.
 |---|---|---|---|
 | `unite` | **oui** | `"EUR"`, `"percent"`, ou autre | Format des valeurs écrites : `€`, `%`, nombre nu. |
 | `couleurs` | non | deux couleurs, comme `LineChart` | Une par option. Convention de la chaîne : bleu = ce que vous versez, ambre = ce que le capital verse. |
+| `natures` | non | `[n1, n2]` parmi `"gain"`, `"perte"`, `"manque_a_gagner"`, `"neutre"` | Le sens de chaque option (R10) ; il l'emporte sur `couleurs`. Un manque à gagner a ses jauges **hachurées** et ses pictogrammes **en pointillés**, en `MANQUE`. |
 | `pictogrammes` | non | `[{"option": k, "icone": nom, "nombre": n}]` | `n` pictogrammes (1 à 40) qui apparaissent un à un dans la colonne k, à côté de ses jauges. `n` est un nombre que la voix énonce et que les sources portent (R3) : « douze mois » donne 12. `icone` : un nom de la liste ci-dessous. |
 | `ecart` | non | `{"entre": [g1, g2], "valeur": v, "format": f}` | Pointillé à la hauteur de la plus petite des jauges `g1` et `g2` (rangs dans `donnees`) et accolade le long de la plus grande. `valeur` est facultative ; si elle est écrite, elle vient des sources (R3). `format` : comme `LineChart`. |
 | `mise_en_avant` | non | `{"option": k}` | Encadre l'option k et estompe l'autre. |
@@ -868,13 +889,14 @@ montants, eux, sont écrits dans la scène, sur leur lien.
 | `mise_en_avant` | non | `{"liens": [k, …]}` | Ces liens s'affirment ; les autres s'estompent, avec leurs particules et leur montant. |
 
 **Le sens d'un lien : `nature`** (R10). Chaque lien peut porter
-`"nature"` : `"neutre"` (défaut), `"gain"` ou `"perte"`.
+`"nature"` : `"neutre"` (défaut), `"gain"`, `"perte"` ou `"manque_a_gagner"`.
 
 | `nature` | Sens de la flèche | Couleur | Montant | Effet |
 |---|---|---|---|---|
 | `"neutre"` | de la source vers la destination | celle de `couleur` | tel quel (« 200 € ») | Un versement, un transfert : rien n'est gagné ni perdu. |
 | `"gain"` | de ce qui rapporte **vers celui qui gagne** | ambre, imposée | précédé de « + » (« +7 % ») | — |
 | `"perte"` | **part de celui qui perd**, vers ce qui lui prend (frais, impôt, inflation) | `NEG`, imposée | précédé du signe moins (« −1,2 % ») | Le nœud qui perd rétrécit légèrement (à 88 %) dès que le montant est écrit ; à chaque nouvelle perte encore, sans passer sous 70 %. |
+| `"manque_a_gagner"` | de l'option qui rapporte plus **vers celle du spectateur**, qui en reçoit moins | `MANQUE`, imposée, **en pointillés** | tel qu'il est donné : « −2 % » pour `"montant": -2`, « 2 % » pour `2` | Aucun nœud ne rétrécit : le capital ne diminue pas. |
 
 Avec `gain` ou `perte`, n'écris pas `couleur` : la nature l'impose, et `make
 check` refuse un brief où les deux se contredisent. Écris `montant` en valeur
@@ -1162,7 +1184,7 @@ barre (le net) se pose en plein, depuis zéro, dans la couleur du départ — en
 |---|---|---|---|
 | `format` | **oui** | `"pct"`, `"euro"`, `"nombre"` | Écriture de toutes les valeurs. |
 | `depart` | **oui** | nombre, sourcé | La valeur de départ : la première barre. |
-| `marches` | **oui** | `[{"montant": v, "nature": "perte" \| "gain"}]`, 1 à 6 | Une marche par étape que la voix nomme (R9), dans l'ordre. `montant` en valeur positive ; `nature` est obligatoire : c'est elle qui donne le sens, la couleur et le signe (« −1,5 % », « +0,4 % »). |
+| `marches` | **oui** | `[{"montant": v, "nature": "perte" \| "gain" \| "manque_a_gagner"}]`, 1 à 6 | Une marche par étape que la voix nomme (R9), dans l'ordre. `nature` est obligatoire : c'est elle qui donne le sens, la couleur et le signe (« −1,5 % », « +0,4 % »). `montant` en valeur positive pour une perte ou un gain. Un manque à gagner descend, **hachuré**, en `MANQUE`, et son montant s'écrit tel qu'il est donné (`-2` : « −2 % »). |
 | `arrivee` | **oui** | nombre, sourcé | La valeur d'arrivée : la dernière barre. Le moteur ne la calcule pas (R3) ; il vérifie qu'elle est bien celle où mènent les marches, et **arrête le build** sinon (7 − 1,5 − 1,6 − 2 doit faire 1,9, à 0,011 près). |
 | `couleur` | non | `"INTEREST"` (défaut), `"CONTRIB"`, `"TEAL"` | Couleur de la barre de départ et d'arrivée : ambre pour un rendement ou un gain, bleu pour une somme versée. Jamais `NEG`. |
 
@@ -1260,7 +1282,7 @@ chaque grille quand il y en a deux.
 | Paramètre | Obligatoire | Valeurs admises | Effet |
 |---|---|---|---|
 | `taille` | **oui** | `10`, `20`, `100` | Nombre de cases de chaque grille : 2 × 5, 4 × 5, 10 × 10. Prends le dénominateur que dit la voix : « sept fois sur dix » → 10 ; un pourcentage énoncé tel quel → 100. |
-| `groupes` | **oui** | `[{"cases": n, "valeur": v, "format": f, "nature": s}]`, 1 ou 2 | Un groupe par fréquence que la voix énonce. `cases` : le nombre de cases allumées — **l'arrondi que dit la voix** (7 pour « sept fois sur dix »). `valeur` : **la valeur exacte**, sourcée, écrite à côté (68.9). `format` : `"pct"` par défaut. `nature`, obligatoire : `"gain"` (un succès, ambre), `"perte"` (un résultat négatif pour le spectateur, `NEG`), `"neutre"` (ni l'un ni l'autre, vert d'eau) — voir « Quelle `nature` » ci-dessous. |
+| `groupes` | **oui** | `[{"cases": n, "valeur": v, "format": f, "nature": s}]`, 1 ou 2 | Un groupe par fréquence que la voix énonce. `cases` : le nombre de cases allumées — **l'arrondi que dit la voix** (7 pour « sept fois sur dix »). `valeur` : **la valeur exacte**, sourcée, écrite à côté (68.9). `format` : `"pct"` par défaut. `nature`, obligatoire : `"gain"` (un succès, ambre), `"perte"` (un résultat négatif pour le spectateur, `NEG`), `"manque_a_gagner"` (le spectateur y gagne moins qu'avec l'autre option : `MANQUE`, cases **hachurées**, pictogrammes **en pointillés**), `"neutre"` (ni l'un ni l'autre, vert d'eau) — voir « Quelle `nature` » ci-dessous. |
 | `icone` | non | un pictogramme du catalogue (`calendar`, `user`, `coins`…) | Remplace les cercles. À réserver aux grilles de 10 et de 20 : à 100, il ne se lit plus. |
 
 Le moteur n'arrondit rien (R3) : il vérifie que `cases` est bien l'arrondi de
@@ -1283,11 +1305,18 @@ d'une comparaison n'est pas une perte : elle est `"neutre"`.
   mieux dans 31,1 % des cas**. » Personne ne perd, c'est l'autre option qui
   l'emporte : `{"cases": 69, "valeur": 68.9, "nature": "gain"}` puis
   `{"cases": 31, "valeur": 31.1, "nature": "neutre"}`.
+- `"manque_a_gagner"` — « Dans 68,9 % des périodes, **étaler vous a fait
+  gagner moins** que tout placer d'un coup. » Le spectateur qui étale ne perd
+  rien, il gagne moins : `{"cases": 69, "valeur": 68.9, "nature":
+  "manque_a_gagner"}`.
 - `"gain"` — la fréquence d'un succès, d'un résultat favorable : « le
   placement est gagnant sept fois sur dix ».
 
 Dans le doute entre `"perte"` et `"neutre"` : si la phrase ne dit pas que le
-spectateur perd ou échoue, c'est `"neutre"`.
+spectateur perd ou échoue, c'est `"neutre"`. Entre `"neutre"` et
+`"manque_a_gagner"` : si la phrase dit que le spectateur gagne **moins**
+qu'avec l'autre option, c'est un manque à gagner ; si elle dit seulement que
+l'autre option l'emporte, c'est `"neutre"`.
 
 **Éléments adressables dans `revelations`** :
 
@@ -1365,7 +1394,8 @@ spectateur peut être mis en avant d'un trait plein.
 | `par_point` | non | entier (défaut 1) | Combien de résultats vaut un point. 600 points dessinés au plus : pour 1 600 résultats, `4` (400 points). Le compteur, lui, va toujours jusqu'à `total`. Au-delà de 1, une légende discrète s'écrit sous le compteur : « 1 point = 4 périodes ». |
 | `unite` | avec `par_point` > 1 | le nom des résultats, au pluriel (`"périodes"`, `"années"`) | Le mot de la légende des points. Sans lui, `par_point` > 1 arrête le build. |
 | `seuil` | non | nombre (défaut 0), une borne de tranche | La limite de la zone : les résultats au-dessous. |
-| `zone_negative` | non | `true` (défaut), `false` | Le sens de ce qui est sous le seuil : `true`, une perte pour le spectateur (zone teintée, points et part en `NEG`) ; `false`, l'autre option qui l'emporte (points et part en vert d'eau, sans teinte). Voir ci-dessous. |
+| `sous_seuil` | non | `"perte"` (défaut), `"manque_a_gagner"`, `"neutre"` | Le sens de ce qui est sous le seuil (R10) : une perte pour le spectateur (zone teintée, points et part en `NEG`) ; un manque à gagner (zone **hachurée**, limite en pointillés, points et part en `MANQUE`) ; l'autre option qui l'emporte (points et part en vert d'eau, sans teinte). Voir ci-dessous. |
+| `zone_negative` | non | `true`, `false` | Ancienne écriture de `sous_seuil` : `true` = `"perte"`, `false` = `"neutre"`. Les deux ensemble arrêtent le build. |
 | `part_negative` | non | `{"valeur": v, "format": "pct"}` | La part des résultats sous le seuil, sourcée, écrite en grand dans la zone, dans sa couleur, sans signe (c'est une fréquence). |
 | `couleur` | non | `"INTEREST"` (défaut), `"CONTRIB"`, `"TEAL"` | Couleur des résultats au-dessus du seuil. Jamais `NEG`. |
 | `mediane` | non | `{"valeur": v}` | Trait pointillé à cette valeur, et la valeur écrite au-dessus. Sourcée : le moteur ne la calcule pas. |
@@ -1397,14 +1427,19 @@ du compteur, au départ de la chute.
   sous zéro, le spectateur perd de l'argent. « Sur un an, ce placement a fini
   en perte dans 31,1 % des périodes. » Zone teintée, points et « 31,1 % » en
   `NEG`, nom de zone « en perte ».
-- `"zone_negative": false` — l'**écart entre deux options** : sous zéro,
-  personne ne perd, c'est l'autre option qui l'emporte. « Tout d'un coup
-  contre étalé : dans 31,1 % des périodes, étaler a fait mieux. » Points et
-  « 31,1 % » en vert d'eau, limite en gris, sans teinte, nom de zone « étaler
-  fait mieux ».
+- `"zone_negative": false` (ou `"sous_seuil": "neutre"`) — l'**écart entre
+  deux options** : sous zéro, personne ne perd, c'est l'autre option qui
+  l'emporte. « Tout d'un coup contre étalé : dans 31,1 % des périodes, étaler
+  a fait mieux. » Points et « 31,1 % » en vert d'eau, limite en gris, sans
+  teinte, nom de zone « étaler fait mieux ».
+- `"sous_seuil": "manque_a_gagner"` — le même écart, quand la voix le dit
+  comme un manque pour le spectateur : « dans 31,1 % des périodes, tout placer
+  d'un coup vous a fait gagner moins qu'étaler ». Zone hachurée, limite en
+  pointillés, points et « 31,1 % » en `MANQUE`.
 
-Dans le doute : si la phrase ne dit pas que le spectateur perd, c'est
-`false`.
+Dans le doute : si la phrase ne dit pas que le spectateur perd, ce n'est pas
+une perte ; si elle dit qu'il gagne moins, c'est un manque à gagner ; sinon,
+neutre.
 
 L'axe et ses graduations sont du décor. Pendant la chute, l'écran vit ;
 ensuite, moins de 4 s entre deux révélations (R6).

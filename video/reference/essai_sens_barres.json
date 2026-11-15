@@ -1,0 +1,233 @@
+{
+ "statut": "PLAN D'ESSAI VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
+ "courante": 1,
+ "versions": [
+  {
+   "version": 1,
+   "validee_le": "15/11/2026",
+   "motif": "nature manque a gagner validee a l'ecran par Alexandre le 15/11/2026",
+   "regle_cadre": "v2",
+   "regle_comparaison": "v2",
+   "regle_barres": "v3-phrase",
+   "vue_a_l_ecran": true,
+   "duree_s": 11.0,
+   "images": 330,
+   "pixels": {
+    "largeur": 960,
+    "hauteur": 540,
+    "md5": "d6232928c6a0570dbcc1d6b193de8441"
+   },
+   "segment": {
+    "id": "essai_sens_barres",
+    "role": "essai",
+    "type_visuel": "manim",
+    "manim_brief": {
+     "composant": "Bars",
+     "mode": "simple",
+     "axes": {
+      "unite_y": "pct"
+     },
+     "donnees": [
+      [
+       1,
+       6
+      ],
+      [
+       2,
+       -1.5
+      ],
+      [
+       3,
+       -2
+      ],
+      [
+       4,
+       4
+      ]
+     ],
+     "couleurs": [
+      "TEAL"
+     ],
+     "natures": [
+      "gain",
+      "perte",
+      "manque_a_gagner",
+      "neutre"
+     ],
+     "revelations": [
+      {
+       "element": "bar_1",
+       "t_rel_s": 2.0
+      },
+      {
+       "element": "bar_2",
+       "t_rel_s": 4.0
+      },
+      {
+       "element": "bar_3",
+       "t_rel_s": 6.0
+      },
+      {
+       "element": "bar_4",
+       "t_rel_s": 8.0
+      }
+     ]
+    },
+    "overlay_texte": [
+     {
+      "ancre": "titre_haut",
+      "t_rel_s": 0.5,
+      "texte_fr": "Essai : les quatre natures de sens"
+     },
+     {
+      "ancre": "source_1",
+      "t_rel_s": 2.0,
+      "texte_fr": "Gain"
+     },
+     {
+      "ancre": "source_2",
+      "t_rel_s": 4.0,
+      "texte_fr": "Perte"
+     },
+     {
+      "ancre": "source_3",
+      "t_rel_s": 6.0,
+      "texte_fr": "Manque à gagner"
+     },
+     {
+      "ancre": "source_4",
+      "t_rel_s": 8.0,
+      "texte_fr": "Neutre"
+     }
+    ]
+   },
+   "calendrier": [
+    [
+     0.0,
+     0.133,
+     "Create"
+    ],
+    [
+     0.083,
+     0.133,
+     "AnimationGroup"
+    ],
+    [
+     0.167,
+     0.133,
+     "AnimationGroup"
+    ],
+    [
+     0.25,
+     0.133,
+     "AnimationGroup"
+    ],
+    [
+     0.333,
+     0.133,
+     "AnimationGroup"
+    ],
+    [
+     0.417,
+     0.133,
+     "AnimationGroup"
+    ],
+    [
+     0.5,
+     0.133,
+     "AnimationGroup"
+    ],
+    [
+     0.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     0.583,
+     0.133,
+     "AnimationGroup"
+    ],
+    [
+     0.667,
+     0.133,
+     "FadeIn"
+    ],
+    [
+     0.75,
+     0.133,
+     "FadeIn"
+    ],
+    [
+     0.833,
+     0.133,
+     "FadeIn"
+    ],
+    [
+     0.917,
+     0.083,
+     "FadeIn"
+    ],
+    [
+     1.2,
+     0.8,
+     "GrowBar"
+    ],
+    [
+     2.0,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     2.0,
+     0.4,
+     "FadeIn"
+    ],
+    [
+     2.5,
+     1.5,
+     "GrowBar"
+    ],
+    [
+     4.0,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     4.0,
+     0.4,
+     "FadeIn"
+    ],
+    [
+     4.5,
+     1.5,
+     "GrowBar"
+    ],
+    [
+     6.0,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     6.0,
+     0.4,
+     "FadeIn"
+    ],
+    [
+     6.5,
+     1.5,
+     "GrowBar"
+    ],
+    [
+     8.0,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     8.0,
+     0.4,
+     "FadeIn"
+    ]
+   ]
+  }
+ ]
+}

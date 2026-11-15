@@ -1,0 +1,60 @@
+{
+ "_role": "Plan d'essai, hors episode : nature manque_a_gagner (R10) dans Distribution - sous le seuil, un manque a gagner : zone hachuree, limite en pointilles, points et part en MANQUE. Chiffres d'essai, sans source.",
+ "duree_s": 12.0,
+ "segment": {
+  "id": "essai_manque_distribution",
+  "role": "essai",
+  "type_visuel": "manim",
+  "manim_brief": {
+   "composant": "Distribution",
+   "format": "pct",
+   "classes": {
+    "debut": -20,
+    "pas": 5,
+    "effectifs": [
+     18,
+     60,
+     150,
+     270,
+     330,
+     290,
+     210,
+     130,
+     78,
+     40,
+     18,
+     6
+    ]
+   },
+   "total": 1600,
+   "par_point": 4,
+   "unite": "périodes",
+   "sous_seuil": "manque_a_gagner",
+   "part_negative": {
+    "valeur": 31.1
+   },
+   "revelations": [
+    {
+     "element": "points",
+     "t_rel_s": 1.5
+    },
+    {
+     "element": "zone",
+     "t_rel_s": 8.0
+    }
+   ]
+  },
+  "overlay_texte": [
+   {
+    "ancre": "titre_haut",
+    "t_rel_s": 0.5,
+    "texte_fr": "Distribution : manque à gagner"
+   },
+   {
+    "ancre": "zone",
+    "t_rel_s": 8.0,
+    "texte_fr": "étaler rapporte moins"
+   }
+  ]
+ }
+}

@@ -1,0 +1,42 @@
+{
+ "_role": "Plan d'essai, hors episode : nature manque_a_gagner (R10) dans Grille - deux grilles de 10 cercles : un gain (ambre) et un manque a gagner (MANQUE, cases hachurees). Chiffres d'essai, sans source.",
+ "duree_s": 7.0,
+ "segment": {
+  "id": "essai_manque_grille",
+  "role": "essai",
+  "type_visuel": "manim",
+  "manim_brief": {
+   "composant": "Grille",
+   "taille": 10,
+   "groupes": [
+    {
+     "cases": 7,
+     "valeur": 68.9,
+     "nature": "gain"
+    },
+    {
+     "cases": 3,
+     "valeur": 31.1,
+     "nature": "manque_a_gagner"
+    }
+   ],
+   "revelations": [
+    {
+     "element": "groupe_1",
+     "t_rel_s": 1.5
+    },
+    {
+     "element": "groupe_2",
+     "t_rel_s": 3.5
+    }
+   ]
+  },
+  "overlay_texte": [
+   {
+    "ancre": "titre_haut",
+    "t_rel_s": 0.5,
+    "texte_fr": "Grille : manque à gagner"
+   }
+  ]
+ }
+}

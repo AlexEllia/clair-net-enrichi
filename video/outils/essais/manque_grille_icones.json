@@ -1,0 +1,34 @@
+{
+ "_role": "Plan d'essai, hors episode : nature manque_a_gagner (R10) dans Grille - une grille de 10 pictogrammes, le manque a gagner en pointilles. Chiffres d'essai, sans source.",
+ "duree_s": 6.0,
+ "segment": {
+  "id": "essai_manque_grille_icones",
+  "role": "essai",
+  "type_visuel": "manim",
+  "manim_brief": {
+   "composant": "Grille",
+   "taille": 10,
+   "icone": "calendar",
+   "groupes": [
+    {
+     "cases": 3,
+     "valeur": 31.1,
+     "nature": "manque_a_gagner"
+    }
+   ],
+   "revelations": [
+    {
+     "element": "groupe_1",
+     "t_rel_s": 1.5
+    }
+   ]
+  },
+  "overlay_texte": [
+   {
+    "ancre": "titre_haut",
+    "t_rel_s": 0.5,
+    "texte_fr": "Grille : pictogrammes"
+   }
+  ]
+ }
+}

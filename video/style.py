@@ -26,6 +26,11 @@ CONTRIB     = "#5B8DEF"   # ce que vous versez
 INTEREST    = "#F2B33D"   # ce que le capital vous verse
 TEAL        = "#3FC0A5"   # troisieme serie
 NEG         = "#E2725B"   # negatif, perte
+MANQUE      = "#BD6700"   # manque a gagner : un ecart defavorable avec une autre option,
+                          # sans perte reelle. Orange brule, plus sombre qu'INTEREST et NEG
+                          # (L* 52 contre 77 et 61) : il s'en distingue d'abord par la
+                          # luminance, ce que gardent la deuteranopie et la protanopie.
+                          # Toujours avec son motif (pointilles ou hachures).
 WHITE_DIM   = "#9AA5B4"
 
 # --- Typographie -------------------------------------------------------------

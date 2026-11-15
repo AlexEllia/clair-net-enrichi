@@ -1,0 +1,50 @@
+{
+ "_role": "Plan d'essai, hors episode : nature manque_a_gagner (R10) dans Cascade - une perte (NEG) puis un manque a gagner (MANQUE, marche hachuree, « −2 % » tel qu'il est donne). Chiffres d'essai, sans source.",
+ "duree_s": 10.0,
+ "segment": {
+  "id": "essai_manque_cascade",
+  "role": "essai",
+  "type_visuel": "manim",
+  "manim_brief": {
+   "composant": "Cascade",
+   "format": "pct",
+   "depart": 7,
+   "marches": [
+    {
+     "montant": 1.5,
+     "nature": "perte"
+    },
+    {
+     "montant": -2,
+     "nature": "manque_a_gagner"
+    }
+   ],
+   "arrivee": 3.5,
+   "revelations": [
+    {
+     "element": "depart",
+     "t_rel_s": 1.5
+    },
+    {
+     "element": "marche_1",
+     "t_rel_s": 3.5
+    },
+    {
+     "element": "marche_2",
+     "t_rel_s": 5.5
+    },
+    {
+     "element": "arrivee",
+     "t_rel_s": 7.5
+    }
+   ]
+  },
+  "overlay_texte": [
+   {
+    "ancre": "titre_haut",
+    "t_rel_s": 0.5,
+    "texte_fr": "Cascade : manque à gagner"
+   }
+  ]
+ }
+}

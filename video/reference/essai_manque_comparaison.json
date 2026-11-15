@@ -1,0 +1,110 @@
+{
+ "statut": "PLAN D'ESSAI VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
+ "courante": 1,
+ "versions": [
+  {
+   "version": 1,
+   "validee_le": "15/11/2026",
+   "motif": "nature manque a gagner validee a l'ecran par Alexandre le 15/11/2026",
+   "regle_cadre": "v2",
+   "regle_comparaison": "v2",
+   "regle_barres": "v3-phrase",
+   "vue_a_l_ecran": true,
+   "duree_s": 9.0,
+   "images": 270,
+   "pixels": {
+    "largeur": 960,
+    "hauteur": 540,
+    "md5": "aa120b37a900ca38a8e02844ba50cc16"
+   },
+   "segment": {
+    "id": "essai_manque_comparaison",
+    "role": "essai",
+    "type_visuel": "manim",
+    "manim_brief": {
+     "composant": "Comparaison",
+     "unite": "percent",
+     "donnees": [
+      [
+       1,
+       7
+      ],
+      [
+       2,
+       5
+      ]
+     ],
+     "natures": [
+      "gain",
+      "manque_a_gagner"
+     ],
+     "pictogrammes": [
+      {
+       "option": 2,
+       "icone": "calendar",
+       "nombre": 4
+      }
+     ],
+     "revelations": [
+      {
+       "element": "value_1",
+       "t_rel_s": 2.0
+      },
+      {
+       "element": "value_2",
+       "t_rel_s": 4.0
+      },
+      {
+       "element": "pictos_1",
+       "t_rel_s": 6.0
+      }
+     ]
+    },
+    "overlay_texte": [
+     {
+      "ancre": "titre_haut",
+      "t_rel_s": 0.5,
+      "texte_fr": "Comparaison : manque à gagner"
+     }
+    ]
+   },
+   "calendrier": [
+    [
+     0.0,
+     1.0,
+     "Create"
+    ],
+    [
+     0.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     1.2,
+     0.8,
+     "GrowBar"
+    ],
+    [
+     2.0,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     2.2,
+     1.8,
+     "GrowBar"
+    ],
+    [
+     4.0,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     4.2,
+     1.8,
+     "FillPictos"
+    ]
+   ]
+  }
+ ]
+}

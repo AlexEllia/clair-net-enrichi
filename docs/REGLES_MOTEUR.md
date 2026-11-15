@@ -138,6 +138,25 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
   d'essai déjà validés, la valeur d'Erosion qui descendait sur la tranche
   avant son départ et un nom de Cascade à 0,14 de sa source : corrigés (la
   valeur attend la fin du glissement ; source à 0,50 sous le nom).
+- **Quatrième nature : manque à gagner** (15/11/2026, décision d'Alexandre ;
+  `MANQUE` dans style.py, motifs dans components.py) : un écart défavorable
+  avec une autre option, sans perte réelle de capital (« étaler rapporte 2 %
+  de moins »), à distinguer de la perte (argent qui sort réellement). Couleur
+  `MANQUE` = #BD6700, orange brûlé ; INTEREST et NEG inchangés. Écarts
+  (teinte HSL, L* CIELAB, CIEDE2000 en vision normale / deutéranopie /
+  protanopie, simulation de Machado 2009) : contre INTEREST −6°, −24,5,
+  23,1 / 19,1 / 22,9 ; contre NEG +22°, −8,3, 19,1 / 10,7 / 12,8 (pour
+  repère, INTEREST contre NEG : 29,9 / 14,3 / 20,7). Contraste sur le fond
+  4,5:1. C'était le meilleur compromis parmi les oranges (teinte 18 à 34°)
+  lisibles sur le fond ; l'écart avec NEG sous deutéranopie reste modeste,
+  d'où le **second signal obligatoire** : pointillés pour un trait
+  (`pointille`), hachures pour une surface (`Hachure`, `disque_hachure`, trame
+  fixe dans l'image : une barre qui grandit ne voit pas ses rayures glisser).
+  Familles : Flux (lien), Bars (`natures`), Comparaison (`natures`), Grille,
+  Distribution (`sous_seuil`), Cascade (marche) ; pas Erosion. Signe : tel
+  qu'il est dit. `make check` refuse un manque à gagner hors `MANQUE` ou sans
+  son motif (`a_motif`). Outil : `video/outils/daltonisme.py` (simulation sur
+  une image). Essai : `video/outils/essais/sens_barres.json`.
 - **Code couleur de sens, R10** (12/11/2026, décision d'Alexandre) : `CONTRIB`
   (bleu) = ce que l'on verse, `INTEREST` (ambre) = ce que l'on gagne, `NEG`
   (#E2725B) = ce que l'on perd ; une perte n'apparaît jamais en ambre ni en

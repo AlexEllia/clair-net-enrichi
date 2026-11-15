@@ -780,10 +780,10 @@ def fautes_sens(seg, dur, ep_dir=None, strict=True):
     Un lien trace en NEG sans `nature` : refuse si `strict` (script ecrit
     contre le catalogue actuel, plan d'essai), simple remarque sinon (script
     anterieur a la regle)."""
-    from components import SIGNE_SENS, NATURES, _PALETTE
-    from style import NEG, INTEREST
+    from components import SIGNE_SENS, NATURES, _PALETTE, a_motif
+    from style import NEG, INTEREST, MANQUE
     # La charte fait foi, pas la table du moteur : c'est elle que l'on controle.
-    COULEUR_SENS = {"gain": INTEREST, "perte": NEG}
+    COULEUR_SENS = {"gain": INTEREST, "perte": NEG, "manque_a_gagner": MANQUE}
     fautes, remarques = [], []
     mb = seg.get("manim_brief") or {}
     if mb.get("composant") == "Flux":
@@ -801,8 +801,10 @@ def fautes_sens(seg, dur, ep_dir=None, strict=True):
                 continue
             if c is not None and _PALETTE.get(c, c) != COULEUR_SENS[nature]:
                 fautes.append(f"link_{i} : {nature} declare en couleur {c} - "
-                              + ("une perte se trace en NEG, jamais en ambre ni en bleu"
-                                 if nature == "perte" else "un gain se trace en ambre (INTEREST)"))
+                              + {"perte": "une perte se trace en NEG, jamais en ambre ni en bleu",
+                                 "gain": "un gain se trace en ambre (INTEREST)",
+                                 "manque_a_gagner": "un manque a gagner se trace en MANQUE, "
+                                                    "en pointilles"}[nature])
             v = ln.get("montant")
             if v is not None and float(v) < 0 and nature == "gain":
                 fautes.append(f"link_{i} : gain de montant negatif ({v})")
@@ -816,9 +818,16 @@ def fautes_sens(seg, dur, ep_dir=None, strict=True):
         if vues != {voulu}:
             fautes.append(f"{nom} : {nature} dessine en {', '.join(sorted(vues))} au lieu de "
                           f"{voulu}")
+        if nature == "manque_a_gagner":
+            # Le second signal, sans la couleur : pointilles ou hachures.
+            motifs = e.get("motif") or []
+            sans = [m for m in motifs if not a_motif(m)]
+            if not motifs or sans:
+                fautes.append(f"{nom} : manque a gagner sans son motif (pointilles pour un "
+                              f"trait, hachures pour une surface)")
         # Le signe ne vaut que pour un montant : une frequence (Grille) dit son
         # sens par sa seule couleur.
-        if e["montant"] is not None and e.get("signe", True):
+        if e["montant"] is not None and e.get("signe", True) and nature in SIGNE_SENS:
             texte = getattr(e["montant"], "text", "")
             if not texte.startswith(SIGNE_SENS[nature]):
                 fautes.append(f"{nom} : montant « {texte} » sans signe "
@@ -896,6 +905,13 @@ def check_density(final, tl, segments, dest):
 
 
 def main():
+    # Une console Windows en cp1252 ne sait pas ecrire le vrai signe moins ni
+    # l'espace fine : le rapport ne doit pas s'arreter pour autant.
+    for flux in (sys.stdout, sys.stderr):
+        try:
+            flux.reconfigure(errors="replace")
+        except (AttributeError, ValueError):
+            pass
     ap = argparse.ArgumentParser()
     ap.add_argument("--ep", required=True)
     ap.add_argument("--only", nargs="*", default=None,

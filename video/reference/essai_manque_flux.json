@@ -1,0 +1,109 @@
+{
+ "statut": "PLAN D'ESSAI VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
+ "courante": 1,
+ "versions": [
+  {
+   "version": 1,
+   "validee_le": "15/11/2026",
+   "motif": "nature manque a gagner validee a l'ecran par Alexandre le 15/11/2026",
+   "regle_cadre": "v2",
+   "regle_comparaison": "v2",
+   "regle_barres": "v3-phrase",
+   "vue_a_l_ecran": true,
+   "duree_s": 8.0,
+   "images": 240,
+   "pixels": {
+    "largeur": 960,
+    "hauteur": 540,
+    "md5": "e2e3b1cc09ceed1ed2ad349f067ffcab"
+   },
+   "segment": {
+    "id": "essai_manque_flux",
+    "role": "essai",
+    "type_visuel": "manim",
+    "manim_brief": {
+     "composant": "Flux",
+     "noeuds": [
+      {
+       "icone": "wallet",
+       "position": [
+        -4.0,
+        0
+       ]
+      },
+      {
+       "icone": "trending-up",
+       "position": [
+        3.5,
+        0
+       ]
+      }
+     ],
+     "liens": [
+      {
+       "de": 2,
+       "vers": 1,
+       "nature": "manque_a_gagner",
+       "montant": -2,
+       "format": "pct",
+       "intensite": 2
+      }
+     ],
+     "revelations": [
+      {
+       "element": "node_1",
+       "t_rel_s": 1.0
+      },
+      {
+       "element": "node_2",
+       "t_rel_s": 2.5
+      },
+      {
+       "element": "link_1",
+       "t_rel_s": 2.5
+      }
+     ]
+    },
+    "overlay_texte": [
+     {
+      "ancre": "titre_haut",
+      "t_rel_s": 0.5,
+      "texte_fr": "Flux : manque à gagner"
+     }
+    ]
+   },
+   "calendrier": [
+    [
+     0.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     1.0,
+     1.3,
+     "FadeIn"
+    ],
+    [
+     2.5,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     2.5,
+     1.5,
+     "Create+FadeIn"
+    ],
+    [
+     2.5,
+     1.5,
+     "FadeIn"
+    ],
+    [
+     4.0,
+     4.0,
+     "Courant"
+    ]
+   ]
+  }
+ ]
+}
