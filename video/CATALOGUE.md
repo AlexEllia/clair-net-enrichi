@@ -142,7 +142,7 @@ en tire la couleur, le motif et le signe. Quatre natures :
 |---|---|---|---|---|---|
 | `"gain"` | ce que l'on gagne | ambre (`INTEREST`, #F2B33D) | plein | « + », écrit par le moteur | « les intérêts vous rapportent 7 % » |
 | `"perte"` | de l'argent qui **sort réellement** : frais, impôt, inflation, moins-value | `NEG` (#E2725B) | plein | « − », écrit par le moteur | « les frais vous prennent 1,2 % par an » |
-| `"manque_a_gagner"` | un **écart défavorable avec une autre option**, sans perte réelle de capital | `MANQUE` (#BD6700, orange brûlé) | **pointillés** (lien, trait) ou **hachures** (barre, case, zone), toujours | tel qu'il est dit : « −2 % » si la voix dit le moins, sans signe sinon | « étaler rapporte 2 % de moins que tout placer d'un coup » |
+| `"manque_a_gagner"` | un **écart défavorable avec une autre option**, sans perte réelle de capital | `MANQUE` (#BD6700, orange brûlé) | **pointillés** (trait) ou **hachures** (barre, case, zone), toujours | tel qu'il est dit : « −2 % » si la voix dit le moins, sans signe sinon | « étaler rapporte 2 % de moins que tout placer d'un coup » |
 | `"neutre"` | ni l'un ni l'autre : un versement, un transfert, l'autre option qui l'emporte | celle de l'élément (bleu `CONTRIB` = ce que l'on verse, vert d'eau `TEAL` sinon) | plein | tel quel | « vous versez 200 € par mois » |
 
 **Une perte n'apparaît jamais en ambre ni en bleu.** Ne confonds pas perte et
@@ -154,11 +154,21 @@ motif**, pour se reconnaître sans la couleur (daltonisme, écran terne) : son
 orange se distingue de l'ambre et du rouge d'abord par sa luminance, et sous
 deutéranopie il se rapproche de `NEG` — le motif fait la différence.
 
-Familles et nature : `Flux` (`nature` d'un lien), `Bars` (`natures`),
+Familles et nature : `Flux` (`nature` d'un lien : gain, perte ou neutre), `Bars` (`natures`),
 `Comparaison` (`natures`), `Grille` (`nature` d'un groupe), `Distribution`
 (`sous_seuil`), `Cascade` (`nature` d'une marche). `Erosion` est réservée aux
 pertes réelles : un manque à gagner n'y entre pas. N'écris ni la couleur ni le
 signe d'un gain ou d'une perte : la nature les impose.
+
+**Un manque à gagner n'est jamais un lien de `Flux`.** Un lien montre de
+l'argent qui va d'un nœud à un autre ; un manque à gagner n'est pas un
+mouvement d'argent, c'est un **écart** entre deux options : rien ne circule.
+Dessiné en flèche, il arrive sur le spectateur et se lit comme une somme
+reçue — le contraire de ce que dit la voix (EP004 S07 et S22, plan du
+15/11/2026). Montre-le par une famille qui compare : `Comparaison` (les deux
+options côte à côte), `Bars`, `Cascade` (la marche qui manque), `Grille` ou
+`Distribution`. `make check` refuse `"nature": "manque_a_gagner"` sur un
+lien, quel que soit l'âge du script.
 
 **`make check` refuse** un élément dont le dessin contredit sa nature : une
 perte hors de `NEG` ou sans son signe moins, un gain hors de l'ambre ou sans
@@ -900,7 +910,16 @@ montants, eux, sont écrits dans la scène, sur leur lien.
 | `"neutre"` | de la source vers la destination | celle de `couleur` | tel quel (« 200 € ») | Un versement, un transfert : rien n'est gagné ni perdu. |
 | `"gain"` | de ce qui rapporte **vers celui qui gagne** | ambre, imposée | précédé de « + » (« +7 % ») | — |
 | `"perte"` | **part de celui qui perd**, vers ce qui lui prend (frais, impôt, inflation) | `NEG`, imposée | précédé du signe moins (« −1,2 % ») | Le nœud qui perd rétrécit légèrement (à 88 %) dès que le montant est écrit ; à chaque nouvelle perte encore, sans passer sous 70 %. |
-| `"manque_a_gagner"` | de l'option qui rapporte plus **vers celle du spectateur**, qui en reçoit moins | `MANQUE`, imposée, **en pointillés** | tel qu'il est donné : « −2 % » pour `"montant": -2`, « 2 % » pour `2` | Aucun nœud ne rétrécit : le capital ne diminue pas. |
+
+**`"manque_a_gagner"` est interdit sur un lien** (règle du 15/11/2026, R10) :
+un lien est un mouvement d'argent, un manque à gagner est un écart. « Étaler
+rapporte 0,2 % de moins par an » ne se dessine pas par une flèche vers le
+spectateur — elle se lirait « vous recevez 0,2 % » — mais par une
+`Comparaison` ou des `Bars` aux `natures` `"manque_a_gagner"`, ou par la
+marche d'une `Cascade`. `make check` refuse le lien. Le plan d'essai
+`video/outils/essais/manque_flux.json`, qui le montrait, n'est plus un
+exemple : il est refusé lui aussi, et ne reste figé que pour la
+non-régression du dessin des scripts antérieurs.
 
 Avec `gain` ou `perte`, n'écris pas `couleur` : la nature l'impose, et `make
 check` refuse un brief où les deux se contredisent. Écris `montant` en valeur

@@ -792,6 +792,16 @@ def fautes_sens(seg, dur, ep_dir=None, strict=True):
             if nature not in NATURES:
                 fautes.append(f"link_{i} : nature {nature!r} inconnue ({', '.join(NATURES)})")
                 continue
+            if nature == "manque_a_gagner":
+                # Regle d'Alexandre du 15/11/2026, sans egard a l'age du script :
+                # un lien de Flux est un mouvement d'argent ; un manque a gagner
+                # est un ecart, rien ne circule. Sur EP004 S07 et S22, la fleche
+                # arrivait sur le spectateur et se lisait comme une somme recue.
+                fautes.append(f"link_{i} : manque_a_gagner interdit sur un lien de Flux - un "
+                              f"manque a gagner n'est pas un mouvement d'argent, c'est un "
+                              f"ecart : montre-le par une Comparaison, des Bars, une Cascade, "
+                              f"une Grille ou une Distribution")
+                continue
             c = ln.get("couleur")
             if nature == "neutre":
                 if _PALETTE.get(c, c) == COULEUR_SENS["perte"]:

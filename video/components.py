@@ -2954,6 +2954,10 @@ def Flux(seg, cues):
                      et ce noeud retrecit a l'arrivee du montant). La nature
                      l'emporte sur `couleur` ; make check refuse un brief qui
                      les contredit.
+                     "manque_a_gagner" est interdit sur un lien (regle du
+                     15/11/2026) : ce n'est pas un mouvement d'argent. Le
+                     dessin reste, pour les scripts anterieurs ; make check
+                     le refuse.
       mise_en_avant  {"liens": [k, ...]} : ces liens s'affirment, les autres
                      s'estompent.
     Parties : node_k, link_k, highlight - toutes surgissent (1,5 s) sur leur
