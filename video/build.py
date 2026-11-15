@@ -701,6 +701,62 @@ def collisions(seg, dur, ep_dir=None, strict=True):
             noms = sorted({nom for nom, o in getattr(cues, "obstacles", []) if _chevauche(b, o)})
             if noms:
                 fautes.append(f"libelle {l.nom} recouvre {', '.join(noms)}")
+    # Textes propres au graphique (graduations, valeurs, compteur, part d'une
+    # zone...) : juges entre eux et contre les libelles comme deux libelles
+    # entre eux - ni recouvrement, ni moins de MARGE_ENCART. Une ancre posee
+    # telle quelle par le composant (nom d'un compteur, d'une zone, d'une
+    # mediane, source sous sa categorie) nomme le texte du graphique le plus
+    # proche d'elle : ils forment un bloc, dont l'ecart est celui de la
+    # famille ; seul leur recouvrement est refuse.
+    from manim import Text, MarkupText
+    textes, vus_t = [], set()
+    for g in graphe:
+        for x in g.get_family():
+            if isinstance(x, (Text, MarkupText)) and id(x) not in vus_t and x.width > 1e-6:
+                vus_t.add(id(x))
+                textes.append(x)
+
+    def nom_t(x):
+        return getattr(x, "nom", None) or f"texte du graphique « {getattr(x, 'text', '?')} »"
+
+    from components import dist_boites as _d
+    bloc = {}
+    for l in libelles:
+        ancre = l.nom.split(" «")[0]
+        if textes and (ancre in cues.anchor_align or ancre.startswith("source_")):
+            bloc[id(l)] = id(min(textes, key=lambda x: _d(_boite(l), _boite(x))))
+
+    def verbe_t(b, c):
+        """Comme `verbe`, la marge mesuree en distance reelle entre les deux
+        boites (deux graduations en coin, a l'origine, ne se serrent pas)."""
+        if _chevauche(b, c):
+            return "recouvre"
+        return pres if _d(b, c) < marge - 1e-6 else None
+
+    def noter_t(msg):
+        # Regle du 15/11/2026 : refus pour un script au catalogue actuel et un
+        # plan d'essai, remarque pour un script anterieur.
+        (fautes if strict else remarques).append(msg)
+
+    for i, x in enumerate(textes):
+        b = _boite(x)
+        for y in textes[i + 1:]:
+            v = verbe_t(b, _boite(y))
+            if v:
+                noter_t(f"{nom_t(x)} {v} {nom_t(y)}")
+        for l in libelles:
+            v = verbe_t(b, _boite(l))
+            if v and not (v == pres and bloc.get(id(l)) == id(x)):
+                noter_t(f"libelle {l.nom} {v} {nom_t(x)}")
+    # Traits de repere (seuil, mediane, cas) : aucun texte qui n'est pas le
+    # leur ne les touche ni ne se pose a cheval dessus.
+    for nom, zt, siens, ancres in getattr(cues, "traits", []):
+        for x in textes:
+            if id(x) not in siens and _d(_boite(x), zt) < marge - 1e-6:
+                noter_t(f"{nom_t(x)} touche le {nom} ou le {pres}")
+        for l in libelles:
+            if l.nom.split(" «")[0] not in ancres and _d(_boite(l), zt) < marge - 1e-6:
+                noter_t(f"libelle {l.nom} touche le {nom} ou le {pres}")
     # Etiquettes de valeur : chacune au plus pres de ce qu'elle chiffre.
     from components import ANCRE_MAX, ANCRE_TOL, ETIQUETTES_MAX, dist_boite, dist_boites
     n_sans_nom = cues.meta.get("etiquettes_sans_point_nomme", 0)

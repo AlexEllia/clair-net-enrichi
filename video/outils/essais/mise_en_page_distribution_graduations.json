@@ -1,0 +1,102 @@
+{
+ "_role": "Plan d'essai, hors episode : Distribution etroite (colonne des encarts reservee, 20 tranches) - graduations a 0,15 au moins l'une de l'autre, a pas regulier autour du seuil ; part et nom de zone a 0,20 du trait du seuil ; valeur de la mediane hors de la colonne du seuil. Brief de l'EP004 S14 (plan v4 du 15/11/2026), refuse par le controle etendu avec le code d'avant.",
+ "duree_s": 16.73,
+ "segment": {
+  "id": "essai_mise_en_page_distribution_graduations",
+  "role": "essai",
+  "type_visuel": "manim",
+  "manim_brief": {
+   "composant": "Distribution",
+   "format": "pct",
+   "classes": {
+    "debut": -45,
+    "pas": 5,
+    "effectifs": [
+     1,
+     1,
+     3,
+     7,
+     8,
+     23,
+     62,
+     142,
+     225,
+     377,
+     322,
+     221,
+     145,
+     39,
+     6,
+     3,
+     0,
+     1,
+     3,
+     1
+    ]
+   },
+   "total": 1590,
+   "par_point": 4,
+   "unite": "périodes",
+   "seuil": 0,
+   "part_negative": {
+    "valeur": 29.7,
+    "format": "pct"
+   },
+   "mediane": {
+    "valeur": 4
+   },
+   "revelations": [
+    {
+     "element": "points",
+     "t_rel_s": 0.88
+    },
+    {
+     "element": "zone",
+     "t_rel_s": 4.77
+    },
+    {
+     "element": "mediane",
+     "t_rel_s": 11.1
+    }
+   ],
+   "sous_seuil": "neutre"
+  },
+  "overlay_texte": [
+   {
+    "ancre": "axe_x",
+    "t_rel_s": 0.6,
+    "texte_fr": "Avance de « tout d'un coup » à 20 ans"
+   },
+   {
+    "ancre": "total",
+    "t_rel_s": 0.88,
+    "texte_fr": "périodes testées"
+   },
+   {
+    "ancre": "centre",
+    "t_rel_s": 2.86,
+    "texte_fr": "1 sur 20 : étaler devant de 11,4 % ou plus"
+   },
+   {
+    "ancre": "zone",
+    "t_rel_s": 4.77,
+    "texte_fr": "étaler fait mieux"
+   },
+   {
+    "ancre": "centre",
+    "t_rel_s": 5.42,
+    "texte_fr": "Les pires cas de « tout d'un coup »"
+   },
+   {
+    "ancre": "mediane",
+    "t_rel_s": 8.14,
+    "texte_fr": "cas typique"
+   },
+   {
+    "ancre": "centre",
+    "t_rel_s": 14.15,
+    "texte_fr": "Meilleurs cas : 19 % devant"
+   }
+  ]
+ }
+}

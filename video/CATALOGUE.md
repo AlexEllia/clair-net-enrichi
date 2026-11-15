@@ -313,6 +313,21 @@ check` y applique le contrôle de placement et sa marge minimale de 0,15 unité 
 il refuse un texte qui recouvre ou serre de plus près un autre texte présent en
 même temps, le titre, la source ou le bord de l'image. Les plans `fond_anime` et `broll` gardent l'empilement d'avant.
 
+**Les textes du graphique.** Depuis le 15/11/2026, `make check` juge aussi
+les textes que le moteur écrit lui-même dans le graphique — graduations,
+valeurs, compteur, part d'une zone, valeur d'une médiane — dans toutes les
+familles : deux d'entre eux, ou l'un d'eux et un libellé (titre d'axe, nom
+de zone, source), ne se recouvrent pas et gardent 0,15 unité entre eux.
+Seule exception, le bloc que forment une valeur et le nom que le moteur pose
+contre elle (le compteur et « périodes testées », la part et le nom de la
+zone, une graduation et la source écrite dessous) : leur écart est celui de
+la famille, seul leur recouvrement est refusé. Dans une `Distribution`,
+aucun texte qui n'est pas le sien ne s'approche à moins de 0,15 d'un trait
+de repère (seuil, médiane, cas), ni ne se pose à cheval au-dessus de lui.
+Refus pour un script écrit contre le catalogue actuel, remarque pour un
+script antérieur. Ces fautes sont celles du moteur plus souvent que les
+tiennes : si `make check` en nomme une, signale-la.
+
 **Les libellés de `Flux`.** Le nom d'un lien qui porte un montant ne passe
 pas sur ce montant en montant pour apparaître : s'il le ferait à sa place
 habituelle, il s'en écarte. Le moteur cherche pour chaque nom de nœud ou de
@@ -903,7 +918,8 @@ montants, eux, sont écrits dans la scène, sur leur lien.
 | `mise_en_avant` | non | `{"liens": [k, …]}` | Ces liens s'affirment ; les autres s'estompent, avec leurs particules et leur montant. |
 
 **Le sens d'un lien : `nature`** (R10). Chaque lien peut porter
-`"nature"` : `"neutre"` (défaut), `"gain"`, `"perte"` ou `"manque_a_gagner"`.
+`"nature"` : `"neutre"` (défaut), `"gain"` ou `"perte"`. **Jamais
+`"manque_a_gagner"`** : voir sous le tableau.
 
 | `nature` | Sens de la flèche | Couleur | Montant | Effet |
 |---|---|---|---|---|
@@ -1313,7 +1329,7 @@ chaque grille quand il y en a deux.
 |---|---|---|---|
 | `taille` | **oui** | `10`, `20`, `100` | Nombre de cases de chaque grille : 2 × 5, 4 × 5, 10 × 10. Prends le dénominateur que dit la voix : « sept fois sur dix » → 10 ; un pourcentage énoncé tel quel → 100. |
 | `groupes` | **oui** | `[{"cases": n, "valeur": v, "format": f, "nature": s}]`, 1 ou 2 | Un groupe par fréquence que la voix énonce. `cases` : le nombre de cases allumées — **l'arrondi que dit la voix** (7 pour « sept fois sur dix »). `valeur` : **la valeur exacte**, sourcée, écrite à côté (68.9). `format` : `"pct"` par défaut. `nature`, obligatoire : `"gain"` (un succès, ambre), `"perte"` (un résultat négatif pour le spectateur, `NEG`), `"manque_a_gagner"` (le spectateur y gagne moins qu'avec l'autre option : `MANQUE`, cases **hachurées**, pictogrammes **en pointillés**), `"neutre"` (ni l'un ni l'autre, vert d'eau) — voir « Quelle `nature` » ci-dessous. |
-| `icone` | non | un pictogramme du catalogue (`calendar`, `user`, `coins`…) | Remplace les cercles. À réserver aux grilles de 10 et de 20 : à 100, il ne se lit plus. |
+| `icone` | non | un pictogramme du catalogue (`calendar`, `user`, `coins`…) | Remplace les cercles. À réserver aux grilles de 10 et de 20 : à 100, il ne se lit plus. Un pictogramme plus large que haut (`banknote`) est réduit pour tenir dans le pas de la grille, sans toucher son voisin. |
 
 Le moteur n'arrondit rien (R3) : il vérifie que `cases` est bien l'arrondi de
 `valeur` à la case près (68,9 % sur 10 cases : 6,89, donc 7 ; 6 ou 8
@@ -1473,6 +1489,16 @@ du compteur, au départ de la chute.
 Dans le doute : si la phrase ne dit pas que le spectateur perd, ce n'est pas
 une perte ; si elle dit qu'il gagne moins, c'est un manque à gagner ; sinon,
 neutre.
+
+Les graduations gardent 0,15 unité entre elles : quand le graphique est
+étroit (colonne des encarts réservée, beaucoup de tranches), l'axe en porte
+moins, à pas régulier de part et d'autre du seuil — « −25 %, 0 %, 25 %,
+50 % » plutôt que sept valeurs qui se chevauchent. La part et le nom de la
+zone s'arrêtent à 0,20 du trait du seuil (un nom trop long est réduit : garde-le
+court). La valeur de la médiane ou du cas ne se pose jamais à cheval sur un
+autre trait : elle glisse le long du sien, et son nom part du côté libre. Si
+médiane et cas sont proches, celui de gauche s'écrit au rang du haut, son
+nom vers la gauche ; celui de droite au rang du bas, son nom vers la droite.
 
 L'axe et ses graduations sont du décor. Pendant la chute, l'écran vit ;
 ensuite, moins de 4 s entre deux révélations (R6).

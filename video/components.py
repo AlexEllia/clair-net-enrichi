@@ -71,6 +71,11 @@ class Cues:
         # un gain ou une perte, [{"nom", "nature", "objets", "montant"}] -
         # les objets traces et l'etiquette du montant (ou None).
         self.sens = []
+        # Traits de repere (seuil, mediane, cas) qu'aucun texte ne doit toucher,
+        # pour make check : [(nom, boite (x0, x1, y0, y1) - le trait prolonge
+        # jusqu'au rang ou s'ecrit sa valeur -, ids des textes du graphique
+        # qui sont les siens, ancres des libelles qui sont les siens)].
+        self.traits = []
 
     def add(self, *m):
         self.static.extend(m)
@@ -3683,6 +3688,7 @@ def Cascade(seg, cues):
 GRILLE_FORMES = {10: (2, 5), 20: (4, 5), 100: (10, 10)}    # taille -> (lignes, colonnes)
 GRILLE_PAS = {10: 1.25, 20: 0.95, 100: 0.38}               # entraxe des cases
 GRILLE_COULEURS = {"gain": INTEREST, "perte": NEG, "manque_a_gagner": MANQUE, "neutre": TEAL}
+GRILLE_PICTO_LARGE = 0.78   # largeur maximale d'un pictogramme, en part du pas
 GRILLE_ETEINT = 0.22     # opacite d'une case eteinte (gris de la charte)
 
 
@@ -3770,6 +3776,10 @@ def Grille(seg, cues):
     def case(x, y, couleur, eteinte, manque=False):
         if icone:
             m = picto(icone, MUTED if eteinte else couleur, hauteur=pas * 0.70)
+            # Un pictogramme plus large que haut (billet) tient dans le pas de
+            # la grille : 0,78 du pas au plus, il ne chevauche pas son voisin.
+            if m.width > pas * GRILLE_PICTO_LARGE:
+                m.scale(pas * GRILLE_PICTO_LARGE / m.width)
             m.move_to([x, y, 0])
             if eteinte:
                 _set_alpha(m, GRILLE_ETEINT + 0.2)
@@ -4012,11 +4022,28 @@ def Distribution(seg, cues):
     bornes = sorted({k for k in range(0, n_c + 1, saut)} | ({k_seuil} if zone else set()))
     # Une graduation trop proche du seuil lui cede la place.
     bornes = [k for k in bornes if k == k_seuil or not zone or abs(k - k_seuil) >= saut]
-    xlabels = []
-    for k in bornes:
-        lab = txt(_signe_moins(nombres.fmt(x0 + k * pas, kind)), SZ_SOURCE, MUTED)
-        lab.move_to([fr.px(x0 + k * pas), bas - 0.24 - lab.height / 2, 0])
-        xlabels.append(lab)
+
+    def graduations(ks):
+        labs = []
+        for k in ks:
+            lab = txt(_signe_moins(nombres.fmt(x0 + k * pas, kind)), SZ_SOURCE, MUTED)
+            lab.move_to([fr.px(x0 + k * pas), bas - 0.24 - lab.height / 2, 0])
+            lab.nom = f"graduation « {lab.text} »"
+            labs.append(lab)
+        return labs
+
+    def serrees(labs):
+        return any(b.get_left()[0] - a.get_right()[0] < MARGE_ENCART - 1e-6
+                   for a, b in zip(labs, labs[1:]))
+
+    # Deux graduations voisines gardent MARGE_ENCART entre elles : un graphique
+    # etroit (colonne des encarts reservee) en porte moins, a pas regulier
+    # autour du seuil - sinon le signe moins de l'une passe sous la precedente.
+    xlabels = graduations(bornes)
+    while serrees(xlabels) and len(bornes) > 2:
+        saut += 1
+        bornes = [k for k in range(n_c + 1) if (k - k_seuil) % saut == 0]
+        xlabels = graduations(bornes)
     cues.point("axe_x", ((gauche + droite) / 2, bas - 0.95))
 
     ecrire = lambda v: nombres.fmt(int(round(v)), "nombre", 0)
@@ -4045,6 +4072,7 @@ def Distribution(seg, cues):
         if sous == "manque_a_gagner":
             teinte = Hachure(gauche, fr.px(seuil), bas, haut, MANQUE, fond=0.05, rayures=0.30,
                              contour=False)
+        large_zone = max(fr.px(seuil) - gauche - 0.40, 0.6)
         limite = DashedLine([fr.px(seuil), bas, 0], [fr.px(seuil), haut, 0], dash_length=0.08,
                             stroke_color=col_sous if sous != "neutre" else INK_SOFT,
                             stroke_width=2.0)
@@ -4053,11 +4081,17 @@ def Distribution(seg, cues):
             pn = mb["part_negative"]
             part = txt(nombres.fmt(float(pn["valeur"]), pn.get("format", "pct")), SZ_TITLE,
                        col_sous, weight=SEMIBOLD)
+            # La part et son nom s'arretent a 0,20 du trait du seuil.
+            if part.width > large_zone:
+                part.scale_to_fit_width(large_zone)
             part.move_to([gauche + 0.20, haut - 0.30, 0], aligned_edge=LEFT)
+            part.nom = f"part sous le seuil « {part.text} »"
         cues.point("zone", (gauche + 0.20, haut - 0.80))
         cues.anchor_align["zone"] = LEFT
         cues.anchor_colors["zone"] = col_sous
-        cues.anchor_widths["zone"] = max(fr.px(seuil) - gauche - 0.3, 1.2)
+        cues.anchor_widths["zone"] = large_zone
+        cues.traits.append(("trait du seuil", (fr.px(seuil), fr.px(seuil), bas, haut + 0.45),
+                            set(), set()))
         if sous != "neutre":
             # La part des resultats sous le seuil est une frequence : sans signe.
             cues.sens.append({"nom": "zone", "nature": sous, "objets": [teinte, limite,
@@ -4065,7 +4099,7 @@ def Distribution(seg, cues):
                               "montant": part, "signe": False,
                               "motif": [teinte, limite] if sous == "manque_a_gagner" else []})
 
-    def repere(cle, niveau, plein):
+    def repere(cle, niveau, plein, cote=None):
         """Trait vertical a la valeur, sa valeur ecrite au-dessus du graphique."""
         v = float(mb[cle]["valeur"])
         x = fr.px(v)
@@ -4079,23 +4113,57 @@ def Distribution(seg, cues):
                                stroke_color=INK_SOFT, stroke_width=2.4)
         lab = txt(_signe_moins(nombres.fmt(v, mb[cle].get("format", kind))), SZ_LABEL, INK,
                   weight=SEMIBOLD)
-        a_droite = x <= (gauche + droite) / 2
+        lab.nom = f"valeur de {cle} « {lab.text} »"
+        a_droite = x <= (gauche + droite) / 2 if cote is None else cote == "droite"
         lab.move_to([x, y, 0])
+        # Les autres traits verticaux (seuil, autre repere) montent jusqu'a
+        # ce rang : la valeur ne se pose pas a cheval sur l'un d'eux, elle
+        # glisse le long de son propre trait pour en rester a MARGE_ENCART ;
+        # son nom part du cote ou il a la place, jusqu'au trait suivant.
+        ecart = MARGE_ENCART + 0.01
+        pied = lab.get_bottom()[1] - MARGE_ENCART
+        autres = [c for n, (c, sommet) in colonnes.items() if n != cle and sommet > pied]
+        lo = max([c + ecart for c in autres if c < x - 1e-6], default=-1e9)
+        hi = min([c - ecart for c in autres if c > x + 1e-6], default=1e9)
+        if lab.get_left()[0] < lo:
+            lab.shift(RIGHT * (min(lo, x) - lab.get_left()[0]))
+        elif lab.get_right()[0] > hi:
+            lab.shift(LEFT * (lab.get_right()[0] - max(hi, x)))
+        place_d = hi - (lab.get_right()[0] + 0.15)
+        place_g = (lab.get_left()[0] - 0.15) - lo
+        if (place_d if a_droite else place_g) < 1.6 and                 (place_g if a_droite else place_d) > (place_d if a_droite else place_g):
+            a_droite = not a_droite
         cues.point(cle, (lab.get_right()[0] + 0.15, y) if a_droite
                    else (lab.get_left()[0] - 0.15, y))
         cues.anchor_align[cle] = LEFT if a_droite else RIGHT
-        cues.anchor_widths[cle] = 2.6
+        cues.anchor_widths[cle] = max(min(2.6, place_d if a_droite else place_g), 0.6)
         cues.etiquette(lab, (x, x, y - 0.22, y - 0.22), cle, cle)
+        cues.traits.append((f"trait de {cle}", (x, x, bas, y + 0.20), {id(lab)}, {cle}))
         return trait, lab, x
 
     extras = []
     med = cas = None
+    # Les traits verticaux que les valeurs contournent : {nom: (abscisse,
+    # sommet)}, le sommet etant le haut du rang ou s'ecrit la valeur du trait.
+    proche = bool(mb.get("mediane") and mb.get("cas")) and abs(
+        fr.px(float(mb["cas"]["valeur"])) - fr.px(float(mb["mediane"]["valeur"]))) < 3.6
+    colonnes = {"seuil": (fr.px(seuil), haut + 0.45)} if zone and k_seuil > 0 else {}
+    # Deux reperes proches : celui de gauche s'ecrit au rang du haut, son nom
+    # vers la gauche ; celui de droite au rang du bas, son nom vers la droite.
+    # Aucun nom ne croise alors le trait de l'autre, qui monte jusqu'a son rang.
+    rang = {"mediane": (0, None), "cas": (0, None)}
+    if proche:
+        a_gauche = "mediane" if float(mb["mediane"]["valeur"]) <= float(mb["cas"]["valeur"])             else "cas"
+        rang = {c: ((1, "gauche") if c == a_gauche else (0, "droite")) for c in rang}
+    for cle in ("mediane", "cas"):
+        if mb.get(cle):
+            colonnes[cle] = (fr.px(float(mb[cle]["valeur"])),
+                             haut + 0.32 + 0.60 * rang[cle][0] + 0.20)
     if mb.get("mediane"):
-        med = repere("mediane", 0, False)
+        med = repere("mediane", rang["mediane"][0], False, rang["mediane"][1])
         extras.append("mediane")
     if mb.get("cas"):
-        proche = med is not None and abs(fr.px(float(mb["cas"]["valeur"])) - med[2]) < 3.6
-        cas = repere("cas", 1 if proche else 0, True)
+        cas = repere("cas", rang["cas"][0], True, rang["cas"][1])
         extras.append("cas")
     if zone and k_seuil > 0:
         extras.insert(0, "zone")

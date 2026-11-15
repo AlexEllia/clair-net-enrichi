@@ -1,0 +1,175 @@
+{
+ "statut": "PLAN D'ESSAI VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
+ "courante": 1,
+ "versions": [
+  {
+   "version": 1,
+   "validee_le": "16/11/2026",
+   "motif": "Correction demandee par Alexandre le 15/11/2026 (pas encore vue a l'ecran par lui) : pictogramme large tenu dans 0,78 du pas de la grille (EP004 S21)",
+   "regle_cadre": "v2",
+   "regle_comparaison": "v2",
+   "regle_barres": "v3-phrase",
+   "vue_a_l_ecran": true,
+   "duree_s": 16.4,
+   "images": 492,
+   "pixels": {
+    "largeur": 960,
+    "hauteur": 540,
+    "md5": "d5f7a61565db8499c373b63479780b5e"
+   },
+   "segment": {
+    "id": "essai_mise_en_page_grille_pictos",
+    "role": "essai",
+    "type_visuel": "manim",
+    "manim_brief": {
+     "composant": "Grille",
+     "taille": 10,
+     "icone": "banknote",
+     "groupes": [
+      {
+       "cases": 7,
+       "valeur": 70.3,
+       "format": "pct",
+       "nature": "gain"
+      },
+      {
+       "cases": 3,
+       "valeur": 29.7,
+       "format": "pct",
+       "nature": "neutre"
+      }
+     ],
+     "revelations": [
+      {
+       "element": "groupe_1",
+       "t_rel_s": 3.14
+      },
+      {
+       "element": "groupe_2",
+       "t_rel_s": 4.97
+      }
+     ]
+    },
+    "overlay_texte": [
+     {
+      "ancre": "titre_haut",
+      "t_rel_s": 1.03,
+      "texte_fr": "Vos 10 000 €"
+     },
+     {
+      "ancre": "groupe_1",
+      "t_rel_s": 1.73,
+      "texte_fr": "Tout d'un coup"
+     },
+     {
+      "ancre": "groupe_2",
+      "t_rel_s": 4.49,
+      "texte_fr": "L'étalement"
+     },
+     {
+      "ancre": "bas",
+      "t_rel_s": 6.27,
+      "texte_fr": "Calcul Clair net enrichi, données Shiller (Yale), S&P 500 dividendes réinvestis, 1871-2023 · Performances passées : pas un indicateur fiable des résultats futurs"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 7.78,
+      "texte_fr": "Plus de temps en Bourse"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 9.52,
+      "texte_fr": "Gagnant connu dès l'année 1"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 12.66,
+      "texte_fr": "Ensuite…"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 14.56,
+      "texte_fr": "Même rythme"
+     }
+    ]
+   },
+   "calendrier": [
+    [
+     0.0,
+     2.44,
+     "FadeIn"
+    ],
+    [
+     0.0,
+     2.44,
+     "FadeIn"
+    ],
+    [
+     1.03,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     1.73,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     3.14,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     3.14,
+     1.5,
+     "FillPictos"
+    ],
+    [
+     4.49,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     4.97,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     4.97,
+     1.5,
+     "FillPictos"
+    ],
+    [
+     6.27,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     7.78,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     9.52,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     12.66,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     14.21,
+     0.35,
+     "Efface"
+    ],
+    [
+     14.56,
+     0.6,
+     "FadeIn"
+    ]
+   ]
+  }
+ ]
+}
