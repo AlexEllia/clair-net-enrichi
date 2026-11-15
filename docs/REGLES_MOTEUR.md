@@ -161,6 +161,45 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
   Plans d'essai figés : `essai_mise_en_page_grille_encarts`,
   `_erosion_encarts`, `_bars_sources`, `_flux_montant` ; chacun est refusé par
   le code d'avant et accepté par celui-ci.
+- **Textes du graphique, traits de repère, pictogrammes** (15/11/2026, fautes
+  vues sur les planches de l'EP004 v2, que `make check` laissait passer) :
+  - Contrôle de placement étendu (`collisions`, build.py) aux textes que le
+    moteur écrit dans le graphique (graduations, valeurs, compteur, part
+    d'une zone, valeur de médiane), toutes familles : entre eux et contre les
+    libellés, ni recouvrement ni moins de 0,15 (`MARGE_ENCART`), en distance
+    réelle entre les boîtes (deux graduations en coin, à l'origine d'un
+    LineChart, ne se serrent pas). Exception : le bloc d'une valeur et du nom
+    que le moteur pose contre elle (ancre « telle quelle », `anchor_align`, ou
+    `source_g`) — l'écart du bloc est celui de la famille (0,06 à 0,11), seul
+    le recouvrement est refusé ; les porter à 0,15 aurait changé tous les
+    plans validés. Traits de repère (`cues.traits` : seuil, médiane, cas d'une
+    Distribution, prolongés jusqu'au rang de leur valeur) : aucun texte qui
+    n'est pas le leur à moins de 0,15. Refus pour un script au catalogue
+    actuel et un plan d'essai, remarque sinon. **Non jugé** : un texte contre
+    un élément graphique quelconque (une valeur est à 0,14 de sa barre, une
+    graduation sur sa ligne de grille : par construction, partout).
+  - Distribution : graduations à 0,15 au moins, le pas grandit et se cale sur
+    le seuil (EP004 S14 : « −45 %, 30 %, 15 % », signes moins masqués) ; part
+    et nom de zone à 0,20 du seuil ; la valeur d'un repère glisse le long de
+    son trait pour ne pas chevaucher un autre trait, son nom part du côté
+    libre ; médiane et cas proches : celui de gauche au rang du haut, nom à
+    gauche, celui de droite au rang du bas, nom à droite (avant : le nom de la
+    médiane croisait le trait du cas, sur le plan d'essai validé lui-même).
+    Nouvelles versions de `essai_distribution`, `_ecart`, `manque_distribution`.
+  - Grille : un pictogramme tient dans 0,78 du pas (`GRILLE_PICTO_LARGE`) ;
+    `banknote` chevauchait son voisin (EP004 S21). Les pictogrammes carrés ne
+    changent pas.
+  Plans d'essai figés : `essai_mise_en_page_distribution_graduations` (refusé
+  par le contrôle avec le code d'avant), `essai_mise_en_page_grille_pictos`.
+- **Manque à gagner interdit sur un lien de Flux** (15/11/2026, règle
+  d'Alexandre) : un manque à gagner n'est pas un mouvement d'argent, c'est un
+  écart. `fautes_sens` refuse `"nature": "manque_a_gagner"` sur un lien, quel
+  que soit l'âge du script. Le dessin (pointillés `MANQUE`) reste dans le
+  moteur, inchangé, pour les scripts antérieurs ; `essai_manque_flux` reste
+  figé au pixel près mais est refusé par `controle.py` : ce n'est plus un
+  exemple. *Pourquoi* : EP004 S07 et S22, la flèche orange arrivait sur le
+  nœud du spectateur avec un montant sans signe et se lisait comme une somme
+  reçue. Cowork change ces deux plans de famille.
 - **Quatrième nature : manque à gagner** (15/11/2026, décision d'Alexandre ;
   `MANQUE` dans style.py, motifs dans components.py) : un écart défavorable
   avec une autre option, sans perte réelle de capital (« étaler rapporte 2 %
@@ -175,8 +214,8 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
   d'où le **second signal obligatoire** : pointillés pour un trait
   (`pointille`), hachures pour une surface (`Hachure`, `disque_hachure`, trame
   fixe dans l'image : une barre qui grandit ne voit pas ses rayures glisser).
-  Familles : Flux (lien), Bars (`natures`), Comparaison (`natures`), Grille,
-  Distribution (`sous_seuil`), Cascade (marche) ; pas Erosion. Signe : tel
+  Familles : Bars (`natures`), Comparaison (`natures`), Grille,
+  Distribution (`sous_seuil`), Cascade (marche) ; pas Erosion, et plus Flux (voir ci-dessus). Signe : tel
   qu'il est dit. `make check` refuse un manque à gagner hors `MANQUE` ou sans
   son motif (`a_motif`). Outil : `video/outils/daltonisme.py` (simulation sur
   une image). Essai : `video/outils/essais/sens_barres.json`.
