@@ -1,0 +1,102 @@
+{
+ "_role": "Plan d'essai, hors episode : Flux, montant d'un lien vertical - le montant ne croise jamais le trajet de son lien, particules comprises ; il recule le long de la normale (regle du 16/11/2026, faute vue sur l'EP004 S07 : « 4 % » touchait les particules). Chiffres d'essai, sans source.",
+ "duree_s": 10.0,
+ "segment": {
+  "id": "essai_mise_en_page_flux_montant_vertical",
+  "role": "essai",
+  "type_visuel": "manim",
+  "manim_brief": {
+   "composant": "Flux",
+   "noeuds": [
+    {
+     "icone": "wallet",
+     "position": [
+      -3.0,
+      1.4
+     ]
+    },
+    {
+     "icone": "percent",
+     "position": [
+      -3.0,
+      -1.8
+     ]
+    },
+    {
+     "icone": "trending-up",
+     "position": [
+      2.6,
+      1.4
+     ]
+    }
+   ],
+   "liens": [
+    {
+     "de": 1,
+     "vers": 2,
+     "nature": "perte",
+     "intensite": 3,
+     "montant": 1.2,
+     "format": "pct"
+    },
+    {
+     "de": 3,
+     "vers": 1,
+     "nature": "gain",
+     "intensite": 2,
+     "montant": 7,
+     "format": "pct"
+    }
+   ],
+   "revelations": [
+    {
+     "element": "node_1",
+     "t_rel_s": 1.0
+    },
+    {
+     "element": "node_3",
+     "t_rel_s": 2.5
+    },
+    {
+     "element": "link_2",
+     "t_rel_s": 2.5
+    },
+    {
+     "element": "node_2",
+     "t_rel_s": 5.5
+    },
+    {
+     "element": "link_1",
+     "t_rel_s": 5.5
+    }
+   ]
+  },
+  "overlay_texte": [
+   {
+    "ancre": "titre_haut",
+    "t_rel_s": 0.5,
+    "texte_fr": "Flux : montant sur un lien vertical"
+   },
+   {
+    "ancre": "noeud_1",
+    "t_rel_s": 1.0,
+    "texte_fr": "Votre somme"
+   },
+   {
+    "ancre": "noeud_3",
+    "t_rel_s": 2.5,
+    "texte_fr": "Bourse"
+   },
+   {
+    "ancre": "noeud_2",
+    "t_rel_s": 5.5,
+    "texte_fr": "Frais"
+   },
+   {
+    "ancre": "bas",
+    "t_rel_s": 0.5,
+    "texte_fr": "Plan d'essai du moteur, sans donnée ni source"
+   }
+  ]
+ }
+}

@@ -191,6 +191,19 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
     changent pas.
   Plans d'essai figés : `essai_mise_en_page_distribution_graduations` (refusé
   par le contrôle avec le code d'avant), `essai_mise_en_page_grille_pictos`.
+- **Montant d'un lien de Flux, cases d'une Grille** (16/11/2026, deux règles
+  ciblées demandées par Alexandre, là où le contrôle général ne juge pas un
+  texte contre un élément graphique) : le montant d'un lien ne croise jamais
+  le trajet de ce lien, particules comprises — il recule le long de la
+  normale jusqu'à laisser 0,06 (`FLUX_MONTANT_JEU`) entre sa boîte et les
+  particules, et l'ancre `lien_k` recule d'autant ; `make check` refuse un
+  montant à moins d'un rayon de particule de l'axe du lien (`cues.montants`).
+  *Pourquoi* : EP004 S07, lien vertical, « 4 % » touchait les particules. Un
+  montant qui tenait déjà ne bouge pas. Et `make check` refuse deux cases
+  voisines d'une Grille qui se chevauchent (`cues.cases`), pour que la faute
+  de S21 ne revienne pas. Plan d'essai figé :
+  `essai_mise_en_page_flux_montant_vertical`. Refus pour un script au
+  catalogue actuel et un plan d'essai, remarque sinon.
 - **Manque à gagner interdit sur un lien de Flux** (15/11/2026, règle
   d'Alexandre) : un manque à gagner n'est pas un mouvement d'argent, c'est un
   écart. `fautes_sens` refuse `"nature": "manque_a_gagner"` sur un lien, quel

@@ -757,6 +757,22 @@ def collisions(seg, dur, ep_dir=None, strict=True):
         for l in libelles:
             if l.nom.split(" «")[0] not in ancres and _d(_boite(l), zt) < marge - 1e-6:
                 noter_t(f"libelle {l.nom} touche le {nom} ou le {pres}")
+    # Flux : le montant d'un lien ne croise jamais le trajet de ce lien,
+    # particules comprises (regle du 16/11/2026).
+    from components import dist_boite as _dp
+    for nom, lab, trajet, rayon in getattr(cues, "montants", []):
+        d = min(_dp(_boite(lab), q) for q in trajet)
+        if d < rayon - 1e-6:
+            noter_t(f"{nom} croise le trajet de son lien (a {d:.2f} de son axe, particules "
+                    f"de rayon {rayon:.2f})")
+    # Grille : deux cases voisines ne se chevauchent pas (pictogramme plus
+    # large que le pas).
+    for nom, boites, cols in getattr(cues, "cases", []):
+        paires = [(i, i + 1) for i in range(len(boites) - 1) if (i + 1) % cols]             + [(i, i + cols) for i in range(len(boites) - cols)]
+        n = sum(1 for i, j in paires if _chevauche(boites[i], boites[j], 0.0))
+        if n:
+            noter_t(f"{nom} : {n} paire(s) de cases voisines se chevauchent (pictogramme plus "
+                    f"large que le pas de la grille)")
     # Etiquettes de valeur : chacune au plus pres de ce qu'elle chiffre.
     from components import ANCRE_MAX, ANCRE_TOL, ETIQUETTES_MAX, dist_boite, dist_boites
     n_sans_nom = cues.meta.get("etiquettes_sans_point_nomme", 0)

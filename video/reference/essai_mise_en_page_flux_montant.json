@@ -1,6 +1,6 @@
 {
  "statut": "PLAN D'ESSAI VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
- "courante": 1,
+ "courante": 2,
  "versions": [
   {
    "version": 1,
@@ -16,6 +16,146 @@
     "largeur": 960,
     "hauteur": 540,
     "md5": "323ea7b17d0797a149eb7e33046350c5"
+   },
+   "segment": {
+    "id": "essai_mise_en_page_flux_montant",
+    "role": "essai",
+    "type_visuel": "manim",
+    "manim_brief": {
+     "composant": "Flux",
+     "noeuds": [
+      {
+       "icone": "user",
+       "position": [
+        -3.5,
+        0.6
+       ]
+      },
+      {
+       "icone": "calendar",
+       "position": [
+        2.5,
+        -0.6
+       ]
+      }
+     ],
+     "liens": [
+      {
+       "de": 1,
+       "vers": 2,
+       "nature": "perte",
+       "montant": 1.2,
+       "format": "pct",
+       "intensite": 2
+      }
+     ],
+     "revelations": [
+      {
+       "element": "node_1",
+       "t_rel_s": 1.0
+      },
+      {
+       "element": "node_2",
+       "t_rel_s": 2.5
+      },
+      {
+       "element": "link_1",
+       "t_rel_s": 2.5
+      }
+     ]
+    },
+    "overlay_texte": [
+     {
+      "ancre": "titre_haut",
+      "t_rel_s": 0.5,
+      "texte_fr": "Essai : un montant et un nom"
+     },
+     {
+      "ancre": "noeud_1",
+      "t_rel_s": 1.0,
+      "texte_fr": "Les clients"
+     },
+     {
+      "ancre": "noeud_2",
+      "t_rel_s": 2.5,
+      "texte_fr": "Leurs fonds"
+     },
+     {
+      "ancre": "lien_1",
+      "t_rel_s": 2.6,
+      "texte_fr": "par an, sur 10 ans"
+     }
+    ]
+   },
+   "calendrier": [
+    [
+     0.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     1.0,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     1.0,
+     1.3,
+     "FadeIn"
+    ],
+    [
+     2.5,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     2.5,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     2.5,
+     1.5,
+     "Create+FadeIn"
+    ],
+    [
+     2.5,
+     1.5,
+     "FadeIn"
+    ],
+    [
+     2.6,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     2.8,
+     0.6,
+     "Restyle"
+    ],
+    [
+     4.0,
+     4.0,
+     "Courant"
+    ]
+   ],
+   "archivee_le": "16/11/2026",
+   "archivee_pour": "Regle demandee par Alexandre le 16/11/2026 (pas encore vue a l'ecran par lui) : le montant d'un lien ne croise plus le trajet de ses particules ; -1,2 % recule de 0,08"
+  },
+  {
+   "version": 2,
+   "validee_le": "16/11/2026",
+   "motif": "Regle demandee par Alexandre le 16/11/2026 (pas encore vue a l'ecran par lui) : le montant d'un lien ne croise plus le trajet de ses particules ; -1,2 % recule de 0,08",
+   "regle_cadre": "v2",
+   "regle_comparaison": "v2",
+   "regle_barres": "v3-phrase",
+   "vue_a_l_ecran": true,
+   "duree_s": 8.0,
+   "images": 240,
+   "pixels": {
+    "largeur": 960,
+    "hauteur": 540,
+    "md5": "202e4910eb0c94e47c9ed41fb91c2713"
    },
    "segment": {
     "id": "essai_mise_en_page_flux_montant",

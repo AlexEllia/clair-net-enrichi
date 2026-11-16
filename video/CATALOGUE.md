@@ -328,6 +328,11 @@ Refus pour un script écrit contre le catalogue actuel, remarque pour un
 script antérieur. Ces fautes sont celles du moteur plus souvent que les
 tiennes : si `make check` en nomme une, signale-la.
 
+**Le montant d'un lien de `Flux`** ne croise jamais le trajet de ce lien,
+particules comprises : sur un lien vertical ou très penché, où sa largeur le
+ramènerait dessus, il s'en écarte de lui-même, et le nom du lien avec lui.
+`make check` refuse un montant qui toucherait les particules.
+
 **Les libellés de `Flux`.** Le nom d'un lien qui porte un montant ne passe
 pas sur ce montant en montant pour apparaître : s'il le ferait à sa place
 habituelle, il s'en écarte. Le moteur cherche pour chaque nom de nœud ou de
@@ -1329,7 +1334,7 @@ chaque grille quand il y en a deux.
 |---|---|---|---|
 | `taille` | **oui** | `10`, `20`, `100` | Nombre de cases de chaque grille : 2 × 5, 4 × 5, 10 × 10. Prends le dénominateur que dit la voix : « sept fois sur dix » → 10 ; un pourcentage énoncé tel quel → 100. |
 | `groupes` | **oui** | `[{"cases": n, "valeur": v, "format": f, "nature": s}]`, 1 ou 2 | Un groupe par fréquence que la voix énonce. `cases` : le nombre de cases allumées — **l'arrondi que dit la voix** (7 pour « sept fois sur dix »). `valeur` : **la valeur exacte**, sourcée, écrite à côté (68.9). `format` : `"pct"` par défaut. `nature`, obligatoire : `"gain"` (un succès, ambre), `"perte"` (un résultat négatif pour le spectateur, `NEG`), `"manque_a_gagner"` (le spectateur y gagne moins qu'avec l'autre option : `MANQUE`, cases **hachurées**, pictogrammes **en pointillés**), `"neutre"` (ni l'un ni l'autre, vert d'eau) — voir « Quelle `nature` » ci-dessous. |
-| `icone` | non | un pictogramme du catalogue (`calendar`, `user`, `coins`…) | Remplace les cercles. À réserver aux grilles de 10 et de 20 : à 100, il ne se lit plus. Un pictogramme plus large que haut (`banknote`) est réduit pour tenir dans le pas de la grille, sans toucher son voisin. |
+| `icone` | non | un pictogramme du catalogue (`calendar`, `user`, `coins`…) | Remplace les cercles. À réserver aux grilles de 10 et de 20 : à 100, il ne se lit plus. Un pictogramme plus large que haut (`banknote`) est réduit pour tenir dans le pas de la grille, sans toucher son voisin ; `make check` refuse deux cases voisines qui se chevauchent. |
 
 Le moteur n'arrondit rien (R3) : il vérifie que `cases` est bien l'arrondi de
 `valeur` à la case près (68,9 % sur 10 cases : 6,89, donc 7 ; 6 ou 8

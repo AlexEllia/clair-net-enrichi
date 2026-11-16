@@ -76,6 +76,12 @@ class Cues:
         # jusqu'au rang ou s'ecrit sa valeur -, ids des textes du graphique
         # qui sont les siens, ancres des libelles qui sont les siens)].
         self.traits = []
+        # Montants des liens de Flux, pour make check : [(nom, etiquette,
+        # points du trajet du lien, rayon des particules)].
+        self.montants = []
+        # Cases d'une Grille, pour make check : [(nom du groupe, [boites des
+        # cases, rangee par rangee], colonnes)].
+        self.cases = []
 
     def add(self, *m):
         self.static.extend(m)
@@ -2823,6 +2829,7 @@ SIGNE_SENS = {"gain": "+", "perte": "−"}   # le vrai signe moins, pas le trait
 PERTE_RETRECIT = 0.88   # le noeud qui perd retrecit a l'arrivee du montant
 PERTE_PLANCHER = 0.70   # ... sans jamais passer sous 70 % de sa taille
 PERTE_RT = 0.6
+FLUX_MONTANT_JEU = 0.06  # vide entre le montant d'un lien et les particules qui y circulent
 
 
 def montant_signe(v, kind, nature):
@@ -3047,9 +3054,26 @@ def Flux(seg, cues):
             if normal[1] < 0:
                 normal = -normal
         label = None
+        recul = 0.0
         if ln.get("montant") is not None:
             label = txt(montant_signe(ln["montant"], ln.get("format", "euro"), nature), SZ_LABEL,
                         col, weight=SEMIBOLD).move_to(mid + normal * 0.34)
+            # Le montant ne croise jamais le trajet de son lien, particules
+            # comprises : sur un lien vertical ou tres penche, sa largeur le
+            # ramenerait dessus. Il recule le long de la normale jusqu'a
+            # laisser FLUX_MONTANT_JEU entre sa boite et les particules.
+            trajet = [guide.point_from_proportion(f) for f in np.linspace(0.0, 1.0, 61)]
+            rayon = 0.05 + 0.02 * k
+
+            def libre(m):
+                b = (m.get_left()[0], m.get_right()[0], m.get_bottom()[1], m.get_top()[1])
+                return min(dist_boite(b, q) for q in trajet) >= rayon + FLUX_MONTANT_JEU - 1e-6
+
+            while not libre(label) and recul < 1.2:
+                recul += 0.02
+                label.move_to(mid + normal * (0.34 + recul))
+            cues.montants.append((f"montant du lien {i + 1} « {label.text} »", label, trajet,
+                                  rayon))
         key = f"link_{i + 1}"
         links[key] = (path, tip, dots, label, k, (int(ln["de"]), int(ln["vers"])))
         order.append(key)
@@ -3057,7 +3081,7 @@ def Flux(seg, cues):
             cues.sens.append({"nom": key, "nature": nature, "objets": [path, tip, dots],
                               "montant": label,
                               "motif": [path] if nature == "manque_a_gagner" else []})
-        cues.point(f"lien_{i + 1}", mid + normal * (0.80 if label is not None else 0.42))
+        cues.point(f"lien_{i + 1}", mid + normal * ((0.80 + recul) if label is not None else 0.42))
         cues.anchor_colors[f"lien_{i + 1}"] = col
         cues.anchor_widths[f"lien_{i + 1}"] = 3.0
         # ... ou de l'autre cote du lien, a distance de son trace.
@@ -3798,6 +3822,10 @@ def Grille(seg, cues):
         places = [(cx - w / 2 + (c + 0.5) * pas, cy + h / 2 - (r + 0.5) * pas)
                   for r in range(lignes) for c in range(colonnes)]
         fond = VGroup(*[case(x, y, couleur, True) for x, y in places])
+        cues.cases.append((f"groupe_{gi + 1}",
+                           [(float(m.get_left()[0]), float(m.get_right()[0]),
+                             float(m.get_bottom()[1]), float(m.get_top()[1])) for m in fond],
+                           colonnes))
         manque = g["nature"] == "manque_a_gagner"
         allumees = VGroup(*[case(x, y, couleur, False, manque)
                             for x, y in places[:int(g["cases"])]])
