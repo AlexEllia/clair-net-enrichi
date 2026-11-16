@@ -102,7 +102,11 @@ def main():
         planche.save(out / f"{sid}.png")
         image(plan, long_plan - 0.05, out / f"{sid}_fin.png")
         print(f"{sid}  {n:2d} images  {out / (sid + '.png')}", flush=True)
-    (out / "revelations.json").write_text(json.dumps(bilan, indent=1), encoding="utf-8")
+    # Avec --only, les instants des autres plans restent ceux deja ecrits.
+    fiche = out / "revelations.json"
+    if args.only and fiche.exists():
+        bilan = {**json.loads(fiche.read_text(encoding="utf-8")), **bilan}
+    fiche.write_text(json.dumps(dict(sorted(bilan.items())), indent=1), encoding="utf-8")
 
 
 if __name__ == "__main__":
