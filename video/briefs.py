@@ -261,3 +261,114 @@ def warn_still(seg, intervals, dur):
     for a, b, t, length in still_times(seg, dur, intervals):
         _warn(f"{seg['id']} : ecran fige {length:.2f} s a partir de {t:.2f} s, "
               f"entre {a!r} et {b!r} (> {MAX_STILL:.0f} s)")
+
+
+# --- Deux plans dans un segment ------------------------------------------------
+# Regle d'Alexandre du 17/11/2026 : quand la voix change de sujet en cours de
+# segment, un seul graphique ne peut pas suivre. `manim_brief` porte alors
+# "plans": [brief_a, brief_b] ; chaque brief est un manim_brief ordinaire, avec
+# en plus ses `overlay_texte` et, pour le second, le `declencheur` de son
+# entree. Le moteur en tire deux plans ordinaires, juges et rendus comme tels,
+# puis enchaines en fondu.
+
+PLANS_MAX = 2
+FONDU_PLANS = 0.4       # fondu enchaine d'un plan a l'autre
+PLAN_MIN = 4.0          # duree minimale de chacun des deux plans
+_CLES_PLAN = ("overlay_texte", "declencheur", "t_rel_s", "t_rel_s_estime")
+
+
+def instant_declencheur(voix, texte):
+    """Debut de `texte` dans l'alignement reel de la voix (secondes depuis le
+    debut du segment), None s'il n'y est pas. Casse et espaces ignores ; les
+    balises [..] de la voix ne comptent pas."""
+    if not voix or not texte:
+        return None
+    car, debuts, dans = [], [], False
+    for c, t in zip(voix["characters"], voix["character_start_times_seconds"]):
+        if c == "[":
+            dans = True
+        if dans:
+            if c == "]":
+                dans = False
+            continue
+        if c.isspace() and car and car[-1] == " ":
+            continue
+        car.append(" " if c.isspace() else c.casefold().replace("\u2019", "'"))
+        debuts.append(float(t))
+    cible = " ".join(str(texte).casefold().replace("\u2019", "'").split())
+    i = "".join(car).find(cible)
+    return debuts[i] if i >= 0 else None
+
+
+def sous_plans(seg, dur):
+    """None pour un segment ordinaire. Pour un segment a deux plans :
+    ([(plan, debut, duree), (plan, debut, duree)], infos).
+
+    Chaque `plan` est un segment ordinaire (id « Sxxa », « Sxxb ») : son
+    manim_brief, ses overlays, la voix du segment (`vo_fr`, alignement), tous
+    les instants ramenes a son propre debut. Dans le script, les `t_rel_s`
+    restent comptes depuis le debut du SEGMENT, comme partout.
+    Le second plan entre sur son `declencheur`, lu dans l'alignement reel
+    (`_voix`) ; sans alignement (plan d'essai), sur son `t_rel_s`. Le fondu
+    enchaine occupe les FONDU_PLANS secondes qui precedent ce mot : le plan b
+    est entierement la sur son mot.
+    `infos` : {"coupe": instant du mot, "debut_b": debut du fondu,
+    "aligne": le declencheur a ete trouve dans la voix, "avant": [elements du
+    plan b ecrits avant son debut]}."""
+    mb = seg.get("manim_brief") or {}
+    plans = mb.get("plans")
+    if seg.get("type_visuel") != "manim" or plans is None:
+        return None
+    sid = seg.get("id", "?")
+    if not isinstance(plans, list) or len(plans) != PLANS_MAX \
+            or not all(isinstance(p, dict) and p.get("composant") for p in plans):
+        raise SystemExit(f"{sid} : `plans` attend exactement {PLANS_MAX} briefs, chacun avec "
+                         f"son `composant` (un seul plan s'ecrit sans `plans`)")
+    en_trop = sorted(k for k in mb if k != "plans")
+    if en_trop or seg.get("overlay_texte"):
+        raise SystemExit(f"{sid} : avec `plans`, le segment ne porte rien d'autre - ni "
+                         f"{', '.join(en_trop) or 'parametre'} a cote de `plans`, ni "
+                         f"`overlay_texte` au niveau du segment : chaque plan a les siens")
+    from build import FPS
+    b = plans[1]
+    voix = seg.get("_voix")
+    coupe = instant_declencheur(voix, b.get("declencheur"))
+    aligne = coupe is not None
+    if coupe is None:
+        if b.get("t_rel_s") is None:
+            raise SystemExit(f"{sid} : le second plan attend un `declencheur` (lu dans "
+                             f"l'alignement de la voix) et un `t_rel_s` estime")
+        coupe = float(b["t_rel_s"])
+    debut_b = round((coupe - FONDU_PLANS) * FPS) / FPS
+    coupe = debut_b + FONDU_PLANS
+    if debut_b < PLAN_MIN or dur - coupe < PLAN_MIN:
+        raise SystemExit(f"{sid} : le second plan entre a {coupe:.2f} s d'un segment de "
+                         f"{dur:.2f} s ; chaque plan dure au moins {PLAN_MIN:.0f} s")
+    out, avant = [], []
+    for suffixe, brief, t0, d in (("a", plans[0], 0.0, coupe), ("b", b, debut_b, dur - debut_b)):
+        brief = copy.deepcopy(brief)
+        overlays = brief.pop("overlay_texte", None) or []
+        for k in _CLES_PLAN:
+            brief.pop(k, None)
+        for r in (brief.get("revelations") or []) + overlays:
+            t = float(r["t_rel_s"]) - t0
+            if t < -1e-6:
+                avant.append(r.get("element") or f"{r.get('ancre')} « {r.get('texte_fr')} »")
+            r["t_rel_s"] = round(max(t, 0.0), 3)
+        plan = {k: v for k, v in seg.items() if k not in ("manim_brief", "overlay_texte",
+                                                           "_voix")}
+        plan.update(id=f"{sid}{suffixe}", manim_brief=brief, overlay_texte=overlays,
+                    _plan=suffixe, _plan_debut=t0)
+        if voix:
+            v = dict(voix)
+            for k in ("character_start_times_seconds", "character_end_times_seconds"):
+                v[k] = [float(x) - t0 for x in voix[k]]
+            for k in ("debut_voix_s", "fin_voix_s"):
+                if isinstance(voix.get(k), (int, float)):
+                    v[k] = voix[k] - t0
+            plan["_voix"] = v
+        out.append((plan, t0, d))
+    # `aligne` : None sans alignement (plan d'essai), False si le declencheur n'y
+    # est pas.
+    return out, {"coupe": coupe, "debut_b": debut_b, "aligne": aligne if voix else None,
+                 "avant": avant}

@@ -465,6 +465,16 @@ def _calendrier_essai(seg, dur):
     """Calendrier d'un plan d'essai, quel que soit son type_visuel (un plan de
     typographie n'a pas de manim_brief)."""
     import build
+    sp = build.plans_du_segment(seg, dur)
+    if sp:
+        # Deux plans : les deux calendriers, sur la ligne de temps du segment.
+        rows = [[round(sp[1]["debut_b"], 3), 0.4, "FonduEnchaine"]]
+        for plan, t0, d in sp[0]:
+            cues = build.composer(plan, d)
+            rows += [[round(t + t0, 3), round(min(rt, d - t), 3),
+                      "+".join(type(a).__name__ for a in anims)]
+                     for t, anims, rt in cues.items if t < d]
+        return sorted(rows)
     cues = build.composer(seg, dur)
     return sorted([round(t, 3), round(min(rt, dur - t), 3),
                    "+".join(type(a).__name__ for a in anims)]

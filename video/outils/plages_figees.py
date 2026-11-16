@@ -96,18 +96,29 @@ def main():
          "y prononce : un élément de la famille, ou un accent (`accents` + `accent_k`, deux au "
          "plus par plan). Voir `video/CATALOGUE.md`, « Tenir une fin de plan ».", ""]
     bilan = []
+    unites = []
     for seg in script["segments"]:
         if seg["type_visuel"] != "manim":
             continue
+        try:
+            sp = build.plans_du_segment(seg, durations[seg["id"]].audio, ep_dir)
+        except SystemExit as e:
+            L += [f"## {seg['id']} — deux plans", "", f"Découpe impossible : {e}", ""]
+            continue
+        if sp:
+            # Deux plans : chacun est un plan entier, sur sa propre durée.
+            unites += [(plan, d, t0, seg["id"], None) for plan, t0, d in sp[0]]
+        else:
+            unites.append((seg, durations[seg["id"]].audio, 0.0, seg["id"], ep_dir))
+    for seg, dur, decalage, sid_voix, ep_dir_plan in unites:
         sid, fam = seg["id"], seg["manim_brief"]["composant"]
-        dur = durations[sid].audio
         nu = copy.deepcopy(seg)
         nu["overlay_texte"] = [o for o in nu.get("overlay_texte") or [] if o["ancre"] != "centre"]
         n_enc = len(seg.get("overlay_texte") or []) - len(nu["overlay_texte"])
         try:
             with contextlib.redirect_stderr(io.StringIO()):
-                cal = build.calendrier_nouveaute(nu, dur, ep_dir)
-                cues = build.composer(nu, dur, ep_dir)
+                cal = build.calendrier_nouveaute(nu, dur, ep_dir_plan)
+                cues = build.composer(nu, dur, ep_dir_plan)
         except SystemExit as e:
             L += [f"## {sid} — {fam}", "", f"Plan non construit : {e}", ""]
             continue
@@ -116,7 +127,7 @@ def main():
                         if str(getattr(m, "nom", "")).startswith("titre_haut "))
         titre = "absent" if not titres else f"posé à {titres[0]:.2f} s" + (
             "" if titres[0] <= build.TITRE_AVANT else " (trop tard : 1,0 s au plus)")
-        align_p = ep_dir / "audio" / "alignments" / f"{sid}.json"
+        align_p = ep_dir / "audio" / "alignments" / f"{sid_voix}.json"
         align = json.loads(align_p.read_text(encoding="utf-8")) if align_p.exists() else None
         deja = {r["element"] for r in seg["manim_brief"].get("revelations") or []}
         mb = seg["manim_brief"]
@@ -125,7 +136,8 @@ def main():
         else:
             propres = PROPRES.get(fam, [])
         libres = [p for p in propres if re.match(r"`(\w+)`", p).group(1) not in deja]
-        L += [f"## {sid} — {fam} ({dur:.2f} s)", "",
+        L += [f"## {sid} — {fam} ({dur:.2f} s"
+              + (f", à partir de {decalage:.2f} s du segment" if decalage else "") + ")", "",
               f"- Titre : {titre}. Encarts actuels : {n_enc} (deux au plus).",
               f"- Révélations déjà écrites : {', '.join(f'`{r}`' for r in sorted(deja)) or 'aucune'}.",
               f"- Éléments de la famille encore libres : {' ; '.join(libres) or 'aucun'}.",
@@ -137,7 +149,8 @@ def main():
             L += ["| Début | Fin | Durée | R6 | Ce que dit la voix pendant la plage |",
                   "|---|---|---|---|---|"]
             for a, b in plages:
-                dit = mots_entre(align, a, b) if align else "(pas d'alignement)"
+                dit = mots_entre(align, a + decalage, b + decalage) if align \
+                    else "(pas d'alignement)"
                 L.append(f"| {a:.2f} s | {b:.2f} s | {b - a:.1f} s | "
                          f"{'refus' if b - a > 4.0 else 'limite'} | {dit or '(silence)'} |")
             L.append("")

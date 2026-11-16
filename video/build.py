@@ -41,6 +41,29 @@ def probe(path):
 # --- Rendu d'un plan ---------------------------------------------------------
 
 def render_segment(seg, dur, out_dir, media_dir, width, height):
+    """Rend le plan du segment. Un segment a deux plans (`plans`) est rendu
+    plan par plan, puis enchaine en fondu (FONDU_PLANS) : meme nom de fichier,
+    meme duree, l'audio et le montage n'en savent rien."""
+    from briefs import sous_plans, FONDU_PLANS
+    sp = sous_plans(seg, dur)
+    if sp:
+        (pa, _, da), (pb, debut_b, db) = sp[0]
+        a = _render_un(pa, da, out_dir, media_dir, width, height)
+        b = _render_un(pb, db, out_dir, media_dir, width, height)
+        dest = out_dir / f"{seg['id']}.mp4"
+        sh(["ffmpeg", "-y", "-loglevel", "error", "-i", str(a), "-i", str(b),
+            "-filter_complex",
+            f"[0:v]fps={FPS},format=yuv420p[a];[1:v]fps={FPS},format=yuv420p[b];"
+            f"[a][b]xfade=transition=fade:duration={FONDU_PLANS}:offset={debut_b:.4f}",
+            "-r", str(FPS), "-c:v", "libx264", "-preset", "medium", "-crf", "14",
+            "-pix_fmt", "yuv420p", "-an", str(dest)])
+        a.unlink(missing_ok=True)
+        b.unlink(missing_ok=True)
+        return dest
+    return _render_un(seg, dur, out_dir, media_dir, width, height)
+
+
+def _render_un(seg, dur, out_dir, media_dir, width, height):
     from manim import tempconfig
     from scenes import SegmentScene
     from style import BG
@@ -199,11 +222,21 @@ def check_revelations(segments, durations, plans_dir=None, sources=(), ep_dir=No
     import densite
 
     rows = []
+    a_plat = []
     for s in segments:
+        try:
+            sp = plans_du_segment(s, durations[s["id"]].audio, ep_dir) \
+                if s.get("type_visuel") == "manim" else None
+        except SystemExit:
+            continue
+        if sp:
+            a_plat += [(plan, d, False) for plan, _, d in sp[0]]
+        else:
+            a_plat.append((s, durations[s["id"]].audio, True))
+    for s, dur, entier in a_plat:
         if not (s.get("manim_brief") or {}).get("revelations"):
             continue
-        dur = durations[s["id"]].audio
-        if ep_dir is not None:
+        if ep_dir is not None and entier:
             s = with_voice(s, ep_dir)
         intervals, target, meta = None, s, None
         try:
@@ -220,7 +253,7 @@ def check_revelations(segments, durations, plans_dir=None, sources=(), ep_dir=No
         op = opening(target, meta, dur)
         stills = still_times(target, dur, intervals)
         pixels, perime = None, False
-        plan = plans_dir / f"{s['id']}.mp4" if plans_dir else None
+        plan = plans_dir / f"{s['id']}.mp4" if plans_dir and entier else None
         if plan is not None and plan.exists():
             # Un rendu plus ancien que le script ou que la voix montre un autre
             # plan : on ne le mesure pas, le calendrier fait foi.
@@ -269,6 +302,15 @@ def check_revelations(segments, durations, plans_dir=None, sources=(), ep_dir=No
 CHAINE = ("mention", "ecran_fin")
 
 
+def _famille(s):
+    """Nom de la famille d'un plan manim pour les rapports ; « A + B » pour un
+    segment a deux plans."""
+    mb = s.get("manim_brief") or {}
+    if isinstance(mb.get("plans"), list):
+        return " + ".join(str(p.get("composant", "?")) for p in mb["plans"] if isinstance(p, dict))
+    return mb.get("composant", "manim")
+
+
 def check_chaine(segments):
     """Un plan de chaine (mention, ecran_fin) est compose par le moteur seul :
     il ne porte ni manim_brief ni overlay_texte. Bloquant, au check comme au
@@ -312,7 +354,10 @@ def composer(seg, dur, ep_dir=None):
     from components import COMPONENTS, Cues
     from scenes import add_overlays
 
-    if ep_dir is not None:
+    if isinstance((seg.get("manim_brief") or {}).get("plans"), list):
+        raise SystemExit(f"{seg.get('id')} : segment a deux plans - chaque plan se compose "
+                         f"seul (build.plans_du_segment)")
+    if ep_dir is not None and "_voix" not in seg:
         seg = with_voice(seg, ep_dir)
     visual = seg["type_visuel"]
     cues = Cues(dur)
@@ -329,10 +374,43 @@ def composer(seg, dur, ep_dir=None):
     return cues
 
 
+def plans_du_segment(seg, dur, ep_dir=None):
+    """None pour un segment ordinaire ; pour un segment a deux plans,
+    ([(plan, debut, duree)] x 2, infos) - voir briefs.sous_plans. La voix
+    reelle est lue ici quand `ep_dir` est donne."""
+    from briefs import sous_plans, with_voice
+    if not isinstance((seg.get("manim_brief") or {}).get("plans"), list):
+        return None
+    if ep_dir is not None and "_voix" not in seg:
+        seg = with_voice(seg, ep_dir)
+    return sous_plans(seg, dur)
+
+
+def _fautes_plans(infos):
+    """Ce que la decoupe elle-meme a de fautif."""
+    out = []
+    if infos["aligne"] is False:
+        out.append("declencheur du second plan introuvable dans l'alignement de la voix : il "
+                   "entre sur son `t_rel_s` estime")
+    for nom in infos["avant"]:
+        out.append(f"plan b : {nom} est ecrit avant l'entree du plan "
+                   f"({infos['debut_b']:.2f} s)")
+    return out
+
+
 def calendrier_nouveaute(seg, dur, ep_dir=None):
     """[(debut, fin)] de tout ce qui arrive a l'ecran pendant le plan, tel que
     le moteur le posera : revelations, etiquettes, overlays, mises en avant,
-    argent qui circule. Ne compte pas : ce qui s'anime hors de l'image."""
+    argent qui circule. Ne compte pas : ce qui s'anime hors de l'image.
+    Segment a deux plans : les deux calendriers bout a bout, sur la ligne de
+    temps du segment, et le fondu enchaine entre eux."""
+    sp = plans_du_segment(seg, dur, ep_dir)
+    if sp:
+        from briefs import FONDU_PLANS
+        out = [(sp[1]["debut_b"], sp[1]["debut_b"] + FONDU_PLANS)]
+        for plan, t0, d in sp[0]:
+            out += [(a + t0, min(b, d) + t0) for a, b in calendrier_nouveaute(plan, d)]
+        return sorted(out)
     cues = composer(seg, dur, ep_dir)
     out = []
     for t, anims, rt in cues.items:
@@ -368,7 +446,7 @@ def check_nouveaute(segments, durations, ep_dir):
             continue
         d = durations[sid]
         dur = d.total if visual == "ecran_fin" else d.audio
-        kind = (s.get("manim_brief") or {}).get("composant", "manim") \
+        kind = _famille(s) \
             if visual == "manim" else visual
         try:
             cal = calendrier_nouveaute(s, dur, ep_dir)
@@ -674,6 +752,19 @@ def collisions(seg, dur, ep_dir=None, strict=True):
     simple remarque sinon (script anterieur a la regle)."""
     from style import FW, FH
     from scenes import Efface
+    sp = plans_du_segment(seg, dur, ep_dir)
+    if sp:
+        # Deux plans : chacun est juge comme un plan entier (placement,
+        # encarts, titre dans sa premiere seconde, mouvements).
+        fautes, remarques, n_e, n_l = list(_fautes_plans(sp[1])), [], 0, 0
+        if not strict:
+            remarques, fautes = fautes, []
+        for plan, _, d in sp[0]:
+            f, e, l, r = collisions(plan, d, None, strict)
+            fautes += [f"plan {plan['_plan']} : {x}" for x in f]
+            remarques += [f"plan {plan['_plan']} : {x}" for x in r]
+            n_e, n_l = n_e + e, n_l + l
+        return fautes, n_e, n_l, remarques
     cues = composer(seg, dur, ep_dir)
     objets = _objets(cues)
     sorties = {id(m): t for m, t, a in objets if isinstance(a, Efface)}
@@ -871,7 +962,7 @@ def check_placement(segments, durations, ep_dir, strict=True):
         sid, visual = s["id"], s["type_visuel"]
         if visual in CHAINE:
             continue
-        kind = (s.get("manim_brief") or {}).get("composant", "manim") \
+        kind = _famille(s) \
             if visual == "manim" else visual
         try:
             f, n_e, n_l, rq = collisions(s, durations[sid].audio, ep_dir, strict)
@@ -914,6 +1005,15 @@ def fautes_sens(seg, dur, ep_dir=None, strict=True):
     # La charte fait foi, pas la table du moteur : c'est elle que l'on controle.
     COULEUR_SENS = {"gain": INTEREST, "perte": NEG, "manque_a_gagner": MANQUE}
     fautes, remarques = [], []
+    sp = plans_du_segment(seg, dur, ep_dir)
+    if sp:
+        n = 0
+        for plan, _, d in sp[0]:
+            f, r, k = fautes_sens(plan, d, None, strict)
+            fautes += [f"plan {plan['_plan']} : {x}" for x in f]
+            remarques += [f"plan {plan['_plan']} : {x}" for x in r]
+            n += k
+        return fautes, remarques, n
     mb = seg.get("manim_brief") or {}
     if mb.get("composant") == "Flux":
         for i, ln in enumerate(mb.get("liens") or [], 1):
@@ -1034,7 +1134,7 @@ def check_sens(segments, durations, ep_dir, strict=True):
         sid = s["id"]
         if s["type_visuel"] != "manim":
             continue
-        kind = (s.get("manim_brief") or {}).get("composant", "manim")
+        kind = _famille(s)
         try:
             f, rq, n = fautes_sens(s, durations[sid].audio, ep_dir, strict)
         except SystemExit as e:
@@ -1077,7 +1177,7 @@ def check_density(final, tl, segments, dest):
     Avertit pour chaque plage figee de plus de 4 s, quel que soit le type de
     plan. Ne bloque rien : le montage est deja ecrit."""
     import densite
-    kinds = {s["id"]: (s.get("manim_brief") or {}).get("composant", "manim")
+    kinds = {s["id"]: _famille(s)
              if s["type_visuel"] == "manim" else s["type_visuel"] for s in segments}
     segs = [{"id": r["id"], "type_visuel": kinds.get(r["id"], "?"),
              "debut_s": r["debut_s"], "fin_s": r["fin_s"]} for r in tl["segments"]]
@@ -1206,7 +1306,10 @@ def main():
         if args.skip_render and out.exists():
             print(f"[{i:2d}/{len(todo)}] {sid}  (deja rendu)", flush=True)
         else:
-            comp = seg["manim_brief"]["composant"] if seg["type_visuel"] == "manim" else seg["type_visuel"]
+            comp = (" + ".join(p.get("composant", "?") for p in seg["manim_brief"]["plans"])
+                    if "plans" in (seg.get("manim_brief") or {})
+                    else seg["manim_brief"]["composant"]) \
+                if seg["type_visuel"] == "manim" else seg["type_visuel"]
             print(f"[{i:2d}/{len(todo)}] {sid}  {comp:<18} {d.audio:5.2f}s"
                   f" + {d.silence:.2f}s tenus", flush=True)
             # La scene ne dure que le temps de la voix : aucune animation ne

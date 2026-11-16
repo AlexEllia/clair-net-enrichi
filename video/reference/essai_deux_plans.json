@@ -1,0 +1,260 @@
+{
+ "statut": "PLAN D'ESSAI VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
+ "courante": 1,
+ "versions": [
+  {
+   "version": 1,
+   "validee_le": "16/11/2026",
+   "motif": "Specification d'Alexandre du 17/11/2026 (pas encore vue a l'ecran par lui) : deux plans dans un segment, fondu enchaine de 0,4 s",
+   "regle_cadre": "v2",
+   "regle_comparaison": "v2",
+   "regle_barres": "v3-phrase",
+   "vue_a_l_ecran": true,
+   "duree_s": 16.0,
+   "images": 480,
+   "pixels": {
+    "largeur": 960,
+    "hauteur": 540,
+    "md5": "10cb6e1c0eafc10279acb41607bbb343"
+   },
+   "segment": {
+    "id": "essai_deux_plans",
+    "role": "essai",
+    "type_visuel": "manim",
+    "vo_fr": "Placer tout de suite a fini devant sept fois sur dix. Étaler, trois fois sur dix. Retenez le premier chiffre. Et le prix de l'attente ? En étalant, on finit en moyenne avec quatre pour cent de moins. C'est le prix de la tranquillité.",
+    "manim_brief": {
+     "plans": [
+      {
+       "composant": "Grille",
+       "taille": 10,
+       "icone": "calendar",
+       "groupes": [
+        {
+         "cases": 7,
+         "valeur": 70.3,
+         "format": "pct",
+         "nature": "gain"
+        },
+        {
+         "cases": 3,
+         "valeur": 29.7,
+         "format": "pct",
+         "nature": "neutre"
+        }
+       ],
+       "accents": [
+        {
+         "element": "groupe_1"
+        }
+       ],
+       "revelations": [
+        {
+         "element": "groupe_1",
+         "t_rel_s": 2.0
+        },
+        {
+         "element": "groupe_2",
+         "t_rel_s": 4.2
+        },
+        {
+         "element": "accent_1",
+         "t_rel_s": 6.3
+        }
+       ],
+       "overlay_texte": [
+        {
+         "ancre": "titre_haut",
+         "t_rel_s": 0.5,
+         "texte_fr": "Un départ chaque mois depuis 1871"
+        },
+        {
+         "ancre": "groupe_1",
+         "t_rel_s": 2.0,
+         "texte_fr": "Tout de suite devant"
+        },
+        {
+         "ancre": "groupe_2",
+         "t_rel_s": 4.2,
+         "texte_fr": "Étalé devant"
+        },
+        {
+         "ancre": "bas",
+         "t_rel_s": 0.5,
+         "texte_fr": "Plan d'essai du moteur, sans donnée ni source"
+        }
+       ]
+      },
+      {
+       "composant": "Comparaison",
+       "declencheur": "Et le prix",
+       "t_rel_s": 8.5,
+       "unite": "percent",
+       "reference": {
+        "option": 1
+       },
+       "donnees": [
+        [
+         2,
+         4
+        ]
+       ],
+       "natures": [
+        "neutre",
+        "manque_a_gagner"
+       ],
+       "accents": [
+        {
+         "element": "value_1"
+        }
+       ],
+       "revelations": [
+        {
+         "element": "value_1",
+         "t_rel_s": 12.2
+        },
+        {
+         "element": "accent_1",
+         "t_rel_s": 14.3
+        }
+       ],
+       "overlay_texte": [
+        {
+         "ancre": "titre_haut",
+         "t_rel_s": 8.4,
+         "texte_fr": "Ce que coûte l'étalement"
+        },
+        {
+         "ancre": "option_1",
+         "t_rel_s": 8.4,
+         "texte_fr": "Tout d'un coup"
+        },
+        {
+         "ancre": "option_2",
+         "t_rel_s": 9.0,
+         "texte_fr": "Étalé sur 1 an"
+        },
+        {
+         "ancre": "centre",
+         "t_rel_s": 13.2,
+         "texte_fr": "Capital final, 20 ans après"
+        },
+        {
+         "ancre": "bas",
+         "t_rel_s": 8.4,
+         "texte_fr": "Plan d'essai du moteur : chiffres de l'EP004"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "calendrier": [
+    [
+     0.0,
+     1.3,
+     "FadeIn"
+    ],
+    [
+     0.0,
+     1.3,
+     "FadeIn"
+    ],
+    [
+     0.5,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     0.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     2.0,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     2.0,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     2.0,
+     1.5,
+     "FillPictos"
+    ],
+    [
+     4.2,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     4.2,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     4.2,
+     1.5,
+     "FillPictos"
+    ],
+    [
+     6.3,
+     0.4,
+     "Create+Restyle+Restyle+Restyle"
+    ],
+    [
+     8.1,
+     0.4,
+     "FonduEnchaine"
+    ],
+    [
+     8.1,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     8.1,
+     1.0,
+     "Create"
+    ],
+    [
+     8.4,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     8.4,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     9.3,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     9.3,
+     2.9,
+     "GrowBar"
+    ],
+    [
+     12.2,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     13.2,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     14.3,
+     0.4,
+     "Create+Restyle"
+    ]
+   ]
+  }
+ ]
+}

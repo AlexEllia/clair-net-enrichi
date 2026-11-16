@@ -191,6 +191,30 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
     changent pas.
   Plans d'essai figés : `essai_mise_en_page_distribution_graduations` (refusé
   par le contrôle avec le code d'avant), `essai_mise_en_page_grille_pictos`.
+- **Deux plans dans un segment** (17/11/2026, spécification d'Alexandre :
+  S05, S07, S16 et S21 de l'EP004 ont deux temps, la voix change de sujet en
+  cours de segment). `manim_brief.plans` : exactement deux briefs ordinaires,
+  chacun avec ses `overlay_texte`, le second avec un `declencheur`.
+  - `briefs.sous_plans` découpe le segment en deux plans ordinaires
+    (« Sxxa », « Sxxb »), instants ramenés au début de chaque plan, alignement
+    de la voix décalé de même ; le script garde tous ses `t_rel_s` comptés
+    depuis le début du segment. Le second plan entre sur son déclencheur, lu
+    dans l'alignement réel (`instant_declencheur`), à défaut sur son `t_rel_s`
+    (plan d'essai) ; le fondu enchaîné de 0,4 s (`FONDU_PLANS`) finit sur ce
+    mot, son début calé sur une image. Chaque plan dure 4 s au moins
+    (`PLAN_MIN`).
+  - Rendu (`build.render_segment`) : chaque plan est rendu seul, puis les deux
+    sont enchaînés par `xfade` ; même fichier `Sxx.mp4`, même durée à l'image
+    près : audio, sous-titres, timeline et montage n'en savent rien.
+  - Contrôles : `calendrier_nouveaute`, `collisions` et `fautes_sens`
+    jugent chaque plan comme un plan entier (placement, sens, encarts, titre
+    dans sa première seconde, accents) ; R6 sur la ligne de temps du segment,
+    le fondu comptant comme du nouveau ; déclencheur introuvable dans
+    l'alignement et élément du plan b écrit avant son entrée refusés.
+  - La variété des familles n'est pas jugée par le moteur (c'est la rédaction
+    qui la tient) : la règle « chaque plan compte pour un » est au catalogue.
+  Un segment sans `plans` ne change pas. Plan d'essai figé :
+  `essai_deux_plans` (Grille puis Comparaison à ligne de référence).
 - **Fins de plan : révélations de sens, accent commun, titre dès le début**
   (17/11/2026, décisions d'Alexandre : R6 n'est pas assouplie, pas de
   mouvement artificiel ; Cowork cale une révélation sur la phrase de

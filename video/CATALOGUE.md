@@ -258,6 +258,104 @@ souligne au même mot. Chaque famille a les siennes :
 Plan d'essai figé : `video/outils/essais/accent.json` (une `Grille`, deux
 accents).
 
+### Deux plans dans un segment : `plans`
+
+Quand la voix **change de sujet en cours de segment**, un seul graphique ne
+peut pas suivre : il reste figé sur le premier sujet pendant qu'elle parle du
+second. Le segment porte alors deux plans, sans que rien ne change au script
+parlé : même identifiant, même audio, même `vo_fr`.
+
+```json
+"type_visuel": "manim",
+"manim_brief": {
+  "plans": [
+    { …brief du plan a…, "overlay_texte": [ … ] },
+    { …brief du plan b…, "declencheur": "Et le prix", "t_rel_s": 8.5, "overlay_texte": [ … ] }
+  ]
+}
+```
+
+- `plans` : **exactement deux** briefs (un seul plan s'écrit comme
+  d'habitude, sans `plans`). Chacun est un `manim_brief` ordinaire — sa
+  famille, ses paramètres, ses `revelations`, ses `accents` — et porte en plus
+  **ses propres `overlay_texte`**. À côté de `plans`, `manim_brief` ne
+  contient rien d'autre, et le segment n'a pas d'`overlay_texte` à son niveau.
+- Le second brief porte un **`declencheur`** (et un `t_rel_s` estimé) : le mot
+  de la voix sur lequel le sujet change. Le moteur le lit **dans l'alignement
+  réel** de la voix ; `make check` signale un déclencheur qu'il n'y trouve
+  pas (il doit être écrit comme la voix le dit, mot pour mot).
+- Le passage se fait en **fondu enchaîné de 0,4 s**, qui se termine sur ce
+  mot : le plan b est entièrement là quand la voix le nomme. Chaque plan dure
+  au moins 4 s.
+- **Tous les `t_rel_s` restent comptés depuis le début du segment**, dans les
+  deux briefs, révélations et overlays : le recalage n'a rien de particulier
+  à savoir. Un élément du plan b écrit avant son entrée est refusé.
+- **Chaque plan est jugé comme un plan entier** : placement, sens, encarts
+  (deux au plus par plan), **son titre** (`titre_haut`, dans la première
+  seconde *du plan* : pour le plan b, dans la seconde qui suit le début du
+  fondu, soit `t_rel_s` du second brief − 0,4 s à + 0,6 s), accents (deux au
+  plus par plan), R6 (sur la ligne de temps du segment, le fondu comptant
+  comme du nouveau). Les messages de `make check` nomment « plan a » ou
+  « plan b ».
+- **Pour la variété des familles, chaque plan compte pour un.**
+- Ne découpe pas pour meubler : deux plans, c'est deux sujets. Si la voix ne
+  change pas de sujet, la fin du plan se tient par une révélation de sens
+  (ci-dessus).
+
+**Exemple exemplaire, deux plans** — une fréquence, puis ce qu'elle coûte.
+Plan d'essai figé : `video/outils/essais/deux_plans.json`.
+
+```json
+{
+  "vo_fr": "Placer tout de suite a fini devant sept fois sur dix. Étaler, trois fois sur dix. Retenez le premier chiffre. Et le prix de l'attente ? En étalant, on finit en moyenne avec quatre pour cent de moins. C'est le prix de la tranquillité.",
+  "type_visuel": "manim",
+  "manim_brief": {
+    "plans": [
+      {
+        "composant": "Grille", "taille": 10, "icone": "calendar",
+        "groupes": [
+          {"cases": 7, "valeur": 70.3, "format": "pct", "nature": "gain"},
+          {"cases": 3, "valeur": 29.7, "format": "pct", "nature": "neutre"}
+        ],
+        "accents": [{"element": "groupe_1"}],
+        "revelations": [
+          {"element": "groupe_1", "t_rel_s": 2.0, "declencheur": "sept fois sur dix"},
+          {"element": "groupe_2", "t_rel_s": 4.2, "declencheur": "trois fois sur dix"},
+          {"element": "accent_1", "t_rel_s": 6.3, "declencheur": "le premier chiffre"}
+        ],
+        "overlay_texte": [
+          {"ancre": "titre_haut", "t_rel_s": 0.5, "texte_fr": "Un départ chaque mois depuis 1871"},
+          {"ancre": "groupe_1", "t_rel_s": 2.0, "texte_fr": "Tout de suite devant"},
+          {"ancre": "groupe_2", "t_rel_s": 4.2, "texte_fr": "Étalé devant"}
+        ]
+      },
+      {
+        "composant": "Comparaison",
+        "declencheur": "Et le prix", "t_rel_s": 8.5,
+        "unite": "percent", "reference": {"option": 1}, "donnees": [[2, 4]],
+        "natures": ["neutre", "manque_a_gagner"],
+        "accents": [{"element": "value_1"}],
+        "revelations": [
+          {"element": "value_1", "t_rel_s": 12.2, "declencheur": "quatre pour cent"},
+          {"element": "accent_1", "t_rel_s": 14.3, "declencheur": "le prix de la tranquillité"}
+        ],
+        "overlay_texte": [
+          {"ancre": "titre_haut", "t_rel_s": 8.4, "texte_fr": "Ce que coûte l'étalement"},
+          {"ancre": "option_1", "t_rel_s": 8.4, "texte_fr": "Tout d'un coup"},
+          {"ancre": "option_2", "t_rel_s": 9.0, "texte_fr": "Étalé sur 1 an"},
+          {"ancre": "centre", "t_rel_s": 13.2, "texte_fr": "Capital final, 20 ans après"}
+        ]
+      }
+    ]
+  }
+}
+```
+
+Ce que ça donne : la grille s'allume sur ses deux fréquences, « le premier
+chiffre » l'encadre ; de 8,1 à 8,5 s elle se fond dans le second plan, dont le
+titre et la ligne de référence sont là sur « Et le prix » ; la jauge descend
+vers « quatre pour cent », et la conclusion l'encadre.
+
 ---
 
 ## 2. Comment le temps est compté
