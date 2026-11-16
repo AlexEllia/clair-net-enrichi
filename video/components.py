@@ -865,7 +865,7 @@ def _densify(pts, k=5):
 
 
 def _place_label(lab, dot, placed, xmin, xmax, zone=None, traces=None, own=None,
-                 sources=None, floor=None, ticks=()):
+                 sources=None, floor=None, ticks=(), base=False):
     """Pose l'etiquette d'un point source.
 
     Par defaut en haut a gauche du point - la place validee a l'ecran sur S09.
@@ -884,10 +884,15 @@ def _place_label(lab, dot, placed, xmin, xmax, zone=None, traces=None, own=None,
     (`floor`) ; sous l'axe, elle paie une legere penalite : c'est le dernier
     recours. La moins mauvaise l'emporte ; a egalite, l'ordre ci-dessus, qui
     commence par la place validee.
+
+    `base` : le point est pose sur la ligne de base (regle du 16/11/2026). Sa
+    valeur ne descend jamais sous l'axe, parmi les graduations : elle se pose
+    au-dessus et a droite de son point ; si cette place est prise, a une
+    autre place au-dessus de l'axe.
     """
     if traces is not None:
         return _place_label_scored(lab, dot, placed, zone, traces, own, sources or [], floor,
-                                   ticks)
+                                   ticks, base)
     for vdir, hdir in ((UP, LEFT), (UP, RIGHT), (DOWN, LEFT), (DOWN, RIGHT)):
         lab.next_to(dot, vdir, buff=0.14).shift(hdir * (lab.width / 2 + 0.06))
         if lab.get_left()[0] < xmin or lab.get_right()[0] > xmax:
@@ -933,7 +938,11 @@ LABEL_PAD = 0.10  # ecart minimal entre deux etiquettes de valeur
 TICK_PAD = 0.15   # ... entre une etiquette et une graduation de l'axe x
 
 
-def _place_label_scored(lab, dot, placed, zone, traces, own, sources, floor=None, ticks=()):
+BASE_TOL = 1e-6       # un point est « sur la ligne de base » a cette hauteur pres
+
+
+def _place_label_scored(lab, dot, placed, zone, traces, own, sources, floor=None, ticks=(),
+                        base=False):
     xmin, xmax, ymin, ymax = zone
     corners = ((UP, LEFT), (UP, RIGHT), (DOWN, LEFT), (DOWN, RIGHT))
     half = lab.width / 2 + 0.06
@@ -977,6 +986,9 @@ def _place_label_scored(lab, dot, placed, zone, traces, own, sources, floor=None
             continue
         if floor is not None and b - 0.03 < floor < t + 0.03:
             continue
+        if base and floor is not None and t < floor:
+            # Point sur la ligne de base : jamais sous l'axe.
+            continue
         pad = 0.06
         if any(l - pad <= p[0] <= r + pad and b - pad <= p[1] <= t + pad for p in sources):
             continue
@@ -988,10 +1000,15 @@ def _place_label_scored(lab, dot, placed, zone, traces, own, sources, floor=None
         cost += lift * 6 + {"coin": 0.0, "glisse": 0.5, "cote": 1.0, "rappel": 20.0}[kind]
         if floor is not None and t < floor:
             cost += 2.0
+        if base and kind == "coin" and vdir is UP and hdir is RIGHT and lift == 0.0:
+            # Sa place : au-dessus et a droite, des qu'elle est libre, meme
+            # si la courbe passe dessous.
+            best = (cost, kind, vdir, hdir, lift)
+            break
         if best is None or cost < best[0] - 1e-9:
             best = (cost, kind, vdir, hdir, lift)
     if best is None:
-        lab.next_to(dot, UP, buff=0.14).shift(LEFT * (lab.width / 2 + 0.06))
+        lab.next_to(dot, UP, buff=0.14).shift((RIGHT if base else LEFT) * (lab.width / 2 + 0.06))
         return lab
     _, kind, vdir, hdir, lift = best
     _pose(lab, dot, kind, vdir, hdir, lift)
@@ -1186,6 +1203,7 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
                 sources.append(fr.pt(x, y))
     for i, tr in enumerate(traces):
         cues.courbes[i] = _densify(tr)
+    cues.ligne_de_base = float(fr.py(ylo))
     # Une etiquette peut descendre sous l'axe horizontal, dans la rangee des
     # graduations, sans en couvrir aucune : c'est la seule place des valeurs
     # coincees entre l'axe et une autre courbe (55 EUR sous les 2 400 EUR).
@@ -1214,7 +1232,8 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
             lab = txt(nombres.fmt(y, yfmt), SZ_LABEL, cols[i], weight=SEMIBOLD)
             _place_label(lab, dot, placed, zone[0], zone[1], zone=zone,
                          traces=traces, own=i, sources=sources, floor=fr.py(ylo),
-                         ticks=list(xticks))
+                         ticks=list(xticks),
+                         base=abs(fr.pt(x, y)[1] - fr.py(ylo)) <= BASE_TOL)
             # Une valeur identique a celle du point precedent de la meme serie
             # ne se reecrit pas - le point seul apparait -, sauf si la voix
             # l'enonce (partie nommee par le script). Une ligne plate de

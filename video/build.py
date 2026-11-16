@@ -930,10 +930,16 @@ def collisions(seg, dur, ep_dir=None, strict=True):
                       f"{ETIQUETTES_MAX}) : nomme les points que la voix enonce "
                       f"(`series_k_point_j`), les autres ne feront que tracer")
     etiquettes = getattr(cues, "etiquettes", [])
+    base = getattr(cues, "ligne_de_base", None)
     for lab, cible, serie, nom in etiquettes:
         b = _boite(lab)
         texte = getattr(lab, "text", "?")
         d = dist_boites(b, cible)
+        # Point pose sur la ligne de base : sa valeur ne descend jamais sous
+        # l'axe, parmi les graduations (regle du 16/11/2026).
+        if base is not None and abs(cible[2] - base) <= 1e-6 and b[3] < base:
+            fautes.append(f"etiquette « {texte} » de {nom} sous l'axe, parmi les graduations, "
+                          f"alors que son point est sur la ligne de base")
         if d > ANCRE_MAX + 1e-6:
             fautes.append(f"etiquette « {texte} » de {nom} a {d:.2f} de son point "
                           f"(maximum {ANCRE_MAX:.2f})")

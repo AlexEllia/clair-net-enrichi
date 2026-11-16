@@ -191,6 +191,20 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
     changent pas.
   Plans d'essai figés : `essai_mise_en_page_distribution_graduations` (refusé
   par le contrôle avec le code d'avant), `essai_mise_en_page_grille_pictos`.
+- **LineChart : valeur d'un point posé sur la ligne de base** (16/11/2026,
+  demande d'Alexandre ; `base` dans `_place_label_scored`, components.py) :
+  elle ne descend jamais sous l'axe, parmi les graduations. Elle se pose
+  au-dessus et à droite de son point dès que cette place est libre (même si
+  la courbe passe dessous), sinon à une autre place au-dessus de l'axe. « Sur
+  la ligne de base » : la valeur est la borne basse de l'axe (`BASE_TOL`).
+  `make check` refuse une telle étiquette sous l'axe (`cues.ligne_de_base`,
+  `collisions`), quel que soit l'âge du script. *Pourquoi* : EP004 S05 plan b,
+  « 1 $ » (1871, borne basse de l'axe log) se lisait comme une graduation de
+  l'axe des années. Un point au-dessus de la ligne de base garde ses places,
+  dessous compris (EP001c S27, « 55 € » à 0,01 au-dessus de l'axe : inchangé).
+  Effet sur l'EP004 : S05 plan b seul. `essai_linechart_log` passe en v2 ;
+  « 3,34 $ », dont la place en haut à gauche est prise par « 1 $ », passe à
+  droite de son point, où la courbe le frôle. Le catalogue ne change pas.
 - **LineChart : axe logarithmique** (18/11/2026, demande d'Alexandre pour le
   plan b de l'EP004 S05, l'indice Shiller depuis 1871). `"echelle_y": "log"`
   (`ECHELLES_Y`, `_line_points` ; `plotting.FrameLog`, le même cadre dont
