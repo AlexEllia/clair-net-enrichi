@@ -425,7 +425,9 @@ def add_overlays(seg, cues, visual):
                 t = txt(o["texte_fr"], SZ_BODY, cues.anchor_colors.get(anchor, INK),
                         weight=SEMIBOLD)
                 _fit(t, cues.anchor_widths.get(anchor, 4.0))
-                t.move_to([x, y, 0])
+                # Centre sur son ancre ; cale sur un bord quand le composant le
+                # dit (nom d'une ligne de reference, au bout gauche de la ligne).
+                t.move_to([x, y, 0], aligned_edge=cues.anchor_align.get(anchor, ORIGIN))
             elif anchor in cues.anchor_align:
                 # Ancre posee telle quelle par le composant (Erosion : capital,
                 # perte_k, cumul ; Cascade : depart, marche_k, arrivee), calee

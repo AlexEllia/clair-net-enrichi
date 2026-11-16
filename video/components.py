@@ -2568,6 +2568,9 @@ def Comparaison(seg, cues):
                      "perte", "manque_a_gagner", "neutre" (sa couleur) ; la
                      nature l'emporte sur `couleurs`. Un manque a gagner a
                      ses jauges hachurees et ses pictogrammes en pointilles.
+      reference      {"option": k, "echelle": e} : l'option k n'est pas une
+                     jauge mais une ligne de reference, et l'autre option une
+                     jauge suspendue dessous (voir _comparaison_reference)
     Parties : value_g, pictos_k, suite (traces), highlight, gap (surgissements).
     Ancres d'overlay : option_1, option_2 (nom de chaque option).
     """
@@ -2581,6 +2584,8 @@ def Comparaison(seg, cues):
     rows = [(int(r[0]), float(r[1])) for r in mb.get("donnees") or []]
     if not rows or any(o not in (1, 2) for o, _ in rows):
         raise SystemExit(f"{sid} : Comparaison attend donnees [[option, valeur]], option 1 ou 2")
+    if mb.get("reference"):
+        return _comparaison_reference(seg, cues, fmt, rows)
     if any(v < 0 for _, v in rows):
         raise SystemExit(f"{sid} : Comparaison ne trace pas encore de valeur negative")
     cols = [_PALETTE.get(c, c) for c in mb.get("couleurs", [])]
@@ -2812,6 +2817,118 @@ def Comparaison(seg, cues):
                *[FadeIn(m) for m in gap_m[2:]], rt=PUNCTUAL_MAX)
     return VGroup(*[VGroup(r, l) for r, l, _ in gauges.values()],
                   *[g for g, _ in pic_groups.values()])
+
+
+REFERENCE_PART = 0.6     # sans `echelle`, la jauge suspendue occupe 0,6 de la hauteur libre
+REFERENCE_NATURES = ("manque_a_gagner", "perte")
+
+
+def _comparaison_reference(seg, cues, fmt, rows):
+    """Comparaison a ligne de reference : un ecart avec une autre option.
+
+    `reference: {"option": k}` - l'option k est le repere : une ligne
+    horizontale en pointilles neutres sur toute la largeur du graphique, son
+    nom au bout gauche (overlay option_k). Ce n'est pas une valeur : elle n'a
+    pas de ligne dans `donnees`, ne demande pas de mot, et se trace des le
+    debut du plan, toujours avant la jauge.
+    L'autre option est une jauge suspendue sous la ligne, de hauteur
+    proportionnelle a l'ecart (`donnees` : sa seule ligne). Nature
+    "manque_a_gagner" : MANQUE hachure, montant tel que le brief l'ecrit
+    (4 : « 4 % » ; -4 : « −4 % ») ; "perte" : NEG, signe moins ecrit par le
+    moteur. Aucune autre nature (make check). Ni axe, ni graduation, ni zero.
+    `echelle` (facultatif) : l'ecart qui occuperait toute la hauteur libre,
+    pour que deux plans se comparent ; sans elle, la jauge en occupe 0,6.
+    Parties : value_1 (trace, 6 s au plus, montant sur son mot).
+    Ancres d'overlay : option_k (nom de la reference, au bout gauche de la
+    ligne), option de l'autre (son nom, sous le montant).
+    """
+    import nombres
+    sid = seg.get("id", "?")
+    mb = seg["manim_brief"]
+    ref = mb["reference"]
+    k = int(ref.get("option", 0)) if isinstance(ref, dict) else 0
+    if k not in (1, 2):
+        raise SystemExit(f"{sid} : Comparaison, `reference` attend {{\"option\": 1}} ou 2")
+    for cle in ("pictogrammes", "ecart", "suite", "mise_en_avant"):
+        if mb.get(cle):
+            raise SystemExit(f"{sid} : Comparaison, `reference` ne se combine pas avec `{cle}`")
+    autre = 3 - k
+    if len(rows) != 1 or rows[0][0] != autre or abs(rows[0][1]) < 1e-12:
+        raise SystemExit(f"{sid} : Comparaison a `reference` : `donnees` porte une seule ligne, "
+                         f"l'ecart de l'option {autre} ([[{autre}, valeur]], valeur non nulle) ; "
+                         f"la reference est un repere, pas une valeur")
+    v = rows[0][1]
+    natures = mb.get("natures") or ["neutre", "neutre"]
+    if len(natures) != 2 or any(n not in NATURES for n in natures):
+        raise SystemExit(f"{sid} : Comparaison, `natures` : deux valeurs parmi {', '.join(NATURES)}")
+    nat = natures[autre - 1]
+    cols = [_PALETTE.get(c, c) for c in mb.get("couleurs", [])]
+    cols += [CONTRIB, INTEREST][len(cols):]
+    col = COULEUR_SENS.get(nat, cols[autre - 1])
+
+    # --- geometrie : la ligne en haut, la jauge qui en descend ---------------
+    encarts = reserve_encarts(cues)
+    gauche, droite = (-6.60, GRAPHE_DROITE) if encarts else (X_LEFT + 0.4, X_RIGHT - 0.4)
+    y_ref = 1.25
+    y0 = -2.45 if "bas" in cues.anchors else -2.70
+    ligne = DashedLine([gauche, y_ref, 0], [droite, y_ref, 0], dash_length=0.14,
+                       stroke_color=INK_SOFT, stroke_width=2.6)
+    cues.point(f"option_{k}", (gauche, y_ref + 0.40))
+    cues.anchor_align[f"option_{k}"] = LEFT
+    cues.anchor_colors[f"option_{k}"] = INK_SOFT
+    cues.anchor_widths[f"option_{k}"] = min(5.2, droite - gauche)
+    cues.anchor_times[f"option_{k}"] = 0.0
+
+    libre = (y_ref - y0) - 1.05          # sous la jauge : son montant, puis son nom
+    echelle = float(ref.get("echelle") or abs(v) / REFERENCE_PART)
+    if abs(v) > echelle + 1e-9:
+        raise SystemExit(f"{sid} : Comparaison, reference.echelle ({echelle:g}) plus petite que "
+                         f"l'ecart ({abs(v):g})")
+    h = max(libre * abs(v) / echelle, 0.03)
+    x = (gauche + droite) / 2
+    rect = Rectangle(width=1.5, height=h, fill_color=col, fill_opacity=0.92, stroke_width=0)
+    rect.move_to([x, y_ref, 0], aligned_edge=UP)
+    if nat == "manque_a_gagner":
+        rect = Hachure.sur(rect, MANQUE)
+    # Un manque a gagner s'ecrit tel que le brief le donne ; une perte porte
+    # toujours son signe moins.
+    ecrit = (SIGNE_SENS["perte"] + nombres.fmt(abs(v), fmt)) if nat == "perte" \
+        else moins(nombres.fmt(v, fmt))
+    lab = txt(ecrit, SZ_BODY, INK, weight=SEMIBOLD)
+    lab.next_to(rect, DOWN, buff=0.14)
+    lab.nom = f"montant de l'ecart « {lab.text} »"
+    key = "value_1"
+    cues.etiquette(lab, (rect.get_left()[0], rect.get_right()[0],
+                         rect.get_bottom()[1], rect.get_top()[1]), key, key)
+    cues.point(key, rect.get_edge_center(DOWN))
+    cues.point(f"option_{autre}", (x, lab.get_bottom()[1] - 0.42))
+    cues.anchor_colors[f"option_{autre}"] = col
+    cues.anchor_widths[f"option_{autre}"] = min(5.2, droite - gauche - 0.4)
+    if nat != "neutre":
+        cues.sens.append({"nom": key, "nature": nat, "objets": [rect], "montant": None,
+                          "motif": [rect] if nat == "manque_a_gagner" else []})
+
+    # --- calendrier : la ligne d'abord, puis la jauge vers son mot -----------
+    rev = Reveal(seg, cues, [key], extras=[], t0=1.6, rt=PUNCTUAL_MAX, margin=0.6)
+    _warn_unnamed(sid, [key], rev)
+    times = _named_times([key], rev)
+    tracks = {key: [(1.0, times[key])]}
+    frame_end = min(_frame_end(tracks), PUNCTUAL_MAX)
+    runs, first_motion = _plan_runs(sid, tracks, frame_end, [], CONTINUOUS_MAX, cues.dur)
+    _build_frame(cues, ligne, [], [], frame_end)
+    for kf in runs.get(key) or []:
+        t0, t1 = kf[0][0], kf[-1][0]
+        if h < VISIBLE_H:
+            t0 = max(t0, t1 - MIN_LEAD)
+        first_motion = t0
+        rev.times[key] = t1
+        # Sans declencheur, le nom de l'option arrive avec sa jauge.
+        cues.anchor_times[f"option_{autre}"] = t0
+        cues.at(t0, GrowBar(rect, UP), rt=t1 - t0)
+        cues.at(t1, FadeIn(lab, scale=0.6), rt=LABEL_RT)
+    cues.meta["frame_end"] = frame_end
+    cues.meta["first_data"] = first_motion
+    return VGroup(rect, lab)
 
 
 # =============================================================================

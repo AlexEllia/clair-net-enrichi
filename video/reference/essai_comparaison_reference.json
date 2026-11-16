@@ -1,0 +1,199 @@
+{
+ "statut": "PLAN D'ESSAI VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
+ "courante": 1,
+ "versions": [
+  {
+   "version": 1,
+   "validee_le": "16/11/2026",
+   "motif": "Specification d'Alexandre du 16/11/2026 (pas encore vue a l'ecran par lui) : Comparaison a ligne de reference, brief de l'EP004 S07",
+   "regle_cadre": "v2",
+   "regle_comparaison": "v2",
+   "regle_barres": "v3-phrase",
+   "vue_a_l_ecran": true,
+   "duree_s": 21.53,
+   "images": 646,
+   "pixels": {
+    "largeur": 960,
+    "hauteur": 540,
+    "md5": "16aefd4dd51e3a2948d5fc81bae5fcef"
+   },
+   "segment": {
+    "id": "essai_comparaison_reference",
+    "role": "essai",
+    "type_visuel": "manim",
+    "manim_brief": {
+     "composant": "Comparaison",
+     "unite": "percent",
+     "reference": {
+      "option": 1
+     },
+     "donnees": [
+      [
+       2,
+       4
+      ]
+     ],
+     "natures": [
+      "neutre",
+      "manque_a_gagner"
+     ],
+     "revelations": [
+      {
+       "element": "value_1",
+       "t_rel_s": 19.46
+      }
+     ]
+    },
+    "overlay_texte": [
+     {
+      "ancre": "titre_haut",
+      "t_rel_s": 0.5,
+      "texte_fr": "Pourquoi un tel écart ?"
+     },
+     {
+      "ancre": "option_1",
+      "t_rel_s": 1.0,
+      "texte_fr": "Tout d'un coup"
+     },
+     {
+      "ancre": "option_2",
+      "t_rel_s": 3.64,
+      "texte_fr": "Étalé sur 1 an"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 4.59,
+      "texte_fr": "Une partie attend sur le côté"
+     },
+     {
+      "ancre": "bas",
+      "t_rel_s": 5.95,
+      "texte_fr": "Calcul Clair net enrichi, données Shiller (Yale), S&P 500 dividendes réinvestis, 1871-2023 · Performances passées : pas un indicateur fiable des résultats futurs"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 8.58,
+      "texte_fr": "5,5 mois en moyenne"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 9.39,
+      "texte_fr": "Avant d'être investi"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 12.43,
+      "texte_fr": "La Bourse monte, en moyenne"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 15.32,
+      "texte_fr": "Une partie de la hausse ratée"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 17.18,
+      "texte_fr": "Au final"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 20.24,
+      "texte_fr": "Coût en % du capital"
+     }
+    ]
+   },
+   "calendrier": [
+    [
+     0.0,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     0.0,
+     1.5,
+     "Create"
+    ],
+    [
+     0.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     4.59,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     5.95,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     8.58,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     9.39,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     12.08,
+     0.35,
+     "Efface"
+    ],
+    [
+     12.43,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     13.46,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     13.46,
+     6.0,
+     "GrowBar"
+    ],
+    [
+     14.97,
+     0.35,
+     "Efface"
+    ],
+    [
+     15.32,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     16.83,
+     0.35,
+     "Efface"
+    ],
+    [
+     17.18,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     19.46,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     19.89,
+     0.35,
+     "Efface"
+    ],
+    [
+     20.24,
+     0.6,
+     "FadeIn"
+    ]
+   ]
+  }
+ ]
+}

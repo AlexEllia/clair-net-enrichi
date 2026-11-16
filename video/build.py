@@ -890,6 +890,46 @@ def fautes_sens(seg, dur, ep_dir=None, strict=True):
             v = ln.get("montant")
             if v is not None and float(v) < 0 and nature == "gain":
                 fautes.append(f"link_{i} : gain de montant negatif ({v})")
+    comp = mb.get("composant")
+    # Comparaison a ligne de reference : la reference est neutre, la jauge
+    # suspendue dit un manque a gagner ou une perte, rien d'autre.
+    if comp == "Comparaison" and mb.get("reference"):
+        from components import REFERENCE_NATURES
+        k = mb["reference"].get("option") if isinstance(mb["reference"], dict) else None
+        nats = mb.get("natures") or ["neutre", "neutre"]
+        if k in (1, 2) and len(nats) == 2:
+            if nats[k - 1] != "neutre":
+                fautes.append(f"option_{k} : la reference est un repere neutre, pas "
+                              f"{nats[k - 1]!r} - ecris \"neutre\" a son rang dans `natures`")
+            if nats[2 - k] not in REFERENCE_NATURES:
+                fautes.append(f"option_{3 - k} : sous une ligne de reference, la jauge dit un "
+                              f"manque_a_gagner ou une perte, pas {nats[2 - k]!r}")
+    # Toutes familles : jamais une valeur a 0 a cote d'un manque a gagner. Une
+    # colonne vide a cote d'une jauge fait lire que l'autre option rapporte
+    # plus (EP004 S07 et S22, plan du 16/11/2026) : la reference est une ligne.
+    zeros = []
+    if comp == "Comparaison" and not mb.get("reference"):
+        nats = mb.get("natures") or []
+        if "manque_a_gagner" in nats:
+            zeros = [f"value_{g + 1}" for g, r in enumerate(mb.get("donnees") or [])
+                     if float(r[1]) == 0 and nats[int(r[0]) - 1] != "manque_a_gagner"]
+    elif comp == "Bars" and "manque_a_gagner" in (mb.get("natures") or []):
+        nats, simple = mb["natures"], mb.get("mode") == "simple"
+        for g, r in enumerate(mb.get("donnees") or []):
+            for s_i, val in enumerate(r[1:]):
+                i = g if simple else s_i
+                nat = nats[i] if i < len(nats) else None
+                if float(val) == 0 and nat != "manque_a_gagner":
+                    zeros.append(f"bar_{g + 1}" if simple else f"bar_{g + 1}_{s_i + 1}")
+    elif comp == "Grille":
+        gr = mb.get("groupes") or []
+        if any(g.get("nature") == "manque_a_gagner" for g in gr):
+            zeros = [f"groupe_{i + 1}" for i, g in enumerate(gr)
+                     if g.get("cases") == 0 and g.get("nature") != "manque_a_gagner"]
+    for nom in zeros:
+        fautes.append(f"{nom} : valeur a 0 a cote d'un manque a gagner - une colonne a 0 fait "
+                      f"lire que l'autre option rapporte plus ; la reference est une ligne "
+                      f"(Comparaison, `reference`)")
     cues = composer(seg, dur, ep_dir)
     for e in cues.sens:
         nature, nom = e["nature"], e["nom"]

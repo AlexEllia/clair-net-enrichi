@@ -155,6 +155,7 @@ orange se distingue de l'ambre et du rouge d'abord par sa luminance, et sous
 deutéranopie il se rapproche de `NEG` — le motif fait la différence.
 
 Familles et nature : `Flux` (`nature` d'un lien : gain, perte ou neutre), `Bars` (`natures`),
+`Comparaison` à ligne de référence (`reference` : manque à gagner ou perte),
 `Comparaison` (`natures`), `Grille` (`nature` d'un groupe), `Distribution`
 (`sous_seuil`), `Cascade` (`nature` d'une marche). `Erosion` est réservée aux
 pertes réelles : un manque à gagner n'y entre pas. N'écris ni la couleur ni le
@@ -169,6 +170,16 @@ reçue — le contraire de ce que dit la voix (EP004 S07 et S22, plan du
 options côte à côte), `Bars`, `Cascade` (la marche qui manque), `Grille` ou
 `Distribution`. `make check` refuse `"nature": "manque_a_gagner"` sur un
 lien, quel que soit l'âge du script.
+
+**Jamais une colonne à 0 à côté d'un manque à gagner : la référence est une
+ligne.** Pour dire « étaler coûte 4 % par rapport à tout placer d'un coup »,
+n'écris pas l'option de référence comme une valeur à 0 : une colonne vide à
+côté d'une jauge à 4 % fait lire qu'étaler rapporte **plus**. L'option à
+laquelle on se compare est un **repère** : une `Comparaison` à ligne de
+référence (`"reference": {"option": k}`, voir sa fiche) la trace en pointillés
+neutres et suspend l'écart dessous. `make check` refuse, dans toute famille
+(`Comparaison`, `Bars`, `Grille`), une valeur à 0 placée à côté d'une valeur
+en `"manque_a_gagner"`.
 
 **`make check` refuse** un élément dont le dessin contredit sa nature : une
 perte hors de `NEG` ou sans son signe moins, un gain hors de l'ambre ou sans
@@ -762,6 +773,7 @@ voulu. Les valeurs sont positives ou nulles.
 | `pictogrammes` | non | `[{"option": k, "icone": nom, "nombre": n}]` | `n` pictogrammes (1 à 40) qui apparaissent un à un dans la colonne k, à côté de ses jauges. `n` est un nombre que la voix énonce et que les sources portent (R3) : « douze mois » donne 12. `icone` : un nom de la liste ci-dessous. |
 | `ecart` | non | `{"entre": [g1, g2], "valeur": v, "format": f}` | Pointillé à la hauteur de la plus petite des jauges `g1` et `g2` (rangs dans `donnees`) et accolade le long de la plus grande. `valeur` est facultative ; si elle est écrite, elle vient des sources (R3). `format` : comme `LineChart`. |
 | `mise_en_avant` | non | `{"option": k}` | Encadre l'option k et estompe l'autre. |
+| `reference` | non | `{"option": k}` ou `{"option": k, "echelle": e}` | **Comparaison à ligne de référence** : l'option k n'est plus une colonne mais une ligne horizontale en pointillés, et l'autre option une jauge suspendue dessous. Change la forme de `donnees` et les paramètres admis : voir « Ligne de référence » ci-dessous. |
 | `suite` | non | `{"option": k}` | Une bande ouverte au-dessus de la dernière jauge de k, en dégradé, sans borne ni valeur : ce qui viendra et qu'on ne chiffre pas encore. Des particules y montent jusqu'à la fin du plan. |
 
 **Éléments adressables dans `revelations`** :
@@ -774,6 +786,77 @@ voulu. Les valeurs sont positives ou nulles.
 | `gap` | surgissement (1,5 s) | Exige `ecart`. |
 | `highlight` | surgissement (1,5 s) | Exige `mise_en_avant`. |
 | ~~`frame`~~ | décor | Ne pas écrire (R8). Les deux lignes de base et le séparateur se construisent seuls ; si la première donnée tarde, toute la structure (voir ci-dessous). |
+
+**Ligne de référence : un écart avec une autre option** (`reference`, règle
+du 16/11/2026). Quand la voix dit ce qu'une option **coûte par rapport à
+l'autre** — un manque à gagner, ou une perte mesurée contre un repère —, la
+référence n'est pas une valeur : c'est le niveau auquel on se compare.
+
+- `"reference": {"option": k}` — l'option k devient une **ligne horizontale en
+  pointillés neutres**, sur toute la largeur du graphique. Son nom s'écrit au
+  bout gauche de la ligne, par l'overlay `option_k`. C'est un repère : elle se
+  trace dès le début du plan (1,5 s), toujours avant la jauge, **sans
+  révélation ni mot déclencheur**. Écris son nom sans `declencheur` : il
+  arrive avec la ligne.
+- **`donnees` ne porte qu'une ligne** : `[[autre option, écart]]`. La
+  référence n'a pas de valeur ; lui en écrire une (`[k, 0]`) arrête le build.
+- L'autre option est une **jauge suspendue sous la ligne**, de hauteur
+  proportionnelle à l'écart, son montant écrit dessous et son nom (overlay
+  `option_` de l'autre) sous le montant. Sans `declencheur`, ce nom arrive
+  quand la jauge commence à descendre.
+- `natures` : `"neutre"` au rang de la référence, et pour l'autre
+  **`"manque_a_gagner"`** (orange `MANQUE` hachuré, montant **tel que tu
+  l'écris** : `4` donne « 4 % », `-4` donne « −4 % » — n'écris le signe que si
+  la voix le dit) ou **`"perte"`** (`NEG`, signe moins écrit par le moteur ;
+  écris la valeur positive). Aucune autre nature : `make check` refuse une
+  référence qui n'est pas neutre et une jauge en `"gain"` ou `"neutre"`.
+- `echelle` (facultatif) : l'écart qui occuperait toute la hauteur libre.
+  Sans elle, la jauge occupe 0,6 de cette hauteur, quelle que soit sa valeur :
+  deux plans ne se comparent donc pas à l'œil. Donne la même `echelle` à deux
+  plans qui portent la même grandeur, jamais à deux grandeurs différentes
+  (4 % du capital final et 0,2 % de rendement par an ne se comparent pas).
+- **À l'écran : ni axe gradué, ni numéro de catégorie, ni « 0 % ».**
+- Un seul élément dans `revelations` : **`value_1`**, la jauge, sur le mot qui
+  énonce l'écart (tracé, 6 s au plus). `pictogrammes`, `ecart`, `suite` et
+  `mise_en_avant` ne se combinent pas avec `reference`.
+
+**Exemple exemplaire, ligne de référence** — ce qu'étaler coûte par rapport à
+tout placer d'un coup. **C'est celui-ci qu'il faut imiter pour un manque à
+gagner.** La référence est nommée dès la première image ; l'écart descend sur
+son chiffre, sans signe parce que la voix dit « coûte quatre pour cent » ; les
+encarts tiennent l'écran en attendant. Plan d'essai figé :
+`video/outils/essais/comparaison_reference.json`.
+
+```json
+{
+  "vo_fr": "Pourquoi un tel écart ? Parce qu'en étalant, une partie de l'argent attend sur le côté. […] Au final, ça coûte environ quatre pour cent du capital.",
+  "type_visuel": "manim",
+  "manim_brief": {
+    "composant": "Comparaison",
+    "unite": "percent",
+    "reference": {"option": 1},
+    "donnees": [[2, 4]],
+    "natures": ["neutre", "manque_a_gagner"],
+    "revelations": [
+      {"element": "value_1", "t_rel_s": 19.46, "declencheur": "quatre pour cent"}
+    ]
+  },
+  "overlay_texte": [
+    {"ancre": "titre_haut", "t_rel_s": 0.5, "texte_fr": "Pourquoi un tel écart ?", "declencheur": "Pourquoi un tel écart"},
+    {"ancre": "option_1", "t_rel_s": 1.0, "texte_fr": "Tout d'un coup"},
+    {"ancre": "option_2", "t_rel_s": 13.5, "texte_fr": "Étalé sur 1 an"},
+    {"ancre": "centre", "t_rel_s": 4.59, "texte_fr": "Une partie attend sur le côté", "declencheur": "attend sur le côté"},
+    {"ancre": "centre", "t_rel_s": 8.58, "texte_fr": "5,5 mois en moyenne", "declencheur": "cinq mois et demi"}
+  ]
+}
+```
+
+Ce que ça donne : la ligne « Tout d'un coup » se trace dans la première
+seconde et demie ; les encarts se succèdent ; à 13,5 s la jauge hachurée
+commence à descendre sous la ligne, « Étalé sur 1 an » apparaît dessous, et
+« 4 % » s'écrit sur « quatre pour cent ». **Ne fais jamais** de la référence
+une colonne à 0 (`"donnees": [[1, 0], [2, 4]]` sans `reference`) : `make
+check` le refuse (R10).
 
 **Comment les deux options se partagent le temps** : comme les barres, un
 seul tracé bouge à la fois, et il commence à monter pendant que la voix parle
