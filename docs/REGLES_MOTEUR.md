@@ -191,6 +191,25 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
     changent pas.
   Plans d'essai figés : `essai_mise_en_page_distribution_graduations` (refusé
   par le contrôle avec le code d'avant), `essai_mise_en_page_grille_pictos`.
+- **Comparaison à ligne de référence** (16/11/2026, spécification
+  d'Alexandre ; `_comparaison_reference`, components.py) : `"reference":
+  {"option": k}` — l'option k est une ligne horizontale en pointillés neutres
+  sur toute la largeur, nommée au bout gauche (`option_k`, calé à gauche),
+  tracée dès le début (1,5 s), sans révélation ; l'autre option est une jauge
+  suspendue dessous, de hauteur proportionnelle à l'écart (0,6 de la hauteur
+  libre, ou `echelle`), `manque_a_gagner` (MANQUE hachuré, montant tel que le
+  brief l'écrit) ou `perte` (NEG, signe moins). `donnees` : une seule ligne.
+  Ni axe, ni graduation, ni zéro. Sans déclencheur, le nom de la référence
+  arrive avec la ligne, celui de l'autre option avec sa jauge. Contrôle de
+  sens (`fautes_sens`, quel que soit l'âge du script) : référence non neutre
+  refusée ; jauge d'une autre nature refusée ; couleur et motif vérifiés ; et,
+  **dans toute famille** (Comparaison, Bars, Grille), une valeur à 0 à côté
+  d'un manque à gagner est refusée. *Pourquoi* : EP004 S07 et S22 réécrits en
+  Comparaison avec « Tout d'un coup » en colonne à 0 — une colonne vide à côté
+  d'une jauge à 4 % fait lire qu'étaler rapporte plus. Une Comparaison sans
+  `reference` ne change pas (EP004 S12 et S13 re-rendus à l'identique, au
+  pixel près). Plan d'essai figé : `essai_comparaison_reference` (brief de
+  S07).
 - **Montant d'un lien de Flux, cases d'une Grille** (16/11/2026, deux règles
   ciblées demandées par Alexandre, là où le contrôle général ne juge pas un
   texte contre un élément graphique) : le montant d'un lien ne croise jamais
