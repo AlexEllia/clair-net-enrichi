@@ -280,7 +280,7 @@ unique quand leur instant dépend de la voix.
 | `axe_y` | à gauche de l'axe vertical, pivoté de 90° | titre de l'axe vertical |
 | `legende` | bandeau sous le titre | une entrée par série, **dans l'ordre des séries** : la 1re légende prend la couleur de la série 1, etc. |
 | `bas` | pied d'image | source, mention |
-| `centre` | encart dans la colonne de droite, réservée | propos court, 18 caractères par ligne ; voir « Les encarts » ci-dessous |
+| `centre` | encart dans la colonne de droite, réservée | **deux au plus** dans un plan `manim`, qui ne répètent pas la voix ; 18 caractères par ligne ; voir « Les encarts » ci-dessous |
 | `option_1`, `option_2` | au-dessus de chaque colonne de `Comparaison` | nom de l'option, dans sa couleur |
 | `noeud_k` | sous le k-ième nœud de `Flux` ; à défaut de place, au-dessus, à droite ou à gauche | nom du nœud |
 | `lien_k` | le long du k-ième lien de `Flux`, d'un côté ou de l'autre | nom du flux, dans sa couleur |
@@ -307,14 +307,41 @@ reste au-dessus du graphique, et les nœuds de `Flux` se resserrent vers la
 gauche si l'un d'eux y débordait (un schéma qui tient déjà à gauche de
 x = 1,7 n'est pas touché). Un plan sans encart garde toute la largeur.
 
-La colonne a trois emplacements, de haut en bas. Écris autant d'encarts que
-le propos en demande : quand un quatrième arrive, le plus ancien sort en
-fondu (0,35 s, juste avant) et le nouveau prend sa place ; le cinquième
-remplace le deuxième, et ainsi de suite. Trois encarts au plus sont donc à
-l'écran, et un encart reste lisible tant que trois autres ne l'ont pas
-suivi : laisse-lui le temps d'être lu avant le troisième suivant.
+**Dans un plan `manim` : deux encarts au plus, qui restent, et qui ne
+répètent pas la voix** (règle du 16/11/2026).
 
-**En typographie (`typo_cinetique`), même règle.** Les textes `centre` sont
+- **Deux encarts `centre` au plus par plan**, titre et source non compris.
+  `make check` refuse le troisième.
+- **Rien ne tourne** : un encart posé reste affiché jusqu'à la fin du plan.
+  Le titre (`titre_haut`, un seul par plan) aussi : pose-le à ~0,6 s, il
+  reste tout le plan.
+- **Un encart ne reprend pas la voix.** `make check` refuse un encart qui
+  contient **trois mots consécutifs** du `vo_fr` du segment (sans tenir compte
+  de la casse, de la ponctuation ni des nombres) : « Une partie attend sur le
+  côté » sous une voix qui dit « une partie de l'argent attend sur le côté »
+  est refusé pour « attend sur le ». La colonne d'encarts n'est pas un second
+  sous-titre : des fragments de phrase qui défilent à côté du graphique se
+  lisent comme un doublon raté des sous-titres. Un encart dit **ce que la
+  voix ne dit pas** : une hypothèse (« Dividendes réinvestis »), une unité ou
+  un périmètre (« Capital final, 20 ans après »), une réserve (« Moyenne sur
+  1 590 essais »). S'il n'y a rien de tel à dire, n'écris pas d'encart.
+- **Ce n'est plus aux encarts de tenir l'écran** (R6). C'est le graphique qui
+  vit : un tracé en cours (courbe, barre ou jauge qui avance jusqu'à 6 s avant
+  son mot, points qui tombent, argent qui circule) compte comme du nouveau à
+  chaque image, au calendrier comme en pixels. Si un plan reste figé plus de
+  4 s sans encart, il lui manque une révélation, ou la famille n'est pas la
+  bonne : ne comble pas avec du texte.
+
+Les noms que portent les éléments du graphique (`option_k`, `noeud_k`,
+`lien_k`, `axe_x`, `source_g`…) ne sont pas des encarts : ils nomment ce que
+l'image montre, et reprennent naturellement les mots de la voix.
+
+Pour un script écrit avant cette règle, `make check` ne fait que signaler ;
+le moteur rend encore ses encarts comme avant (trois emplacements, le
+quatrième remplace le plus ancien), pour que les épisodes publiés se
+re-rendent à l'identique. N'écris plus de plan ainsi.
+
+**En typographie (`typo_cinetique`), rien ne change.** Les textes `centre` sont
 écrits en grand au milieu de l'image, sur trois emplacements espacés de
 2,05 unités entre le titre et la source ; le quatrième prend la place du plus
 ancien, qui sort en fondu, et ainsi de suite. Un plan à deux textes les
@@ -822,14 +849,14 @@ référence n'est pas une valeur : c'est le niveau auquel on se compare.
 
 **Exemple exemplaire, ligne de référence** — ce qu'étaler coûte par rapport à
 tout placer d'un coup. **C'est celui-ci qu'il faut imiter pour un manque à
-gagner.** La référence est nommée dès la première image ; l'écart descend sur
-son chiffre, sans signe parce que la voix dit « coûte quatre pour cent » ; les
-encarts tiennent l'écran en attendant. Plan d'essai figé :
-`video/outils/essais/comparaison_reference.json`.
+gagner.** La référence est nommée dès la première image ; l'écart descend vers
+son chiffre, sans signe parce que la voix dit « quatre pour cent de moins » et
+que le dessin dit déjà le sens ; un seul encart, qui dit ce que la voix ne dit
+pas. Plan d'essai figé : `video/outils/essais/comparaison_reference.json`.
 
 ```json
 {
-  "vo_fr": "Pourquoi un tel écart ? Parce qu'en étalant, une partie de l'argent attend sur le côté. […] Au final, ça coûte environ quatre pour cent du capital.",
+  "vo_fr": "En étalant sur un an, on finit en moyenne avec quatre pour cent de moins que si l'on avait tout placé d'un coup.",
   "type_visuel": "manim",
   "manim_brief": {
     "composant": "Comparaison",
@@ -838,25 +865,28 @@ encarts tiennent l'écran en attendant. Plan d'essai figé :
     "donnees": [[2, 4]],
     "natures": ["neutre", "manque_a_gagner"],
     "revelations": [
-      {"element": "value_1", "t_rel_s": 19.46, "declencheur": "quatre pour cent"}
+      {"element": "value_1", "t_rel_s": 4.0, "declencheur": "quatre pour cent"}
     ]
   },
   "overlay_texte": [
-    {"ancre": "titre_haut", "t_rel_s": 0.5, "texte_fr": "Pourquoi un tel écart ?", "declencheur": "Pourquoi un tel écart"},
+    {"ancre": "titre_haut", "t_rel_s": 0.5, "texte_fr": "Ce que coûte l'étalement"},
     {"ancre": "option_1", "t_rel_s": 1.0, "texte_fr": "Tout d'un coup"},
-    {"ancre": "option_2", "t_rel_s": 13.5, "texte_fr": "Étalé sur 1 an"},
-    {"ancre": "centre", "t_rel_s": 4.59, "texte_fr": "Une partie attend sur le côté", "declencheur": "attend sur le côté"},
-    {"ancre": "centre", "t_rel_s": 8.58, "texte_fr": "5,5 mois en moyenne", "declencheur": "cinq mois et demi"}
+    {"ancre": "option_2", "t_rel_s": 2.0, "texte_fr": "Étalé sur 1 an"},
+    {"ancre": "centre", "t_rel_s": 5.5, "texte_fr": "Capital final, 20 ans après"},
+    {"ancre": "bas", "t_rel_s": 0.5, "texte_fr": "Calcul Clair net enrichi, données Shiller (Yale), 1871-2023"}
   ]
 }
 ```
 
 Ce que ça donne : la ligne « Tout d'un coup » se trace dans la première
-seconde et demie ; les encarts se succèdent ; à 13,5 s la jauge hachurée
-commence à descendre sous la ligne, « Étalé sur 1 an » apparaît dessous, et
-« 4 % » s'écrit sur « quatre pour cent ». **Ne fais jamais** de la référence
-une colonne à 0 (`"donnees": [[1, 0], [2, 4]]` sans `reference`) : `make
-check` le refuse (R10).
+seconde et demie ; la jauge hachurée descend aussitôt sous la ligne, « Étalé
+sur 1 an » dessous, et « 4 % » s'écrit sur « quatre pour cent » ; l'encart
+précise ensuite de quel capital on parle, et reste. **Ne fais jamais** de la
+référence une colonne à 0 (`"donnees": [[1, 0], [2, 4]]` sans `reference`) :
+`make check` le refuse (R10). Si le chiffre arrive tard dans la phrase, la
+jauge ne descend que 6 s avant lui : un plan où rien d'autre ne vit d'ici là
+est refusé (R6) — c'est la voix ou la famille qu'il faut revoir, pas des
+encarts qu'il faut ajouter.
 
 **Comment les deux options se partagent le temps** : comme les barres, un
 seul tracé bouge à la fois, et il commence à monter pendant que la voix parle

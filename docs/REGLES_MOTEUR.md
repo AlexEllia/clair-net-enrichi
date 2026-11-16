@@ -191,6 +191,35 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
     changent pas.
   Plans d'essai figés : `essai_mise_en_page_distribution_graduations` (refusé
   par le contrôle avec le code d'avant), `essai_mise_en_page_grille_pictos`.
+- **Encarts d'un plan manim : deux au plus, qui restent, sans reprendre la
+  voix** (16/11/2026, règles d'Alexandre après avoir vu les aperçus de S07 et
+  S22 de l'EP004 : la colonne d'encarts reprenait des morceaux de la voix et
+  les faisait tourner, « un doublon raté des sous-titres »). Plans `manim`
+  seulement ; `typo_cinetique` garde sa rotation à trois.
+  - Deux encarts `centre` au plus par plan, titre et source non compris
+    (`ENCARTS_MAX`, build.py) ; un encart reste jusqu'à la fin du plan, rien
+    ne tourne ; un seul `titre_haut`, qui reste tout le plan (le moteur n'a
+    jamais retiré un titre : vérifié).
+  - Un encart ne contient pas trois mots consécutifs du `vo_fr` du segment
+    (`REPRISE_MOTS`, `fautes_encarts`), casse, ponctuation et nombres en
+    chiffres ignorés. Jugé sur les seuls encarts `centre` : les noms
+    d'éléments (`option_k`, `noeud_k`, `lien_k`, axes, sources) reprennent
+    les mots de la voix par nature (« Tout d'un coup ») et ne sont pas jugés.
+  - Refus pour un script au catalogue actuel et un plan d'essai, remarque
+    pour un script antérieur. Le moteur rend encore la rotation (quatrième
+    encart à la place du plus ancien) pour les scripts antérieurs, afin que
+    les épisodes publiés se re-rendent à l'identique.
+  - R6 inchangée, vérifiée : un tracé en cours compte à chaque image, au
+    calendrier (`calendrier_nouveaute` compte toute sa durée) comme en pixels
+    (jauge suspendue de S07 et S22 : 59 images actives sur 59 pendant la
+    descente, `densite.mesurer`). Ce n'est plus aux encarts de tenir l'écran.
+  - Conséquence : les plans d'essai figés qui portent plus de deux encarts
+    (`mise_en_page_grille_encarts`, `_erosion_encarts`,
+    `_distribution_graduations`, `_grille_pictos`) restent figés au pixel près
+    pour ce qu'ils vérifient (la mise en page à côté de la colonne), mais
+    `controle.py` les refuse désormais sur ce point : ce ne sont pas des
+    exemples d'écriture. `essai_comparaison_reference`, cité au catalogue,
+    passe en v2 avec un seul encart.
 - **Comparaison à ligne de référence** (16/11/2026, spécification
   d'Alexandre ; `_comparaison_reference`, components.py) : `"reference":
   {"option": k}` — l'option k est une ligne horizontale en pointillés neutres

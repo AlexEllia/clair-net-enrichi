@@ -1,6 +1,6 @@
 {
  "statut": "PLAN D'ESSAI VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
- "courante": 1,
+ "courante": 2,
  "versions": [
   {
    "version": 1,
@@ -190,6 +190,122 @@
     ],
     [
      20.24,
+     0.6,
+     "FadeIn"
+    ]
+   ],
+   "archivee_le": "16/11/2026",
+   "archivee_pour": "Regles des encarts du 16/11/2026 (pas encore vue a l'ecran par Alexandre) : un seul encart qui ne reprend pas la voix, jauge sur son mot a 4 s ; le plan fige en v1 portait sept encarts"
+  },
+  {
+   "version": 2,
+   "validee_le": "16/11/2026",
+   "motif": "Regles des encarts du 16/11/2026 (pas encore vue a l'ecran par Alexandre) : un seul encart qui ne reprend pas la voix, jauge sur son mot a 4 s ; le plan fige en v1 portait sept encarts",
+   "regle_cadre": "v2",
+   "regle_comparaison": "v2",
+   "regle_barres": "v3-phrase",
+   "vue_a_l_ecran": true,
+   "duree_s": 9.0,
+   "images": 270,
+   "pixels": {
+    "largeur": 960,
+    "hauteur": 540,
+    "md5": "cd2d768bf5fa70d58c72ca13d27fc8d3"
+   },
+   "segment": {
+    "id": "essai_comparaison_reference",
+    "role": "essai",
+    "type_visuel": "manim",
+    "vo_fr": "En étalant sur un an, on finit en moyenne avec quatre pour cent de moins que si l'on avait tout placé d'un coup.",
+    "manim_brief": {
+     "composant": "Comparaison",
+     "unite": "percent",
+     "reference": {
+      "option": 1
+     },
+     "donnees": [
+      [
+       2,
+       4
+      ]
+     ],
+     "natures": [
+      "neutre",
+      "manque_a_gagner"
+     ],
+     "revelations": [
+      {
+       "element": "value_1",
+       "t_rel_s": 4.0
+      }
+     ]
+    },
+    "overlay_texte": [
+     {
+      "ancre": "titre_haut",
+      "t_rel_s": 0.5,
+      "texte_fr": "Ce que coûte l'étalement"
+     },
+     {
+      "ancre": "option_1",
+      "t_rel_s": 1.0,
+      "texte_fr": "Tout d'un coup"
+     },
+     {
+      "ancre": "option_2",
+      "t_rel_s": 2.0,
+      "texte_fr": "Étalé sur 1 an"
+     },
+     {
+      "ancre": "centre",
+      "t_rel_s": 5.5,
+      "texte_fr": "Capital final, 20 ans après"
+     },
+     {
+      "ancre": "bas",
+      "t_rel_s": 0.5,
+      "texte_fr": "Plan d'essai du moteur : chiffres de l'EP004 S07"
+     }
+    ]
+   },
+   "calendrier": [
+    [
+     0.0,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     0.0,
+     1.0,
+     "Create"
+    ],
+    [
+     0.5,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     0.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     1.2,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     1.2,
+     2.8,
+     "GrowBar"
+    ],
+    [
+     4.0,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     5.5,
      0.6,
      "FadeIn"
     ]

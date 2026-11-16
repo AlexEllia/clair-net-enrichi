@@ -605,6 +605,49 @@ def mouvements(seg, dur, ep_dir=None):
     return fautes
 
 
+ENCARTS_MAX = 2        # encarts « centre » d'un plan manim, titre et source non compris
+REPRISE_MOTS = 3       # mots consecutifs de la voix qu'un encart ne reprend pas
+
+
+def _mots(s):
+    """Les mots d'un texte, pour comparer un encart a la voix : sans casse ni
+    ponctuation, les nombres ecrits en chiffres retires."""
+    import re
+    return re.findall(r"[^\W\d_]+", str(s).casefold())
+
+
+def fautes_encarts(seg):
+    """Regles des encarts d'un plan manim (16/11/2026) : deux encarts
+    « centre » au plus, et aucun ne reprend REPRISE_MOTS mots consecutifs du
+    `vo_fr` du segment - la colonne d'encarts n'est pas un second sous-titre.
+    Un seul `titre_haut` : il reste affiche tout le plan, rien ne le remplace.
+    Renvoie [message]."""
+    if seg.get("type_visuel") != "manim":
+        return []
+    ov = seg.get("overlay_texte") or []
+    ctr = [o for o in ov if o.get("ancre") == "centre"]
+    out = []
+    if len(ctr) > ENCARTS_MAX:
+        out.append(f"{len(ctr)} encarts « centre » (maximum {ENCARTS_MAX} par plan, titre et "
+                   f"source non compris) : un encart reste affiche jusqu'a la fin du plan, "
+                   f"rien ne tourne")
+    titres = [o for o in ov if o.get("ancre") == "titre_haut"]
+    if len(titres) > 1:
+        out.append(f"{len(titres)} titres `titre_haut` : un seul, il reste affiche tout le plan")
+    voix = _mots(seg.get("vo_fr") or "")
+    suites = {tuple(voix[i:i + REPRISE_MOTS]) for i in range(len(voix) - REPRISE_MOTS + 1)}
+    for o in ctr:
+        m = _mots(o.get("texte_fr") or "")
+        for i in range(len(m) - REPRISE_MOTS + 1):
+            if tuple(m[i:i + REPRISE_MOTS]) in suites:
+                out.append(f"encart « {o['texte_fr']} » reprend la voix (« "
+                           f"{' '.join(m[i:i + REPRISE_MOTS])} ») : un encart dit ce que la "
+                           f"voix ne dit pas (une hypothese, une unite, une reserve), il ne la "
+                           f"sous-titre pas")
+                break
+    return out
+
+
 def collisions(seg, dur, ep_dir=None, strict=True):
     """Fautes de placement d'un plan, jugees sur les boites englobantes de
     tout ce que le moteur y pose :
@@ -798,6 +841,9 @@ def collisions(seg, dur, ep_dir=None, strict=True):
                 if dk < d - ANCRE_TOL:
                     fautes.append(f"etiquette « {texte} » de {nom} plus proche de la courbe "
                                   f"de la serie {k + 1} ({dk:.2f}) que de son point ({d:.2f})")
+    # Encarts d'un plan manim : deux au plus, aucun ne reprend la voix.
+    for x in fautes_encarts(seg):
+        noter_t(x)
     # Pendant les animations : rien de ce qui bouge ne passe sous un autre.
     for x in mouvements(seg, dur, ep_dir):
         (fautes if strict else remarques).append(x)
