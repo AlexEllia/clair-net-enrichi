@@ -1,0 +1,157 @@
+{
+ "statut": "PLAN D'ESSAI VALIDE A L'ECRAN - ne jamais regenerer sans accord explicite ; une modification approuvee ajoute une version, n'en ecrase aucune.",
+ "courante": 1,
+ "versions": [
+  {
+   "version": 1,
+   "validee_le": "16/11/2026",
+   "motif": "Regle d'Alexandre du 17/11/2026 (pas encore vue a l'ecran par lui) : accent commun, deux accents sur une Grille",
+   "regle_cadre": "v2",
+   "regle_comparaison": "v2",
+   "regle_barres": "v3-phrase",
+   "vue_a_l_ecran": true,
+   "duree_s": 14.0,
+   "images": 420,
+   "pixels": {
+    "largeur": 960,
+    "hauteur": 540,
+    "md5": "de78697cfe8e8e11abdd7c3218c0de7a"
+   },
+   "segment": {
+    "id": "essai_accent",
+    "role": "essai",
+    "type_visuel": "manim",
+    "vo_fr": "Placer tout de suite a fini devant sept fois sur dix. Étaler a fait mieux trois fois sur dix. Retenez le premier chiffre. Le second est le prix de la tranquillité.",
+    "manim_brief": {
+     "composant": "Grille",
+     "taille": 10,
+     "icone": "calendar",
+     "groupes": [
+      {
+       "cases": 7,
+       "valeur": 70.3,
+       "format": "pct",
+       "nature": "gain"
+      },
+      {
+       "cases": 3,
+       "valeur": 29.7,
+       "format": "pct",
+       "nature": "neutre"
+      }
+     ],
+     "accents": [
+      {
+       "element": "groupe_1"
+      },
+      {
+       "element": "groupe_2"
+      }
+     ],
+     "revelations": [
+      {
+       "element": "groupe_1",
+       "t_rel_s": 2.2
+      },
+      {
+       "element": "groupe_2",
+       "t_rel_s": 5.0
+      },
+      {
+       "element": "accent_1",
+       "t_rel_s": 8.0
+      },
+      {
+       "element": "accent_2",
+       "t_rel_s": 11.0
+      }
+     ]
+    },
+    "overlay_texte": [
+     {
+      "ancre": "titre_haut",
+      "t_rel_s": 0.5,
+      "texte_fr": "Un départ chaque mois depuis 1871"
+     },
+     {
+      "ancre": "groupe_1",
+      "t_rel_s": 2.2,
+      "texte_fr": "Tout de suite devant"
+     },
+     {
+      "ancre": "groupe_2",
+      "t_rel_s": 5.0,
+      "texte_fr": "Étalé devant"
+     },
+     {
+      "ancre": "bas",
+      "t_rel_s": 0.5,
+      "texte_fr": "Plan d'essai du moteur, sans donnée ni source"
+     }
+    ]
+   },
+   "calendrier": [
+    [
+     0.0,
+     1.5,
+     "FadeIn"
+    ],
+    [
+     0.0,
+     1.5,
+     "FadeIn"
+    ],
+    [
+     0.5,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     0.5,
+     0.6,
+     "FadeIn"
+    ],
+    [
+     2.2,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     2.2,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     2.2,
+     1.5,
+     "FillPictos"
+    ],
+    [
+     5.0,
+     0.3,
+     "FadeIn"
+    ],
+    [
+     5.0,
+     0.5,
+     "FadeIn"
+    ],
+    [
+     5.0,
+     1.5,
+     "FillPictos"
+    ],
+    [
+     8.0,
+     0.4,
+     "Create+Restyle+Restyle+Restyle"
+    ],
+    [
+     11.0,
+     0.4,
+     "Create+Restyle+Restyle+Restyle"
+    ]
+   ]
+  }
+ ]
+}

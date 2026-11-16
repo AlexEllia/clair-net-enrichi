@@ -605,6 +605,7 @@ def mouvements(seg, dur, ep_dir=None):
     return fautes
 
 
+TITRE_AVANT = 1.0      # un titre de plan manim apparait dans la premiere seconde
 ENCARTS_MAX = 2        # encarts « centre » d'un plan manim, titre et source non compris
 REPRISE_MOTS = 3       # mots consecutifs de la voix qu'un encart ne reprend pas
 
@@ -844,6 +845,16 @@ def collisions(seg, dur, ep_dir=None, strict=True):
     # Encarts d'un plan manim : deux au plus, aucun ne reprend la voix.
     for x in fautes_encarts(seg):
         noter_t(x)
+    # Titre d'un plan manim : obligatoire, pose dans la premiere seconde.
+    if seg.get("type_visuel") == "manim":
+        t_titre = [t for m, t, a in objets if getattr(m, "role", None) == "libelle"
+                   and str(getattr(m, "nom", "")).startswith("titre_haut ")]
+        if not t_titre:
+            noter_t("plan manim sans titre (`titre_haut`) : un titre, pose dans la premiere "
+                    "seconde, reste affiche tout le plan")
+        elif min(t_titre) > TITRE_AVANT + 1e-6:
+            noter_t(f"titre pose a {min(t_titre):.2f} s : un titre de plan manim apparait dans "
+                    f"la premiere seconde ({TITRE_AVANT:.0f} s au plus) et reste tout le plan")
     # Pendant les animations : rien de ce qui bouge ne passe sous un autre.
     for x in mouvements(seg, dur, ep_dir):
         (fautes if strict else remarques).append(x)
@@ -976,7 +987,18 @@ def fautes_sens(seg, dur, ep_dir=None, strict=True):
         fautes.append(f"{nom} : valeur a 0 a cote d'un manque a gagner - une colonne a 0 fait "
                       f"lire que l'autre option rapporte plus ; la reference est une ligne "
                       f"(Comparaison, `reference`)")
+    from components import ACCENTS_MAX, ACCENT_COULEURS
+    if isinstance(mb.get("accents"), list) and len(mb["accents"]) > ACCENTS_MAX:
+        fautes.append(f"{len(mb['accents'])} accents (maximum {ACCENTS_MAX} par plan)")
+        return fautes, remarques, 0
     cues = composer(seg, dur, ep_dir)
+    # Accent : le cadre porte la couleur de la nature de ce qu'il entoure.
+    for nom, cle, cadre, nature in getattr(cues, "accents", []):
+        voulu = ACCENT_COULEURS[nature].upper()
+        vues = _teintes(cadre)
+        if vues != {voulu}:
+            fautes.append(f"{nom} ({cle}, {nature}) : cadre en {', '.join(sorted(vues))} au "
+                          f"lieu de {voulu}")
     for e in cues.sens:
         nature, nom = e["nature"], e["nom"]
         voulu = COULEUR_SENS[nature].upper()

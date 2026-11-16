@@ -191,6 +191,37 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
     changent pas.
   Plans d'essai figés : `essai_mise_en_page_distribution_graduations` (refusé
   par le contrôle avec le code d'avant), `essai_mise_en_page_grille_pictos`.
+- **Fins de plan : révélations de sens, accent commun, titre dès le début**
+  (17/11/2026, décisions d'Alexandre : R6 n'est pas assouplie, pas de
+  mouvement artificiel ; Cowork cale une révélation sur la phrase de
+  conclusion).
+  - Inventaire des éléments de soulignement par famille au catalogue
+    (« Tenir une fin de plan »).
+  - **Accent commun** (`_accents`, components.py ; `build_objets.py`) :
+    `"accents": [{"element": clé}]`, un ou deux, révélations `accent_1`,
+    `accent_2`. Sur son mot, l'élément garde sa présence, le reste du
+    graphique s'estompe à 0,45 (`ACCENT_ESTOMPE`) en 0,4 s (`ACCENT_RT`), un
+    cadre fin l'entoure dans la couleur de sa nature (`ACCENT_COULEURS` :
+    ambre, NEG, MANQUE, clair pour neutre), jusqu'à la fin du plan ; au second
+    accent, le premier élément et son cadre restent. Posé après le composant,
+    par un habillage commun de `COMPONENTS` : chaque famille déclare ses
+    éléments par `cues.partie(clé, objets)` (LineChart `series_k`, Bars
+    `bar_g`, Areas `band_g`, Comparaison `value_g`, Flux `node_k`/`link_k`,
+    Erosion `capital`/`perte_k`/`cumul`, Cascade `depart`/`marche_k`/
+    `arrivee`, Grille `groupe_k`, Distribution `zone`/`mediane`/`cas`). La
+    nature est celle que le plan a déclarée pour l'élément (`cues.sens`).
+    Contrôle : plus de deux accents refusé ; couleur du cadre vérifiée contre
+    la nature (`fautes_sens`). Les particules d'un Flux (Courant) ne
+    s'estompent pas. Un plan sans `accents` ne change pas : non-régression
+    identique au pixel près.
+  - **Titre** : un plan manim sans `titre_haut`, ou dont le titre arrive
+    après 1,0 s (`TITRE_AVANT`, instant réel après recalage), est refusé
+    (script au catalogue actuel et plan d'essai ; remarque sinon).
+  - Outil : `video/outils/plages_figees.py EPxxx` écrit
+    `build/plages_figees.md` — pour chaque plan manim simulé sans encart, les
+    plages de plus de 3,5 s sans changement, les mots de la voix pendant
+    chacune (alignement) et les éléments disponibles.
+  Plan d'essai figé : `essai_accent`.
 - **Encarts d'un plan manim : deux au plus, qui restent, sans reprendre la
   voix** (16/11/2026, règles d'Alexandre après avoir vu les aperçus de S07 et
   S22 de l'EP004 : la colonne d'encarts reprenait des morceaux de la voix et

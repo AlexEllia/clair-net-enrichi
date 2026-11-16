@@ -1,0 +1,77 @@
+{
+ "_role": "Plan d'essai, hors episode : accent commun (regle du 17/11/2026) - sur son mot, l'element designe garde toute sa presence, le reste du graphique s'estompe a 45 % en 0,4 s, un trait fin dans la couleur de sa nature l'entoure, jusqu'a la fin du plan. Deux accents : le premier sur un gain (cadre ambre), le second sur un groupe neutre (cadre clair), le premier restant present. Grille, famille sans mise en avant propre. Chiffres d'essai, sans source.",
+ "duree_s": 14.0,
+ "segment": {
+  "id": "essai_accent",
+  "role": "essai",
+  "type_visuel": "manim",
+  "vo_fr": "Placer tout de suite a fini devant sept fois sur dix. Étaler a fait mieux trois fois sur dix. Retenez le premier chiffre. Le second est le prix de la tranquillité.",
+  "manim_brief": {
+   "composant": "Grille",
+   "taille": 10,
+   "icone": "calendar",
+   "groupes": [
+    {
+     "cases": 7,
+     "valeur": 70.3,
+     "format": "pct",
+     "nature": "gain"
+    },
+    {
+     "cases": 3,
+     "valeur": 29.7,
+     "format": "pct",
+     "nature": "neutre"
+    }
+   ],
+   "accents": [
+    {
+     "element": "groupe_1"
+    },
+    {
+     "element": "groupe_2"
+    }
+   ],
+   "revelations": [
+    {
+     "element": "groupe_1",
+     "t_rel_s": 2.2
+    },
+    {
+     "element": "groupe_2",
+     "t_rel_s": 5.0
+    },
+    {
+     "element": "accent_1",
+     "t_rel_s": 8.0
+    },
+    {
+     "element": "accent_2",
+     "t_rel_s": 11.0
+    }
+   ]
+  },
+  "overlay_texte": [
+   {
+    "ancre": "titre_haut",
+    "t_rel_s": 0.5,
+    "texte_fr": "Un départ chaque mois depuis 1871"
+   },
+   {
+    "ancre": "groupe_1",
+    "t_rel_s": 2.2,
+    "texte_fr": "Tout de suite devant"
+   },
+   {
+    "ancre": "groupe_2",
+    "t_rel_s": 5.0,
+    "texte_fr": "Étalé devant"
+   },
+   {
+    "ancre": "bas",
+    "t_rel_s": 0.5,
+    "texte_fr": "Plan d'essai du moteur, sans donnée ni source"
+   }
+  ]
+ }
+}

@@ -82,6 +82,14 @@ class Cues:
         # Cases d'une Grille, pour make check : [(nom du groupe, [boites des
         # cases, rangee par rangee], colonnes)].
         self.cases = []
+        # Elements que le brief peut accentuer (`accents`), {cle: [objets]},
+        # et les accents poses, pour make check : [(nom, cle, cadre, nature)].
+        self.parties = {}
+        self.accents = []
+
+    def partie(self, cle, *objets):
+        """Declare un element du graphique que le brief peut accentuer."""
+        self.parties[str(cle)] = [o for o in objets if o is not None]
 
     def add(self, *m):
         self.static.extend(m)
@@ -264,7 +272,9 @@ class Reveal:
                     break
                 key = self.order[pos]
             elif key not in self.order:
-                print(f"[REVEALS] partie inconnue : {key!r}", file=sys.stderr)
+                # accent_k est pose apres le composant (_accents).
+                if not str(key).startswith("accent_"):
+                    print(f"[REVEALS] partie inconnue : {key!r}", file=sys.stderr)
                 continue
             pos = self.order.index(key) + 1
             if t is not None:
@@ -1188,6 +1198,7 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
                 grp.add(lab.rappel)
             marks.append((mk, x, grp))
         curves.append((ys, ln, marks))
+        cues.partie(f"{prefix}_{i + 1}", ln, *[g for _, _, g in marks])
         cues.point(f"{prefix}_{i + 1}_fin", fr.pt(*s[-1]))
         if fill:
             # L'aire va de zero a la courbe ; elle se balaie de gauche a droite
@@ -1898,6 +1909,7 @@ def Bars(seg, cues):
             else:
                 lab.next_to(rect, UP if v >= 0 else DOWN, buff=0.14)
             bars[key] = (rect, lab, edge)
+            cues.partie(key, rect, lab)
             cues.etiquette(lab, (rect.get_left()[0], rect.get_right()[0],
                                  rect.get_bottom()[1], rect.get_top()[1]), key, key)
             order.append(key)
@@ -2184,6 +2196,7 @@ def _bands(seg, cues):
             marks.add(edge_line, lab)
             cues.point(f"{key}_{'bas' if below else 'haut'}", edge_line.get_center())
         bands[key] = (rect, marks, edge)
+        cues.partie(key, rect, marks)
         order.append(key)
 
     rev = Reveal(seg, cues, order, t0=1.6, rt=PUNCTUAL_MAX, margin=0.6)
@@ -2652,6 +2665,7 @@ def Comparaison(seg, cues):
             cues.etiquette(lab, (rect.get_left()[0], rect.get_right()[0],
                                  rect.get_bottom()[1], rect.get_top()[1]), key, key)
             gauges[key] = (rect, lab, k)
+            cues.partie(key, rect, lab)
             order.append(key)
             by_opt[k].add(rect, lab)
             cues.point(key, rect.get_edge_center(UP))
@@ -2901,6 +2915,7 @@ def _comparaison_reference(seg, cues, fmt, rows):
     cues.etiquette(lab, (rect.get_left()[0], rect.get_right()[0],
                          rect.get_bottom()[1], rect.get_top()[1]), key, key)
     cues.point(key, rect.get_edge_center(DOWN))
+    cues.partie(key, rect, lab)
     cues.point(f"option_{autre}", (x, lab.get_bottom()[1] - 0.42))
     cues.anchor_colors[f"option_{autre}"] = col
     cues.anchor_widths[f"option_{autre}"] = min(5.2, droite - gauche - 0.4)
@@ -3128,6 +3143,7 @@ def Flux(seg, cues):
         icon = picto(nd["icone"], INK, hauteur=0.58).move_to([x, y, 0])
         key = f"node_{i + 1}"
         nodes[key] = (VGroup(ring, icon), np.array([x, y, 0.0]))
+        cues.partie(key, nodes[key][0])
         order.append(key)
         cues.point(f"noeud_{i + 1}", (x, y - R - 0.36))
         cues.anchor_widths[f"noeud_{i + 1}"] = 3.2
@@ -3193,6 +3209,7 @@ def Flux(seg, cues):
                                   rayon))
         key = f"link_{i + 1}"
         links[key] = (path, tip, dots, label, k, (int(ln["de"]), int(ln["vers"])))
+        cues.partie(key, path, tip, label)
         order.append(key)
         if nature != "neutre":
             cues.sens.append({"nom": key, "nature": nature, "objets": [path, tip, dots],
@@ -3486,6 +3503,7 @@ def Erosion(seg, cues):
     valeur.move_to([dx, y0 + haut(restes[-1]) + 0.36, 0])
     centre_valeur = lambda v: np.array([dx, y0 + haut(v) + 0.36, 0.0])
     cues.point("capital", (dx, y0 - 0.40))
+    cues.partie("capital", colonne, valeur)
     cues.anchor_align["capital"] = ORIGIN
     cues.anchor_widths["capital"] = W + 1.4
 
@@ -3516,6 +3534,7 @@ def Erosion(seg, cues):
             rappel = Line([dx + x_fant + W / 2 + 0.04, milieu, 0], [dx + x_lab - 0.06, y, 0],
                           stroke_color=NEG, stroke_width=1.6)
         groupes.append((tranches, bornes, lab, rappel, n))
+        cues.partie(f"perte_{k + 1}", tranches, lab, rappel)
         cues.point(f"perte_{k + 1}", (dx + x_lab, y - 0.45) if noms_dessous
                    else (dx + x_lab + lab.width + 0.25, y))
         cues.anchor_align[f"perte_{k + 1}"] = LEFT
@@ -3533,6 +3552,7 @@ def Erosion(seg, cues):
                           Line([bx - 0.14, bas, 0], [bx, bas, 0], **kw),
                           Line([bx - 0.14, sommet, 0], [bx, sommet, 0], **kw))
         total.move_to([bx + 0.2, (bas + sommet) / 2, 0], aligned_edge=LEFT)
+        cues.partie("cumul", accolade, total)
         cues.point("cumul", (total.get_center()[0], total.get_bottom()[1] - 0.32))
         cues.anchor_align["cumul"] = ORIGIN
         if noms_dessous:
@@ -3728,6 +3748,7 @@ def Cascade(seg, cues):
         else:
             lab.next_to(rect, UP, buff=0.14)
         bars[key] = (rect, lab, edge)
+        cues.partie(key, rect, lab)
         order.append(key)
         cues.etiquette(lab, (rect.get_left()[0], rect.get_right()[0],
                              rect.get_bottom()[1], rect.get_top()[1]), key, key)
@@ -3954,6 +3975,7 @@ def Grille(seg, cues):
         key = f"groupe_{gi + 1}"
         fonds.append(fond)
         vagues[key] = (allumees, lab)
+        cues.partie(key, fond, allumees, lab)
         order.append(key)
         cues.point(key, (cx, cy + h / 2 + 0.42))
         cues.anchor_align[key] = ORIGIN
@@ -4350,10 +4372,12 @@ def Distribution(seg, cues):
         anims = ([FadeIn(teinte)] if teinte is not None else []) + [Create(limite)] \
             + ([FadeIn(part, scale=0.6)] if part else [])
         rev.at("zone", *anims, rt=PUNCTUAL_MAX)
+        cues.partie("zone", teinte, limite, part, sous_seuil)
     for cle, obj in (("mediane", med), ("cas", cas)):
         if obj is not None:
             rev.default(cle, rev.last + 0.4)
             rev.at(cle, Create(obj[0]), FadeIn(obj[1], scale=0.6), rt=PUNCTUAL_MAX)
+            cues.partie(cle, obj[0], obj[1])
     return VGroup(points, compte, *([legende] if legende is not None else []))
 
 
@@ -4375,3 +4399,105 @@ COMPONENTS = {
     "Grille": Grille,
     "Distribution": Distribution,
 }
+
+
+# =============================================================================
+# Accent  -  souligner un element apres la derniere valeur (toutes familles)
+# =============================================================================
+# Regle d'Alexandre du 17/11/2026 : les fins de plan ne sont tenues ni par des
+# encarts ni par un mouvement artificiel, mais par une revelation de sens,
+# calee sur la phrase de conclusion. `accents: [{"element": cle}]` dans le
+# brief, `accent_k` dans les revelations : sur son mot, l'element designe
+# garde toute sa presence, le reste du graphique s'estompe a ACCENT_ESTOMPE en
+# ACCENT_RT, un trait fin dans la couleur de sa nature l'entoure, et cet etat
+# dure jusqu'a la fin du plan.
+
+ACCENTS_MAX = 2
+ACCENT_ESTOMPE = 0.45
+ACCENT_RT = 0.4
+ACCENT_COULEURS = {"gain": INTEREST, "perte": NEG, "manque_a_gagner": MANQUE, "neutre": INK}
+
+
+def _feuilles(m):
+    return {id(x) for x in m.family_members_with_points()}
+
+
+def _accents(seg, cues):
+    mb = (seg or {}).get("manim_brief") or {}
+    spec = mb.get("accents")
+    if not spec:
+        return
+    sid = seg.get("id", "?")
+    if not isinstance(spec, list) or len(spec) > ACCENTS_MAX:
+        raise SystemExit(f"{sid} : `accents`, une liste de {ACCENTS_MAX} elements au plus "
+                         f"([{{\"element\": cle}}])")
+    tops = {}
+    for r in mb.get("reveals") or []:
+        if isinstance(r, dict) and str(r.get("target", "")).startswith("accent_"):
+            tops[r["target"]] = float(r.get("at", r.get("start", 0.0)))
+    for r in mb.get("revelations") or []:
+        if str(r.get("element", "")).startswith("accent_"):
+            tops.setdefault(r["element"], float(r["t_rel_s"]))
+    from build_objets import objets_avant
+    deja = []                      # pieces des elements deja accentues
+    origines = {}
+    for k, a in enumerate(spec, 1):
+        cle = a.get("element") if isinstance(a, dict) else None
+        if cle not in cues.parties:
+            raise SystemExit(f"{sid} : accents[{k - 1}].element {cle!r} inconnu ; elements "
+                             f"de ce plan : {', '.join(sorted(cues.parties)) or 'aucun'}")
+        nom = f"accent_{k}"
+        if nom not in tops:
+            raise SystemExit(f"{sid} : {nom} sans revelation - ecris {{\"element\": "
+                             f"\"{nom}\", \"t_rel_s\": ..., \"declencheur\": ...}}")
+        t = cues.late(tops[nom], ACCENT_RT + 0.2)
+        membres = [m for m in cues.parties[cle] if m is not None]
+        pieces = set()
+        for m in membres:
+            pieces |= _feuilles(m)
+        nature = next((e["nature"] for e in cues.sens if e["nom"] == cle), "neutre")
+        cadre = SurroundingRectangle(VGroup(*membres), color=ACCENT_COULEURS[nature], buff=0.16,
+                                     stroke_width=2.2, corner_radius=0.08)
+        cadre.nom = f"cadre de {nom} ({cle})"
+        garde = pieces | {p for d in deja for p in d}
+        anims = []
+
+        def estomper(m):
+            f = _feuilles(m)
+            if not f or f <= garde:
+                return
+            if f & garde:
+                for sm in m.submobjects:
+                    estomper(sm)
+                return
+            anims.append(_dim_to(m, ACCENT_ESTOMPE))
+
+        for m in objets_avant(cues, t):
+            estomper(m)
+        if deja:
+            # Un element estompe par l'accent precedent retrouve sa presence.
+            for m in membres:
+                if id(m) in origines:
+                    anims.append(Restyle(m, origines[id(m)]))
+        cues.at(t, Create(cadre), *anims, rt=ACCENT_RT)
+        cues.accents.append((nom, cle, cadre, nature))
+        deja.append(pieces | _feuilles(cadre))     # son cadre reste present, lui aussi
+        if k == 1:
+            # Etat d'origine de tout ce qui pourrait etre accentue ensuite.
+            for a2 in spec[1:]:
+                c2 = a2.get("element") if isinstance(a2, dict) else None
+                for m in cues.parties.get(c2, []):
+                    if m is not None:
+                        origines[id(m)] = m.copy()
+
+
+def _avec_accents(composant):
+    def famille(seg, cues):
+        out = composant(seg, cues)
+        _accents(seg, cues)
+        return out
+    famille.__name__, famille.__doc__ = composant.__name__, composant.__doc__
+    return famille
+
+
+COMPONENTS = {nom: _avec_accents(f) for nom, f in COMPONENTS.items()}

@@ -189,6 +189,75 @@ une perte : un lien tracé en `NEG` sans `nature` est refusé lui aussi (dans un
 script écrit contre une version antérieure du catalogue, il est seulement
 signalé).
 
+### Tenir une fin de plan : souligner, pas meubler
+
+Après la dernière valeur, la voix conclut souvent pendant 4 à 12 s. Ces
+secondes ne se tiennent ni par des encarts (deux au plus, section 3) ni par un
+mouvement sans objet : elles se tiennent par une **révélation de sens**,
+calée sur la phrase de conclusion — ce que la voix souligne, l'image le
+souligne au même mot. Chaque famille a les siennes :
+
+| Famille | Élément (dans `revelations`) | Paramètre à écrire dans le brief | Ce qu'il montre |
+|---|---|---|---|
+| `LineChart` | `crossing` | `"croisement": true` | repère au premier croisement des séries 1 et 2 |
+| | `gap` | `"ecart": {"x": 30, "valeur": 9.5, "format": "facteur"}` | accolade entre les séries à l'abscisse `x` |
+| | `factor` | `"facteur": {"serie": 1, "x": 30, "valeur": 4.3}` | « ×4,3 » à côté d'un point |
+| | `accent_k` | `"accents": [{"element": "series_1"}]` | une courbe et ses valeurs |
+| `Bars` | `highlight` | `"mise_en_avant": {"barre": g}` ou `{"barre": g, "serie": s}` | encadre une barre, estompe les autres |
+| | `reference` | `"repere": {"valeur": 50}` | ligne horizontale pointillée et sa valeur |
+| | `annotation` | `"annotation": {"barre": g, "valeur": 3, "format": "facteur"}` | « ×3 » au-dessus d'une catégorie |
+| | `accent_k` | `"accents": [{"element": "bar_2"}]` (`bar_g_s` en `groupees`/`empilees`) | une barre et sa valeur |
+| `Areas` | `accent_k` | `"accents": [{"element": "band_2"}]` | une bande et ses bornes |
+| `Comparaison` | `gap` | `"ecart": {"entre": [g1, g2], "valeur": v, "format": f}` | pointillé et accolade entre deux jauges |
+| | `highlight` | `"mise_en_avant": {"option": k}` | encadre une option, estompe l'autre |
+| | `suite` | `"suite": {"option": k}` | bande ouverte au-dessus de la dernière jauge |
+| | `accent_k` | `"accents": [{"element": "value_2"}]` | une jauge et sa valeur |
+| `Comparaison` à `reference` | `accent_k` | `"accents": [{"element": "value_1"}]` | la jauge suspendue et son montant |
+| `Flux` | `highlight` | `"mise_en_avant": {"liens": [k, …]}` | ces liens s'affirment, les autres s'estompent |
+| | `accent_k` | `"accents": [{"element": "node_2"}]` ou `"link_3"` | un nœud, ou un lien et son montant |
+| `Erosion` | `reste` | — (élément seul) | la valeur restante s'affirme, agrandie et soulignée |
+| | `cumul` | `"cumul": {"montant": v, "format": f}` | accolade et total perdu |
+| | `accent_k` | `"accents": [{"element": "perte_2"}]`, `"capital"` ou `"cumul"` | une tranche perdue, la colonne, ou le total |
+| `Cascade` | `accent_k` | `"accents": [{"element": "arrivee"}]`, `"depart"` ou `"marche_k"` | une colonne et sa valeur |
+| `Grille` | `valeur_k` | — (élément seul) | la valeur exacte du groupe k, posée après la vague |
+| | `accent_k` | `"accents": [{"element": "groupe_1"}]` | une grille entière et sa valeur |
+| `Distribution` | `zone` | `"part_negative": {"valeur": v, "format": "pct"}` | limite du seuil et part sous le seuil |
+| | `mediane`, `cas` | `"mediane": {"valeur": v}`, `"cas": {"valeur": v}` | trait et valeur |
+| | `accent_k` | `"accents": [{"element": "zone"}]`, `"mediane"` ou `"cas"` | la zone, ou un repère et sa valeur |
+
+**L'accent, commun à toutes les familles** (`accents`, règle du 17/11/2026).
+
+```json
+"accents": [{"element": "groupe_1"}, {"element": "groupe_2"}],
+"revelations": [
+  …,
+  {"element": "accent_1", "t_rel_s": 8.0, "declencheur": "Retenez le premier"},
+  {"element": "accent_2", "t_rel_s": 11.0, "declencheur": "Le second"}
+]
+```
+
+- `accents` : une liste de **un ou deux** `{"element": clé}`, la clé étant un
+  élément du plan (colonne « accent_k » du tableau). `accent_1` désigne le
+  premier, `accent_2` le second. Un élément inconnu arrête le build et nomme
+  ceux du plan.
+- Sur le mot de `accent_k`, l'élément désigné **garde toute sa présence** ; le
+  **reste du graphique s'estompe à 45 %** en 0,4 s ; un **trait fin l'entoure,
+  dans la couleur de sa nature** (ambre pour un gain, `NEG` pour une perte,
+  `MANQUE` pour un manque à gagner, clair pour un élément neutre). Cet état
+  **dure jusqu'à la fin du plan**. Au second accent, le premier élément et son
+  cadre restent présents.
+- `accent_k` est une **révélation** (R4, R6) : écris-lui un `declencheur`, sur
+  le mot de la conclusion qui désigne l'élément. Il doit venir **après** que
+  l'élément est apparu. **Deux accents au plus par plan** ; `make check`
+  refuse le troisième, et vérifie la couleur du cadre contre la nature.
+- Titres, noms et encarts ne s'estompent pas. L'argent qui circule sur un
+  lien de `Flux` non plus.
+- Un accent ne s'invente pas : il souligne ce que la voix souligne. Si la
+  conclusion ne désigne aucun élément, c'est le plan qui est trop long.
+
+Plan d'essai figé : `video/outils/essais/accent.json` (une `Grille`, deux
+accents).
+
 ---
 
 ## 2. Comment le temps est compté
@@ -287,6 +356,10 @@ unique quand leur instant dépend de la voix.
 | `source_g` | sous la catégorie g de `Bars` | source de la barre g, en gris ; remplace `bas` |
 
 - `axe_x`, `axe_y` et `titre_haut` : poser à ~0,6 s.
+- **Tout plan `manim` a un titre** (`titre_haut`, un seul), posé **dans la
+  première seconde** (`t_rel_s` ≤ 1,0, sans `declencheur` qui le retarde) ; il
+  reste affiché tout le plan. `make check` refuse un plan `manim` sans titre
+  ou dont le titre arrive plus tard.
 - Une légende : poser juste après la première révélation de sa série.
 - Les titres d'axes commencent par une majuscule.
 - `option_k`, `noeud_k`, `lien_k` : poser sur le mot qui nomme l'option, le
@@ -313,8 +386,8 @@ répètent pas la voix** (règle du 16/11/2026).
 - **Deux encarts `centre` au plus par plan**, titre et source non compris.
   `make check` refuse le troisième.
 - **Rien ne tourne** : un encart posé reste affiché jusqu'à la fin du plan.
-  Le titre (`titre_haut`, un seul par plan) aussi : pose-le à ~0,6 s, il
-  reste tout le plan.
+  Le titre (`titre_haut`, un seul par plan, obligatoire) aussi : posé dans
+  la première seconde, il reste tout le plan.
 - **Un encart ne reprend pas la voix.** `make check` refuse un encart qui
   contient **trois mots consécutifs** du `vo_fr` du segment (sans tenir compte
   de la casse, de la ponctuation ni des nombres) : « Une partie attend sur le
@@ -330,7 +403,9 @@ répètent pas la voix** (règle du 16/11/2026).
   son mot, points qui tombent, argent qui circule) compte comme du nouveau à
   chaque image, au calendrier comme en pixels. Si un plan reste figé plus de
   4 s sans encart, il lui manque une révélation, ou la famille n'est pas la
-  bonne : ne comble pas avec du texte.
+  bonne : ne comble pas avec du texte. Pour les fins de plan, voir « Tenir
+  une fin de plan » (section 1) : une mise en avant, un écart, un accent,
+  calés sur la phrase de conclusion.
 
 Les noms que portent les éléments du graphique (`option_k`, `noeud_k`,
 `lien_k`, `axe_x`, `source_g`…) ne sont pas des encarts : ils nomment ce que
