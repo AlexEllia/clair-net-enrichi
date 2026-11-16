@@ -10,8 +10,9 @@ se lit dans les deux langues, sa typographie non (4,3 / 4.3 ; 14 057 / 14,057 ;
 NNBSP = " "      # espace fine insecable
 
 _LOCALES = {
-    "fr": {"dec": ",", "mil": NNBSP, "pct": NNBSP + "%", "euro": ("", NNBSP + "€")},
-    "en": {"dec": ".", "mil": ",", "pct": "%", "euro": ("€", "")},
+    "fr": {"dec": ",", "mil": NNBSP, "pct": NNBSP + "%", "euro": ("", NNBSP + "€"),
+           "dollar": ("", NNBSP + "$")},
+    "en": {"dec": ".", "mil": ",", "pct": "%", "euro": ("€", ""), "dollar": ("$", "")},
 }
 
 LOCALE = "fr"
@@ -52,11 +53,17 @@ def euro(v, decimals=0):
     return pre + num(v, decimals) + post
 
 
+def dollar(v, decimals=None):
+    # Decimales par defaut : celles de la valeur (1 $, 1,16 $), comme un nombre.
+    pre, post = _LOCALES[LOCALE]["dollar"]
+    return pre + num(v, decimals) + post
+
+
 def facteur(v, decimals=None):
     return "×" + num(v, decimals)
 
 
-FORMATS = {"nombre": num, "pct": pct, "euro": euro, "facteur": facteur}
+FORMATS = {"nombre": num, "pct": pct, "euro": euro, "dollar": dollar, "facteur": facteur}
 
 
 def fmt(v, kind="nombre", decimals=None):

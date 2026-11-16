@@ -191,6 +191,20 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
     changent pas.
   Plans d'essai figés : `essai_mise_en_page_distribution_graduations` (refusé
   par le contrôle avec le code d'avant), `essai_mise_en_page_grille_pictos`.
+- **LineChart : axe logarithmique** (18/11/2026, demande d'Alexandre pour le
+  plan b de l'EP004 S05, l'indice Shiller depuis 1871). `"echelle_y": "log"`
+  (`ECHELLES_Y`, `_line_points` ; `plotting.FrameLog`, le même cadre dont
+  seule la projection verticale change) : bornes et graduations sur les
+  puissances de 10, au format de l'unité, une puissance sur deux au-delà de
+  huit (`LOG_GRADUATIONS_MAX`) ; une graduation sous l'unité garde ses
+  décimales. Nouveau format `dollar` (nombres.py : « 1 000 $ », « $1,000 » en
+  anglais), donné par `axes.unite_y` `"USD"`. Valeur nulle ou négative : le
+  composant s'arrête et le contrôle de placement la refuse, quel que soit
+  l'âge du script ; `echelle_y: "log"` hors LineChart refusé de même. Les
+  règles de placement et le contrôle des graduations sont ceux de l'axe
+  linéaire, sans exception. Un LineChart sans `echelle_y` ne change pas. Plan
+  d'essai figé : `essai_linechart_log` (153 points annuels, de 1 $ à
+  574 534 $).
 - **Deux plans dans un segment** (17/11/2026, spécification d'Alexandre :
   S05, S07, S16 et S21 de l'EP004 ont deux temps, la voix change de sujet en
   cours de segment). `manim_brief.plans` : exactement deux briefs ordinaires,

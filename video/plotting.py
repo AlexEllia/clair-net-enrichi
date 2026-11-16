@@ -71,6 +71,20 @@ class Frame:
         return t
 
 
+class FrameLog(Frame):
+    """Le meme cadre, l'axe vertical en echelle logarithmique : y0 et y1 sont
+    des puissances de 10, une meme hauteur vaut un meme facteur. Les valeurs
+    restent celles des donnees ; seule leur place change."""
+
+    def py(self, y):
+        lo, hi = np.log10(self.y0), np.log10(self.y1)
+        f = (np.log10(np.maximum(y, self.y0 * 1e-9)) - lo) / (hi - lo) if hi != lo else 0.0
+        return self.c[1] - self.h / 2 + f * self.h
+
+    def wy(self, dy):
+        raise ValueError("un ecart n'a pas de hauteur fixe sur un axe logarithmique")
+
+
 # --- Calculs -----------------------------------------------------------------
 
 def epargne_mensuelle(monthly=200.0, rate=0.05, years=45):

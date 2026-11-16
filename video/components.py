@@ -26,7 +26,7 @@ from style import (BG, BG_LIFT, INK, INK_SOFT, MUTED, RULE, RULE_SOFT, CONTRIB, 
                    TEAL, NEG, MANQUE, WHITE_DIM, PLOT_W, PLOT_H, Y_TOP, X_LEFT, X_RIGHT,
                    SZ_TITLE, SZ_BODY, SZ_LABEL, SZ_SOURCE,
                    txt, fade_up, euro, pct)
-from plotting import (Frame, epargne_mensuelle, calibrate, compound_index,
+from plotting import (Frame, FrameLog, epargne_mensuelle, calibrate, compound_index,
                       monotone_curve, nice_ceiling)
 
 
@@ -1032,7 +1032,13 @@ def _y_format(mb):
         return "pct", ("growth" in u or "gain" in u)
     if "eur" in u:
         return "euro", False
+    if "usd" in u or "dollar" in u or "$" in u:
+        return "dollar", False
     return "nombre", False
+
+
+ECHELLES_Y = ("lineaire", "log")
+LOG_GRADUATIONS_MAX = 8      # au-dela, une puissance de 10 sur deux
 
 
 def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
@@ -1084,6 +1090,25 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
     x1 = max(p[0] for s in series for p in s)
     ylo = min(0.0, min(p[1] for s in series for p in s))
     yhi = nice_ceiling(max(p[1] for s in series for p in s) * 1.08)
+    # Axe logarithmique (`echelle_y: "log"`) : une meme hauteur vaut un meme
+    # facteur ; bornes et graduations sur les puissances de 10. Il n'a pas de
+    # zero : toute valeur y est strictement positive.
+    echelle = mb.get("echelle_y", "lineaire")
+    if echelle not in ECHELLES_Y:
+        raise SystemExit(f"{sid} : manim_brief.echelle_y parmi {', '.join(ECHELLES_Y)} "
+                         f"(recu {echelle!r})")
+    log = echelle == "log"
+    if log:
+        if fill:
+            raise SystemExit(f"{sid} : echelle_y \"log\" ne vaut que pour LineChart")
+        valeurs = [p[1] for s in series for p in s]
+        if min(valeurs) <= 0:
+            raise SystemExit(f"{sid} : echelle_y \"log\" : valeur nulle ou negative "
+                             f"({min(valeurs):g}) - un axe logarithmique n'a pas de zero")
+        ylo = 10.0 ** np.floor(np.log10(min(valeurs)) + 1e-9)
+        yhi = 10.0 ** np.ceil(np.log10(max(valeurs)) - 1e-9)
+        if yhi <= ylo:
+            yhi = ylo * 10.0
     # Aire de trace ajustee a ce qui l'entoure : bandeau de legende en haut,
     # titre d'axe et source en bas, annotation a droite de la derniere abscisse.
     top = 1.70 if "legende" in cues.anchors else 1.90
@@ -1092,14 +1117,21 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
     # Colonne des encarts : l'aire de trace s'arrete avant elle.
     enc = (PLOT_W / 2 - GRAPHE_DROITE) if reserve_encarts(cues) else 0.0
     yvals = np.linspace(ylo, yhi, 5)
+    if log:
+        decades = int(round(np.log10(yhi / ylo)))
+        pas_log = 1 if decades + 1 <= LOG_GRADUATIONS_MAX else 2
+        yvals = np.array([ylo * 10.0 ** k for k in range(0, decades + 1, pas_log)])
     step = _nice_step((x1 - x0) / 4)
     xvals = list(np.arange(np.ceil(x0 / step) * step, x1 + 1e-9, step))
 
     def frame(cut):
         """Cadre, graduations et ancres, l'aire de trace amputee de `cut` a gauche."""
-        f = Frame(x0, x1, ylo, yhi, w=PLOT_W - right - cut - enc, h=top - bottom,
-                  center=[(cut - right - enc) / 2, (top + bottom) / 2, 0])
-        g = f.gridlines(yvals, fmt=lambda v: nombres.fmt(v, yfmt, 0))
+        f = (FrameLog if log else Frame)(
+            x0, x1, ylo, yhi, w=PLOT_W - right - cut - enc, h=top - bottom,
+            center=[(cut - right - enc) / 2, (top + bottom) / 2, 0])
+        # Sur un axe logarithmique, une graduation sous l'unite garde ses
+        # decimales (0,1 ; 0,01).
+        g = f.gridlines(yvals, fmt=lambda v: nombres.fmt(v, yfmt, None if log else 0))
         t = f.xticks(xvals, fmt=lambda v: nombres.num(v, 0))
         w = max((m.width for m in g if isinstance(m, Text)), default=0.0)
         return f, g, t, f.px(x0) - (0.22 + w + 0.45)

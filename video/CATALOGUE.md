@@ -598,6 +598,7 @@ l'écran (`34,8 %` ou `34.8%`) dépend de la langue du rendu, pas du script.
 | `axes.unite_x` | non | libre (`"years"`…) | Documentaire ; l'axe horizontal porte des nombres nus. |
 | `origine` | non | `[x, y]` | Point commun ajouté en tête de chaque série (ex. `[0, 0]` : gain nul au départ). Il ne porte pas d'étiquette. |
 | `couleurs` | non | liste parmi `"INTEREST"` (ambre), `"CONTRIB"` (bleu), `"TEAL"`, `"NEG"`, `"WHITE_DIM"` | Une par série. Convention de la chaîne : bleu = ce que vous versez, ambre = ce que le capital verse. |
+| `echelle_y` | non | `"lineaire"` (défaut), `"log"` | Échelle de l'axe vertical. `"log"` : axe **logarithmique** — une même hauteur vaut un même facteur (de 1 à 10 comme de 1 000 à 10 000). Voir « Axe logarithmique » ci-dessous. |
 | `croisement` | non | `true` | Repère au premier croisement des séries 1 et 2. |
 | `ecart` | non | `{"x": 30, "valeur": 9.5, "format": "facteur"}` | Accolade verticale entre les séries à l'abscisse `x`. `valeur` est facultative ; si elle est écrite, elle vient des sources (R3). `format` : `"nombre"`, `"pct"`, `"euro"`, `"facteur"` (×). L'accolade a la hauteur réelle de l'écart : sous 0,35 unité d'écran (≈ 9 % de la hauteur de l'axe), elle se lit mal — le moteur allonge ses pattes et affirme son trait, et le build le signale. Donne-lui alors une `valeur` sourcée, ou dis l'écart dans un encart. |
 | `facteur` | non | `{"serie": 1, "x": 30, "valeur": 4.3}` | Multiplicateur « ×4,3 » écrit à côté du point de la série à l'abscisse `x`. `valeur` vient des sources (R3). |
@@ -713,6 +714,65 @@ le recalage remplacera.
   ]
 }
 ```
+
+**Axe logarithmique** (`"echelle_y": "log"`, règle du 18/11/2026). Pour une
+grandeur qui se multiplie sur une très longue durée — un indice sur 150 ans,
+1 $ devenu 574 534 $ : sur un axe linéaire, les cent premières années sont
+une ligne plate collée à zéro, et l'on ne voit que la fin.
+
+- Les graduations tombent sur les **puissances de 10**, au format de l'unité :
+  « 1 $, 10 $, 100 $, 1 000 $… ». Les bornes de l'axe sont la puissance de 10
+  sous la plus petite valeur et celle au-dessus de la plus grande. Au-delà de
+  huit graduations, une puissance sur deux.
+- **`axes.unite_y`** donne ce format : `"USD"` (« 1 000 $ »), `"EUR"`
+  (« 1 000 € »), `"percent"`, ou un nombre nu (`"index"`).
+- **Aucune valeur nulle ou négative** : un axe logarithmique n'a pas de zéro.
+  `make check` refuse le plan (et le build s'arrête) dès qu'une valeur de
+  `donnees` ou d'`origine` est ≤ 0. Un gain en pourcentage qui part de 0 % ne
+  se trace donc pas en log : trace l'indice (base 1 ou base 100).
+- `interpolation` reste obligatoire et garde son sens ; entre deux points
+  annuels, `"lineaire"` convient. Une croissance à taux constant
+  (`"exponentielle"`) y devient une **droite** : c'est tout l'intérêt de l'axe.
+- Le reste ne change pas : points nommés (`series_k_point_j`) et leurs
+  étiquettes, `croisement`, `ecart`, `facteur`, accents, placement des
+  étiquettes et contrôle des graduations (0,15 entre deux textes).
+- Dis-le au spectateur si la voix ne le dit pas : un axe logarithmique se lit
+  mal sans avertissement. Le titre de l'axe ou un encart (« Échelle
+  logarithmique ») le signale. `LineChart` seulement.
+
+**Exemple exemplaire, axe logarithmique** — l'indice de Robert Shiller, 1 $
+placé en janvier 1871, dividendes réinvestis. Plan d'essai figé :
+`video/outils/essais/linechart_log.json` (les 153 points annuels y sont).
+
+```json
+{
+  "type_visuel": "manim",
+  "manim_brief": {
+    "composant": "LineChart",
+    "echelle_y": "log",
+    "axes": {"unite_x": "years", "unite_y": "USD"},
+    "interpolation": "lineaire",
+    "couleurs": ["INTEREST"],
+    "donnees": [[1871, 1.0], [1872, 1.16], [1873, 1.29], "… un point par an …", [2023, 574534]],
+    "revelations": [
+      {"element": "series_1_point_1", "t_rel_s": 4.82, "declencheur": "mille huit cent soixante et onze"},
+      {"element": "series_1_point_21", "t_rel_s": 6.88, "declencheur": "Chaque essai dure"},
+      {"element": "series_1_point_153", "t_rel_s": 15.78, "declencheur": "dividendes réinvestis"}
+    ]
+  },
+  "overlay_texte": [
+    {"ancre": "titre_haut", "t_rel_s": 0.5, "texte_fr": "Un essai lancé chaque mois, 20 ans chacun"},
+    {"ancre": "axe_x", "t_rel_s": 0.5, "texte_fr": "Années"},
+    {"ancre": "axe_y", "t_rel_s": 0.5, "texte_fr": "Valeur de 1 $ placé en janvier 1871"},
+    {"ancre": "centre", "t_rel_s": 3.9, "texte_fr": "Départs : janv. 1871 à juin 2003"}
+  ]
+}
+```
+
+Ce que ça donne : l'axe porte sept graduations, de « 1 $ » à « 1 000 000 $ » ;
+la courbe part de « 1 $ », passe par « 3,34 $ » vingt ans plus tard et arrive
+à « 574 534 $ » — les krachs de 1929, 2000 et 2008 s'y voient, alors qu'un axe
+linéaire n'aurait montré que les trente dernières années.
 
 #### `Bars` — barres
 

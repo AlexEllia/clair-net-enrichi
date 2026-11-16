@@ -752,6 +752,20 @@ def collisions(seg, dur, ep_dir=None, strict=True):
     simple remarque sinon (script anterieur a la regle)."""
     from style import FW, FH
     from scenes import Efface
+    mb_log = seg.get("manim_brief") or {}
+    if mb_log.get("echelle_y") == "log":
+        # Un axe logarithmique n'a pas de zero : refus, quel que soit l'age du
+        # script, d'une valeur nulle ou negative (donnees et origine).
+        pts = [v for r in mb_log.get("donnees") or [] for v in r[1:]
+               if isinstance(v, (int, float))]
+        if mb_log.get("origine") is not None:
+            pts.append(mb_log["origine"][1])
+        mauvais = sorted({v for v in pts if v <= 0})
+        if mauvais or mb_log.get("composant") != "LineChart":
+            quoi = (f"valeur nulle ou negative ({', '.join(f'{v:g}' for v in mauvais[:4])}) "
+                    f"sur un axe logarithmique : il n'a pas de zero") if mauvais else \
+                "echelle_y \"log\" ne vaut que pour LineChart"
+            return [quoi], 0, 0, []
     sp = plans_du_segment(seg, dur, ep_dir)
     if sp:
         # Deux plans : chacun est juge comme un plan entier (placement,
