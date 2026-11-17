@@ -1,0 +1,153 @@
+{
+ "_role": "Plan d'essai, hors episode : LineChart dont l'axe vertical ne part pas de 0 (`\"y_min\": 95`, regle du 17/11/2026) - marque de coupure en bas de l'axe, graduations exactes de 95 a 115, accolade de l'ecart lisible. Brief du plan a de l'EP004 S10 (script du 17/11/2026), y_min ajoute ; pas encore vu a l'ecran.",
+ "duree_s": 12.0,
+ "segment": {
+  "id": "essai_linechart_y_min",
+  "role": "essai",
+  "type_visuel": "manim",
+  "vo_fr": "Au bout d'un an, cent dollars placés d'un coup valent cent dix. Étalés sur l'année, cent six. À ce moment-là, les deux portefeuilles sont entièrement investis, dans les mêmes actions.",
+  "manim_brief": {
+   "composant": "LineChart",
+   "donnees": [
+    [
+     1,
+     101.97,
+     100.16
+    ],
+    [
+     2,
+     102.93,
+     100.32
+    ],
+    [
+     3,
+     101.39,
+     99.94
+    ],
+    [
+     4,
+     104.25,
+     100.88
+    ],
+    [
+     5,
+     105.27,
+     101.3
+    ],
+    [
+     6,
+     105.62,
+     101.47
+    ],
+    [
+     7,
+     107.27,
+     102.4
+    ],
+    [
+     8,
+     109.13,
+     103.6
+    ],
+    [
+     9,
+     104.21,
+     100.06
+    ],
+    [
+     10,
+     104.31,
+     100.14
+    ],
+    [
+     11,
+     106.52,
+     102.09
+    ],
+    [
+     12,
+     110,
+     106
+    ]
+   ],
+   "axes": {
+    "unite_x": "months",
+    "unite_y": "index"
+   },
+   "interpolation": "lineaire",
+   "origine": [
+    0,
+    100
+   ],
+   "couleurs": [
+    "INTEREST",
+    "CONTRIB"
+   ],
+   "ecart": {
+    "x": 12,
+    "valeur": 4,
+    "format": "nombre"
+   },
+   "revelations": [
+    {
+     "element": "series_1_point_12",
+     "t_rel_s": 3.25,
+     "declencheur": "cent dix"
+    },
+    {
+     "element": "series_2_point_12",
+     "t_rel_s": 6.22,
+     "declencheur": "cent six"
+    },
+    {
+     "element": "gap",
+     "t_rel_s": 9.9,
+     "declencheur": "entièrement investis"
+    }
+   ],
+   "y_min": 95
+  },
+  "overlay_texte": [
+   {
+    "ancre": "titre_haut",
+    "t_rel_s": 0.5,
+    "texte_fr": "Cas typique : l'écart se forme la première année"
+   },
+   {
+    "ancre": "bas",
+    "t_rel_s": 0.5,
+    "texte_fr": "Cas réel : départ en septembre 1964 · Calcul Clair net enrichi, données Shiller (Yale), S&P 500 dividendes réinvestis, 1871-2023 · Performances passées : pas un indicateur fiable des résultats futurs"
+   },
+   {
+    "ancre": "axe_x",
+    "t_rel_s": 0.6,
+    "texte_fr": "Mois"
+   },
+   {
+    "ancre": "axe_y",
+    "t_rel_s": 0.6,
+    "texte_fr": "Valeur de 100 $ placés"
+   },
+   {
+    "ancre": "legende",
+    "t_rel_s": 3.25,
+    "texte_fr": "Tout d'un coup",
+    "declencheur": "cent dix",
+    "serie": 1
+   },
+   {
+    "ancre": "legende",
+    "t_rel_s": 6.22,
+    "texte_fr": "Étalé sur 12 mois",
+    "declencheur": "cent six",
+    "serie": 2
+   },
+   {
+    "ancre": "centre",
+    "t_rel_s": 7.95,
+    "texte_fr": "12 versements égaux, en début de mois",
+    "declencheur": "ce moment-là"
+   }
+  ]
+ }
+}

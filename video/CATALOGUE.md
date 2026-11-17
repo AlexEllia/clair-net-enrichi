@@ -572,6 +572,16 @@ Refus pour un script écrit contre le catalogue actuel, remarque pour un
 script antérieur. Ces fautes sont celles du moteur plus souvent que les
 tiennes : si `make check` en nomme une, signale-la.
 
+**Graduations exactes** (règle du 17/11/2026), dans toutes les familles :
+une graduation écrit toujours **la valeur exacte de sa position**, à la
+précision écrite. Le moteur choisit le pas pour cela — 1, 2 ou 5 × 10ⁿ ; un
+pas de 2,5 seulement s'il s'écrit sans décimale (25, 250) — et écrit les
+décimales quand le pas est sous l'unité (0,5 %). Avant, un axe de 0 à 10 %
+gradué tous les 2,5 écrivait « 2 % », « 5 % », « 8 % » (EP004 S07) : trois
+chiffres faux. `make check` refuse une graduation dont le nombre écrit
+diffère de sa position, quel que soit l'âge du script. Rien à écrire de ton
+côté.
+
 **Le montant d'un lien de `Flux`** ne croise jamais le trajet de ce lien,
 particules comprises : sur un lien vertical ou très penché, où sa largeur le
 ramènerait dessus, il s'en écarte de lui-même, et le nom du lien avec lui.
@@ -635,8 +645,9 @@ l'écran (`34,8 %` ou `34.8%`) dépend de la langue du rendu, pas du script.
 | `origine` | non | `[x, y]` | Point commun ajouté en tête de chaque série (ex. `[0, 0]` : gain nul au départ). Il ne porte pas d'étiquette. |
 | `couleurs` | non | liste parmi `"INTEREST"` (ambre), `"CONTRIB"` (bleu), `"TEAL"`, `"NEG"`, `"WHITE_DIM"` | Une par série. Convention de la chaîne : bleu = ce que vous versez, ambre = ce que le capital verse. |
 | `echelle_y` | non | `"lineaire"` (défaut), `"log"` | Échelle de l'axe vertical. `"log"` : axe **logarithmique** — une même hauteur vaut un même facteur (de 1 à 10 comme de 1 000 à 10 000). Voir « Axe logarithmique » ci-dessous. |
+| `y_min` | non | un nombre, au plus la plus petite valeur | L'axe vertical **part de cette valeur** au lieu de 0, avec une **marque de coupure** en bas de l'axe. Pour lire un écart petit devant les valeurs (110 contre 106). `LineChart` seulement. Voir « Axe qui ne part pas de 0 » ci-dessous. |
 | `croisement` | non | `true` | Repère au premier croisement des séries 1 et 2. |
-| `ecart` | non | `{"x": 30, "valeur": 9.5, "format": "facteur"}` | Accolade verticale entre les séries à l'abscisse `x`. `valeur` est facultative ; si elle est écrite, elle vient des sources (R3). `format` : `"nombre"`, `"pct"`, `"euro"`, `"facteur"` (×). L'accolade a la hauteur réelle de l'écart : sous 0,35 unité d'écran (≈ 9 % de la hauteur de l'axe), elle se lit mal — le moteur allonge ses pattes et affirme son trait, et le build le signale. Donne-lui alors une `valeur` sourcée, ou dis l'écart dans un encart. |
+| `ecart` | non | `{"x": 30, "valeur": 9.5, "format": "facteur"}` | Accolade verticale entre les séries à l'abscisse `x`. `valeur` est facultative ; si elle est écrite, elle vient des sources (R3). `format` : `"nombre"`, `"pct"`, `"euro"`, `"facteur"` (×). L'accolade a la hauteur réelle de l'écart, ses deux bouts exactement à la hauteur des séries en `x` (sur un escalier aussi). **Sous 0,35 unité d'écran (≈ 9 % de la hauteur de l'axe), `make check` la refuse** : elle se lit mal. Fais alors partir l'axe plus haut (`y_min`), ou montre l'écart autrement. |
 | `facteur` | non | `{"serie": 1, "x": 30, "valeur": 4.3}` | Multiplicateur « ×4,3 » écrit à côté du point de la série à l'abscisse `x`. `valeur` vient des sources (R3). |
 
 **Éléments adressables dans `revelations`** :
@@ -656,7 +667,9 @@ la couleur de sa série : le moteur n'essaie que des places tout autour de lui
 point le plus proche de l'étiquette est le sien — ni un autre point marqué,
 ni la courbe d'une autre série (à 0,05 unité près, pour deux points presque
 confondus). Si aucune n'est libre, l'étiquette s'écarte un peu, reliée à son
-point par un trait de rappel fin ; jamais à plus de **0,60 unité** de lui
+point par un trait de rappel fin, de la couleur de sa série éclaircie
+jusqu'à se voir nettement sur le fond (contraste 4,5 au moins, épaisseur 2,2 ;
+`make check` refuse un trait plus terne) ; jamais à plus de **0,60 unité** de lui
 (≈ 80 px en 1080p). `make check` refuse une étiquette qui enfreint l'une de
 ces deux limites, dans toutes les familles (pour `Bars` et `Comparaison`, la
 cible est la barre ou la jauge). Moins de points nommés, c'est plus de place :
@@ -773,6 +786,29 @@ le recalage remplacera.
   ]
 }
 ```
+
+**Axe qui ne part pas de 0** (`"y_min": v`, règle du 17/11/2026). Quand
+l'écart à montrer est petit devant les valeurs — 110 contre 106 pour
+100 $ placés —, un axe de 0 à 120 l'écrase : l'accolade fait 0,13 unité et
+`make check` la refuse.
+
+- `"y_min": 95` : l'axe vertical part de 95. Une **marque de coupure** (deux
+  traits obliques) interrompt l'axe juste au-dessus de sa borne basse : le
+  spectateur voit que le zéro n'est pas là. Les graduations partent de
+  `y_min`, exactes (95, 100, 105…).
+- `y_min` est **au plus la plus petite valeur** de `donnees` et
+  d'`origine` ; au-dessus, la courbe sortirait par le bas : refusé.
+- **`LineChart` seulement**, sans `echelle_y: "log"`. `Bars`, `Areas`,
+  `Comparaison`, `Cascade`, `Erosion`, `Grille`, `Distribution` — toutes les
+  familles à barres, bandes ou jauges — **partent toujours de 0** : une
+  barre coupée ment sur sa hauteur. `make check` y refuse `y_min`, quel que
+  soit l'âge du script.
+- Choisis une valeur ronde, un peu sous la plus petite valeur. Dis-le si la
+  voix ne le dit pas : le titre de l'axe peut le porter.
+
+Plan d'essai (pas encore validé à l'écran) :
+`video/outils/essais/linechart_y_min.json` — le plan a de l'EP004 S10 avec
+`"y_min": 95`.
 
 **Axe logarithmique** (`"echelle_y": "log"`, règle du 18/11/2026). Pour une
 grandeur qui se multiplie sur une très longue durée — un indice sur 150 ans,
@@ -2135,3 +2171,5 @@ convention 9A de `recherche.md`, et tout nombre affiché présent dans
     temps de se poser (~1 s après le début du fondu).
 12. Une légende par série au plus, avec `"serie": k` dès que l'ordre des
     légendes n'est pas celui des séries.
+13. Une accolade d'écart (`ecart`) fait au moins 0,35 unité à l'écran ;
+    sinon, `"y_min"` sur un `LineChart`. Jamais de `y_min` hors `LineChart`.

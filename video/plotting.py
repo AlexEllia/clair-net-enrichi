@@ -54,6 +54,7 @@ class Frame:
             if fmt:
                 lab = txt(fmt(v), SZ_SOURCE, MUTED)
                 lab.next_to(ln, side, buff=0.22)
+                lab.graduation = float(v)      # sa position, pour make check
                 g.add(lab)
         return g
 
@@ -62,6 +63,8 @@ class Frame:
         for v in values:
             lab = txt(fmt(v), SZ_SOURCE, MUTED)
             lab.move_to(self.pt(v, self.y0)).shift(DOWN * (buff + lab.height / 2))
+            if isinstance(v, (int, float, np.integer, np.floating)):
+                lab.graduation = float(v)      # sa position, pour make check
             g.add(lab)
         return g
 

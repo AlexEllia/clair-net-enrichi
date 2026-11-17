@@ -191,6 +191,44 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
     changent pas.
   Plans d'essai figés : `essai_mise_en_page_distribution_graduations` (refusé
   par le contrôle avec le code d'avant), `essai_mise_en_page_grille_pictos`.
+- **Graduations, axe coupé, accolade, trait de rappel** (17/11/2026, fautes
+  vues sur le rendu de l'EP004 v2 du même jour, demande d'Alexandre : une
+  règle au check pour chaque point) :
+  - **Graduations exactes**, toutes familles (`_pas_exact`,
+    `decimales_exactes`, components.py ; `lab.graduation`, plotting.py ;
+    `nombre_ecrit`, build.py) : le nombre écrit est la valeur de sa
+    position. Pas de 1, 2 ou 5 × 10ⁿ, 2,5 seulement s'il s'écrit sans
+    décimale ; décimales écrites sous l'unité. LineChart : les cinq
+    graduations d'avant restent si elles sont exactes à l'unité (aucun plan
+    validé ne change) ; sinon pas exact et axe monté jusqu'au pas suivant.
+    *Pourquoi* : EP004 S07 plan a, axe de 0 à 10 % gradué tous les 2,5,
+    écrit « 2 % », « 5 % », « 8 % » — maintenant 0, 2, 4… 10 %. Refus de
+    toute graduation fausse, quel que soit l'âge du script.
+  - **`"y_min": v`** (LineChart seulement) : l'axe vertical part de v, avec
+    une marque de coupure (deux traits obliques, `COUPURE_HAUT` = 0,22) au
+    bas de l'axe ; v au plus la plus petite valeur ; ni avec un axe log.
+    Interdit dans toutes les familles à barres, bandes ou jauges, qui
+    partent toujours de 0 : refus au check (et le composant s'arrête),
+    quel que soit l'âge du script ; axe coupé sans marque refusé.
+  - **Accolade d'écart lisible** : sous `ECART_MIN` (0,35 unité), l'ancien
+    avertissement du build devient un refus au check (script au catalogue
+    actuel et plan d'essai ; remarque sinon), qui suggère `y_min`.
+    *Pourquoi* : EP004 S10, accolades de 0,13 et 0,14 unité, lues comme
+    un petit rectangle blanc.
+  - **Accolade alignée sur ses points** : ses bouts sont calculés sur les
+    points sources (`_interp` en x), plus sur la courbe échantillonnée, où
+    un escalier sautait d'une marche à l'autre. *Pourquoi* : EP004 S04,
+    l'accolade de « 50 % » descendait à 45 %. Refus si un bout s'écarte de
+    plus de 0,005 de son point.
+  - **Trait de rappel clair** (`couleur_rappel`, `RAPPEL_CONTRASTE` = 4,5,
+    épaisseur 2,2, opacité 1) : la couleur de la série, éclaircie vers INK
+    jusqu'au contraste voulu sur le fond. Il prenait `get_color()` du texte,
+    une couleur de trait presque noire. *Pourquoi* : EP004 S04, le rappel de
+    « 8,3 % » ne se voyait pas. Refus d'un trait plus terne.
+  Non-régression : tout identique au pixel près sauf `essai_linechart_log`
+  (v4, trait de rappel de « 1 $ » ; calendrier inchangé) — **pas encore vue
+  à l'écran**. Nouveau plan d'essai, non figé (pas encore vu à l'écran) :
+  `essai_linechart_y_min` (EP004 S10 plan a avec `"y_min": 95`).
 - **Corrections du 17/11/2026** (fautes vues sur les aperçus de l'EP004,
   script v8 ; refus pour un script au catalogue actuel et un plan d'essai,
   remarque pour un script antérieur, sauf mention contraire) :

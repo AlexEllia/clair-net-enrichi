@@ -727,6 +727,18 @@ def fautes_encarts(seg):
     return out
 
 
+def nombre_ecrit(texte):
+    """Le premier nombre d'un texte ecrit a la francaise (« 1 000 000 $ »,
+    « −45 % », « 2,5 % », « an 10 »), ou None."""
+    import re
+    t = re.sub(r"\s", "", str(texte).replace("\u202f", "").replace("\u00a0", ""))
+    m = re.search(r"([\u2212-]?)(\d+(?:,\d+)?)", t)
+    if not m:
+        return None
+    v = float(m.group(2).replace(",", "."))
+    return -v if m.group(1) else v
+
+
 def collisions(seg, dur, ep_dir=None, strict=True):
     """Fautes de placement d'un plan, jugees sur les boites englobantes de
     tout ce que le moteur y pose :
@@ -765,6 +777,28 @@ def collisions(seg, dur, ep_dir=None, strict=True):
             quoi = (f"valeur nulle ou negative ({', '.join(f'{v:g}' for v in mauvais[:4])}) "
                     f"sur un axe logarithmique : il n'a pas de zero") if mauvais else \
                 "echelle_y \"log\" ne vaut que pour LineChart"
+            return [quoi], 0, 0, []
+    if mb_log.get("y_min") is not None:
+        # Axe qui ne part pas de 0 (regle du 17/11/2026) : LineChart seulement ;
+        # barres, bandes et jauges partent toujours de 0. Quel que soit l'age
+        # du script.
+        y_min = mb_log["y_min"]
+        pts = [v for r in mb_log.get("donnees") or [] for v in r[1:]
+               if isinstance(v, (int, float))]
+        if mb_log.get("origine") is not None:
+            pts.append(mb_log["origine"][1])
+        quoi = None
+        if mb_log.get("composant") != "LineChart":
+            quoi = (f"y_min interdit dans {mb_log.get('composant')} : barres, bandes et "
+                    f"jauges partent toujours de 0 (LineChart seulement)")
+        elif mb_log.get("echelle_y") == "log":
+            quoi = "y_min ne se combine pas avec echelle_y \"log\""
+        elif isinstance(y_min, bool) or not isinstance(y_min, (int, float)):
+            quoi = f"y_min doit etre un nombre (recu {y_min!r})"
+        elif pts and y_min > min(pts) + 1e-9:
+            quoi = (f"y_min {y_min:g} au-dessus de la plus petite valeur ({min(pts):g}) : "
+                    f"la courbe sortirait par le bas")
+        if quoi:
             return [quoi], 0, 0, []
     sp = plans_du_segment(seg, dur, ep_dir)
     if sp:
@@ -931,6 +965,53 @@ def collisions(seg, dur, ep_dir=None, strict=True):
                       f"(`series_k_point_j`), les autres ne feront que tracer")
     etiquettes = getattr(cues, "etiquettes", [])
     base = getattr(cues, "ligne_de_base", None)
+    # Graduations exactes (regle du 17/11/2026), toutes familles, quel que
+    # soit l'age du script : le nombre ecrit est la valeur de sa position.
+    vus_g = set()
+    for g in graphe:
+        for x in g.get_family():
+            v = getattr(x, "graduation", None)
+            if v is None or id(x) in vus_g:
+                continue
+            vus_g.add(id(x))
+            lu = nombre_ecrit(getattr(x, "text", ""))
+            if lu is None:
+                fautes.append(f"graduation « {getattr(x, 'text', '?')} » : aucun nombre lisible "
+                              f"(position {v:g})")
+            elif abs(lu - v) > 1e-6 * max(1.0, abs(v)):
+                fautes.append(f"graduation « {getattr(x, 'text', '?')} » placee a {v:g} : elle "
+                              f"doit ecrire sa valeur exacte (pas de 1, 2 ou 5, ou la decimale)")
+    # Axe qui ne part pas de 0 : sa marque de coupure est la.
+    y_min = (seg.get("manim_brief") or {}).get("y_min")
+    if isinstance(y_min, (int, float)) and not isinstance(y_min, bool) and y_min > 0 \
+            and getattr(cues, "coupure", None) is None:
+        fautes.append(f"axe vertical a partir de {y_min:g} sans marque de coupure")
+    # Accolades d'ecart d'un LineChart : alignees sur leurs points, lisibles.
+    from components import ECART_MIN, contraste, RAPPEL_CONTRASTE
+    from style import BG
+    for a in getattr(cues, "accolades", []):
+        tr = a["trait"]
+        bas_, haut_ = sorted((float(tr.get_start()[1]), float(tr.get_end()[1])))
+        lo_, hi_ = sorted(a["attendu"])
+        if abs(bas_ - lo_) > 0.005 or abs(haut_ - hi_) > 0.005:
+            fautes.append(f"{a['nom']} : ses bouts ({bas_:.2f} ; {haut_:.2f}) ne sont pas a la "
+                          f"hauteur de ses points ({lo_:.2f} ; {hi_:.2f})")
+        if a["haut"] < ECART_MIN - 1e-9:
+            noter_t(f"{a['nom']} : {a['haut']:.2f} unite a l'ecran (minimum "
+                    f"{ECART_MIN:.2f}, ecart de {a['ecart']:.4g} sur un axe de {a['axe']:.4g}) : "
+                    f"elle se lit mal - fais partir l'axe plus haut (`\"y_min\": v`, "
+                    f"LineChart), ou montre l'ecart autrement")
+    # Traits de rappel : clairs et visibles sur le fond.
+    for lab, _, _, nom in getattr(cues, "etiquettes", []):
+        r_ = getattr(lab, "rappel", None)
+        if r_ is None:
+            continue
+        k = contraste(r_.get_stroke_color(), BG)
+        if (k < RAPPEL_CONTRASTE - 1e-6 or r_.get_stroke_opacity() < 0.9
+                or r_.get_stroke_width() < 2.0):
+            noter_t(f"trait de rappel de « {getattr(lab, 'text', '?')} » ({nom}) peu visible : "
+                    f"contraste {k:.1f} sur le fond (minimum {RAPPEL_CONTRASTE:.1f}), "
+                    f"opacite {r_.get_stroke_opacity():.2f}, epaisseur {r_.get_stroke_width():.1f}")
     # LineChart : aucun texte du graphique (valeur d'un point, d'une accolade,
     # d'un facteur, graduation) n'est traverse par une courbe (17/11/2026).
     from components import croise

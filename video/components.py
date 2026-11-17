@@ -67,6 +67,11 @@ class Cues:
         self.etiquettes = []
         self.courbes = {}
         self.obstacles = []
+        # Accolades d'ecart d'un LineChart, pour make check : [{"nom", "haut",
+        # "trait", "attendu" (y ecran des deux points), "x"}] ; et la marque
+        # de coupure d'un axe qui ne part pas de 0 (`y_min`).
+        self.accolades = []
+        self.coupure = None
         # Code couleur de sens, pour make check : ce que le plan presente comme
         # un gain ou une perte, [{"nom", "nature", "objets", "montant"}] -
         # les objets traces et l'etiquette du montant (ou None).
@@ -854,6 +859,72 @@ def _nice_step(raw):
     return next(m * mag for m in (1, 2, 2.5, 5, 10) if m * mag >= raw - 1e-9)
 
 
+# Graduations exactes (regle du 17/11/2026) : une graduation ecrit toujours
+# sa valeur exacte, a la precision ecrite. Un pas de 2,5 qui s'ecrirait a
+# l'unite (« 2 % », « 8 % » pour 2,5 et 7,5 : EP004 S07 plan a) cede la place
+# a 5 ; un pas sous l'unite ecrit ses decimales. make check refuse une
+# graduation dont le texte n'est pas la valeur de sa position.
+DECIMALES_MAX = 4
+
+
+def _pas_exact(raw, decimales=0):
+    """Comme _nice_step, mais un pas de 2,5 x 10^n n'est retenu que s'il
+    s'ecrit exactement a `decimales` decimales (25, 250 : oui ; 2,5 a l'unite :
+    non, 5 a sa place)."""
+    mag = 10 ** np.floor(np.log10(raw)) if raw > 0 else 1.0
+    for m in (1, 2, 2.5, 5, 10):
+        pas = m * mag
+        if m == 2.5 and abs(round(pas, decimales) - pas) > 1e-9 * max(1.0, pas):
+            continue
+        if pas >= raw - 1e-9:
+            return float(pas)
+    return float(10 * mag)
+
+
+def exactes(vals, decimales):
+    """Toutes les valeurs s'ecrivent-elles exactement a `decimales` decimales ?"""
+    return all(abs(round(float(v), decimales) - float(v)) <= 1e-9 * max(1.0, abs(float(v)))
+               for v in vals)
+
+
+def decimales_exactes(vals, minimum=0):
+    """Le plus petit nombre de decimales (au moins `minimum`) qui ecrit
+    chaque valeur exactement."""
+    for d in range(minimum, DECIMALES_MAX + 1):
+        if exactes(vals, d):
+            return d
+    return DECIMALES_MAX
+
+
+def contraste(c1, c2):
+    """Rapport de contraste WCAG entre deux couleurs (1 a 21)."""
+    def lum(c):
+        r, g, b = [float(x) for x in ManimColor(c).to_rgb()]
+        f = [x / 12.92 if x <= 0.03928 else ((x + 0.055) / 1.055) ** 2.4 for x in (r, g, b)]
+        return 0.2126 * f[0] + 0.7152 * f[1] + 0.0722 * f[2]
+    a, b = sorted((lum(c1), lum(c2)), reverse=True)
+    return (a + 0.05) / (b + 0.05)
+
+
+# Trait de rappel (regle du 17/11/2026) : clair et visible sur le fond. Il
+# prenait la couleur de trait du texte (`get_color`), presque noire : le
+# rappel de « 8,3 % » (EP004 S04) ne se voyait pas.
+RAPPEL_CONTRASTE = 4.5     # contraste minimal du trait sur le fond
+RAPPEL_EPAISSEUR = 2.2
+RAPPEL_OPACITE = 1.0
+
+
+def couleur_rappel(serie):
+    """La couleur de la serie, eclaircie vers INK jusqu'a RAPPEL_CONTRASTE
+    sur le fond."""
+    c = ManimColor(serie)
+    for k in range(11):
+        m = interpolate_color(c, ManimColor(INK), k / 10)
+        if contraste(m, BG) >= RAPPEL_CONTRASTE:
+            return m
+    return ManimColor(INK)
+
+
 def _boxes_overlap(a, b, pad=0.05):
     return not (a.get_right()[0] + pad < b.get_left()[0] or b.get_right()[0] + pad < a.get_left()[0]
                 or a.get_top()[1] + pad < b.get_bottom()[1] or b.get_top()[1] + pad < a.get_bottom()[1])
@@ -924,6 +995,7 @@ def _place_label(lab, dot, placed, xmin, xmax, zone=None, traces=None, own=None,
 # courbe.
 LABEL_RULE = "v2-ancre"
 ECART_MIN = 0.35      # hauteur sous laquelle une accolade d'ecart se lit mal
+COUPURE_HAUT = 0.22  # marque de coupure : au-dessus de la borne basse de l'axe
 ANCRE_MAX = 0.60      # distance maximale du bord de l'etiquette a son point
 ETIQUETTES_MAX = 6    # LineChart sans aucun point nomme : etiquettes au plus (make check)
 ANCRE_TOL = 0.05      # deux points presque confondus : a 0,05 pres, la couleur les departage
@@ -1023,8 +1095,9 @@ def _place_label_scored(lab, dot, placed, zone, traces, own, sources, floor=None
             return lab                  # collee au point : pas de trait a tracer
         q = np.array([np.clip(c[0], boite[0], boite[1]), np.clip(c[1], boite[2], boite[3]), 0.0])
         u = (q - c) / max(np.linalg.norm(q - c), 1e-6)
-        lab.rappel = Line(c + u * 0.11, q - u * 0.04, stroke_color=lab.get_color(),
-                          stroke_width=1.8, stroke_opacity=0.9)
+        lab.rappel = Line(c + u * 0.11, q - u * 0.04,
+                          stroke_color=couleur_rappel(lab.get_fill_color()),
+                          stroke_width=RAPPEL_EPAISSEUR, stroke_opacity=RAPPEL_OPACITE)
     return lab
 
 
@@ -1247,6 +1320,25 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
         yhi = 10.0 ** np.ceil(np.log10(max(valeurs)) - 1e-9)
         if yhi <= ylo:
             yhi = ylo * 10.0
+    # Axe qui ne part pas de 0 (`"y_min": v`, regle du 17/11/2026) : LineChart
+    # seulement, une marque de coupure en bas de l'axe vertical le dit. Les
+    # familles a barres ou jauges partent toujours de 0.
+    y_min = mb.get("y_min")
+    if y_min is not None:
+        if fill or family != "LineChart":
+            raise SystemExit(f"{sid} : y_min ne vaut que pour LineChart - barres, bandes et "
+                             f"jauges partent toujours de 0")
+        if log:
+            raise SystemExit(f"{sid} : y_min ne se combine pas avec echelle_y \"log\"")
+        if isinstance(y_min, bool) or not isinstance(y_min, (int, float)):
+            raise SystemExit(f"{sid} : y_min doit etre un nombre (recu {y_min!r})")
+        vmin = min(p[1] for s in series for p in s)
+        if float(y_min) > vmin + 1e-9:
+            raise SystemExit(f"{sid} : y_min {y_min:g} au-dessus de la plus petite valeur "
+                             f"({vmin:g}) : la courbe sortirait par le bas")
+        ylo = float(y_min)
+        if yhi <= ylo:
+            yhi = nice_ceiling(max(p[1] for s in series for p in s) * 1.08)
     # Aire de trace ajustee a ce qui l'entoure : bandeau de legende en haut,
     # titre d'axe et source en bas, annotation a droite de la derniere abscisse.
     top = 1.70 if "legende" in cues.anchors else 1.90
@@ -1255,12 +1347,25 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
     # Colonne des encarts : l'aire de trace s'arrete avant elle.
     enc = (PLOT_W / 2 - GRAPHE_DROITE) if reserve_encarts(cues) else 0.0
     yvals = np.linspace(ylo, yhi, 5)
+    ydec = None
     if log:
         decades = int(round(np.log10(yhi / ylo)))
         pas_log = 1 if decades + 1 <= LOG_GRADUATIONS_MAX else 2
         yvals = np.array([ylo * 10.0 ** k for k in range(0, decades + 1, pas_log)])
-    step = _nice_step((x1 - x0) / 4)
+    elif exactes(yvals, 0):
+        ydec = 0                       # cinq graduations exactes a l'unite : inchange
+    else:
+        # Graduations exactes : un pas de 1, 2 ou 5 (2,5 seulement s'il
+        # s'ecrit a l'unite), l'axe monte jusqu'au pas suivant, et les
+        # decimales qu'il faut (EP004 S07 plan a : 0, 2, 4... 10 %).
+        ystep = _pas_exact((yhi - ylo) / 5)
+        k_max = int(np.ceil((yhi - ylo) / ystep - 1e-9))
+        yhi = ylo + k_max * ystep
+        yvals = np.array([ylo + k * ystep for k in range(k_max + 1)])
+        ydec = decimales_exactes(yvals)
+    step = _pas_exact((x1 - x0) / 4)
     xvals = list(np.arange(np.ceil(x0 / step) * step, x1 + 1e-9, step))
+    xdec = decimales_exactes(xvals)
 
     def frame(cut):
         """Cadre, graduations et ancres, l'aire de trace amputee de `cut` a gauche."""
@@ -1269,8 +1374,8 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
             center=[(cut - right - enc) / 2, (top + bottom) / 2, 0])
         # Sur un axe logarithmique, une graduation sous l'unite garde ses
         # decimales (0,1 ; 0,01).
-        g = f.gridlines(yvals, fmt=lambda v: nombres.fmt(v, yfmt, None if log else 0))
-        t = f.xticks(xvals, fmt=lambda v: nombres.num(v, 0))
+        g = f.gridlines(yvals, fmt=lambda v: nombres.fmt(v, yfmt, ydec))
+        t = f.xticks(xvals, fmt=lambda v: nombres.num(v, xdec))
         w = max((m.width for m in g if isinstance(m, Text)), default=0.0)
         return f, g, t, f.px(x0) - (0.22 + w + 0.45)
 
@@ -1290,6 +1395,19 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
     # mais il se construit pendant l'attente de la premiere donnee.
     axes = VGroup(fr.baseline(),
                   Line(fr.pt(x0, ylo), fr.pt(x0, yhi), stroke_color=RULE, stroke_width=2.4))
+    if y_min is not None and ylo > 0:
+        # Marque de coupure : l'axe vertical s'interrompt juste au-dessus de sa
+        # borne basse, barre par deux traits obliques clairs.
+        c0 = fr.pt(x0, ylo) + UP * COUPURE_HAUT
+        trou = Rectangle(width=0.34, height=0.13, fill_color=BG, fill_opacity=1,
+                         stroke_width=0).move_to(c0)
+        traits = VGroup(*[Line(c0 + np.array([-0.15, -0.07 + d, 0]),
+                               c0 + np.array([0.15, 0.03 + d, 0]),
+                               stroke_color=INK_SOFT, stroke_width=2.4) for d in (-0.05, 0.05)])
+        coupure = VGroup(trou, traits)
+        coupure.nom = "coupure de l'axe vertical"
+        axes.add(coupure)
+        cues.coupure = coupure
     grid_pairs = [VGroup(ygrid[k], ygrid[k + 1]) for k in range(0, len(ygrid) - 1, 2)]
 
     xs = np.linspace(x0, x1, 120)
@@ -1404,7 +1522,11 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
     if mb.get("ecart") and n >= 2:
         e = mb["ecart"]
         gx = float(e["x"])
-        ys = [float(np.interp(gx, xs, c[0])) for c in curves]
+        # Ses deux bouts sont exactement a la hauteur des series a cette
+        # abscisse (regle du 17/11/2026) - calculee sur les points sources,
+        # pas sur la courbe echantillonnee : un escalier y sautait d'une marche
+        # a l'autre, et l'accolade de « 50 % » (EP004 S04) descendait a 45 %.
+        ys = [float(_interp(s_, np.array([gx]), mode, growth)[0]) for s_ in series]
         lo, hi = min(ys), max(ys)
         bx = fr.px(gx) + 0.32
         kw = dict(stroke_color=INK_SOFT, stroke_width=2.4)
@@ -1416,8 +1538,9 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
             kw = dict(stroke_color=INK, stroke_width=3.4)
             patte = 0.30
             print(f"[ATTENTION] {sid} : ecart de {haut:.2f} unite a l'ecran ({hi - lo:.4g} sur "
-                  f"un axe de {yhi - ylo:.4g}) : l'accolade reste petite, donne-lui une "
-                  f"`valeur` sourcee ou un encart", file=sys.stderr, flush=True)
+                  f"un axe de {yhi - ylo:.4g}) : l'accolade reste petite - fais partir "
+                  f"l'axe plus haut (`y_min`), make check la refuse", file=sys.stderr,
+                  flush=True)
         gap = VGroup(Line([bx, fr.py(lo), 0], [bx, fr.py(hi), 0], **kw),
                      Line([bx - patte, fr.py(lo), 0], [bx, fr.py(lo), 0], **kw),
                      Line([bx - patte, fr.py(hi), 0], [bx, fr.py(hi), 0], **kw))
@@ -1436,6 +1559,9 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
                       for cote, d_y in lieux], traces, placed)
             gap.add(tag)
         cues.point("ecart", (bx + 0.25, fr.py((lo + hi) / 2)))
+        cues.accolades.append({"nom": f"accolade de l'ecart (x = {gx:g})", "haut": haut,
+                               "trait": gap[0], "attendu": (fr.py(lo), fr.py(hi)),
+                               "ecart": hi - lo, "axe": yhi - ylo})
         extras.append("gap")
 
     if mb.get("facteur"):
@@ -2021,7 +2147,7 @@ def Bars(seg, cues):
     # zero elles aussi, et sortaient du cadre par le haut (EP004 S24).
     raw_hi = max([max(tops), 0.0] + extra) * 1.12
     raw_lo = min([0.0] + lows + extra) * 1.12
-    ystep = _nice_step((raw_hi - raw_lo) / 5)
+    ystep = _pas_exact((raw_hi - raw_lo) / 5)
     yhi = float(np.ceil(raw_hi / ystep) * ystep)
     ylo = float(np.floor(raw_lo / ystep) * ystep)
 
@@ -2048,7 +2174,8 @@ def Bars(seg, cues):
     cues.legend_colors = cols[:n_s]
 
     yvals = list(np.arange(ylo, yhi + ystep / 2, ystep))
-    ygrid = fr.gridlines(yvals, fmt=lambda v: nombres.fmt(v, yfmt, 0))
+    ydec = decimales_exactes(yvals)
+    ygrid = fr.gridlines(yvals, fmt=lambda v: nombres.fmt(v, yfmt, ydec))
     xlabels = [txt(nombres.fmt(r[0], xfmt), SZ_SOURCE, MUTED) for r in rows]
     for g, lab in enumerate(xlabels):
         lab.move_to(fr.pt(g + 1, ylo)).shift(DOWN * (0.24 + lab.height / 2))
@@ -2327,7 +2454,7 @@ def _bands(seg, cues):
     raw_hi = hi + (0.35 if borne == "plancher" else 0.10) * span
     raw_lo = lo - (0.35 if borne == "plafond" else 0.10) * span
     raw_hi, raw_lo = max(raw_hi, 0.0), min(raw_lo, 0.0)
-    ystep = _nice_step((raw_hi - raw_lo) / 5)
+    ystep = _pas_exact((raw_hi - raw_lo) / 5)
     yhi = float(np.ceil(raw_hi / ystep) * ystep)
     ylo = float(np.floor(raw_lo / ystep) * ystep)
 
@@ -2339,7 +2466,8 @@ def _bands(seg, cues):
     cues.legend_colors = [body]
 
     yvals = list(np.arange(ylo, yhi + ystep / 2, ystep))
-    ygrid = fr.gridlines(yvals, fmt=lambda v: nombres.fmt(v, yfmt, 0))
+    ydec = decimales_exactes(yvals)
+    ygrid = fr.gridlines(yvals, fmt=lambda v: nombres.fmt(v, yfmt, ydec))
     xlabels = [txt(nombres.fmt(r[0], xfmt), SZ_SOURCE, MUTED) for r in rows]
     for g, lab in enumerate(xlabels):
         lab.move_to(fr.pt(g + 1, ylo)).shift(DOWN * (0.24 + lab.height / 2))
@@ -4385,6 +4513,7 @@ def Distribution(seg, cues):
             lab = txt(_signe_moins(nombres.fmt(x0 + k * pas, kind)), SZ_SOURCE, MUTED)
             lab.move_to([fr.px(x0 + k * pas), bas - 0.24 - lab.height / 2, 0])
             lab.nom = f"graduation « {lab.text} »"
+            lab.graduation = float(x0 + k * pas)
             labs.append(lab)
         return labs
 
@@ -4766,8 +4895,11 @@ def _accents(seg, cues):
                         origines[id(m)] = m.copy()
 
 
-def _avec_accents(composant):
+def _avec_accents(composant, nom):
     def famille(seg, cues):
+        if ((seg or {}).get("manim_brief") or {}).get("y_min") is not None and nom != "LineChart":
+            raise SystemExit(f"{(seg or {}).get('id', '?')} : y_min interdit dans {nom} - "
+                             f"barres, bandes et jauges partent toujours de 0 (LineChart seulement)")
         out = composant(seg, cues)
         _accents(seg, cues)
         return out
@@ -4775,4 +4907,4 @@ def _avec_accents(composant):
     return famille
 
 
-COMPONENTS = {nom: _avec_accents(f) for nom, f in COMPONENTS.items()}
+COMPONENTS = {nom: _avec_accents(f, nom) for nom, f in COMPONENTS.items()}
