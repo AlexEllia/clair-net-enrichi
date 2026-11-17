@@ -1005,6 +1005,8 @@ ANCRE_MAX = 0.60      # distance maximale du bord de l'etiquette a son point
 ETIQUETTES_MAX = 6    # LineChart sans aucun point nomme : etiquettes au plus (make check)
 ANCRE_TOL = 0.05      # deux points presque confondus : a 0,05 pres, la couleur les departage
 ANCRE_RAPPEL = (0.26, 0.40)   # ecarts essayes quand rien n'est libre contre le point
+FIN_SERREE = 0.60          # deux derniers points nommes plus proches que cela a l'ecran...
+FIN_SERREE_DROITE = 0.80   # ... : place laissee a droite de la derniere abscisse
 
 
 def dist_boite(boite, p):
@@ -1083,8 +1085,17 @@ def _place_label_scored(lab, dot, placed, zone, traces, own, sources, floor=None
         # au-dessus de l'axe, a ANCRE_MAX au plus ; elle peut alors etre plus
         # pres d'une autre courbe que de son point : le trait dit a qui elle
         # est, et make check le signale.
-        best = _chercher_place(lab, dot, placed, zone, traces, own, sources, floor, ticks,
-                               True, True, repli=True)
+        # D'abord du cote oppose a la courbe voisine (17/11/2026, EP004 S10
+        # plan b : « 423 », 0,14 sous « 441 », se posait en haut a gauche,
+        # contre la serie 1) : l'etiquette reste plus pres de son point que de
+        # toute autre courbe. Faute de place de ce cote, le repli d'avant.
+        cote = _cote_oppose(dot, traces, own)
+        if cote:
+            best = _chercher_place(lab, dot, placed, zone, traces, own, sources, floor, ticks,
+                                   True, True, repli=True, cote=cote)
+        if best is None:
+            best = _chercher_place(lab, dot, placed, zone, traces, own, sources, floor, ticks,
+                                   True, True, repli=True)
     if best is None:
         # Rien ne tient : au-dessus a droite si elle allait sous l'axe (jamais
         # parmi les graduations), sinon la place d'origine, en haut a gauche.
@@ -1106,13 +1117,36 @@ def _place_label_scored(lab, dot, placed, zone, traces, own, sources, floor=None
     return lab
 
 
+def _cote_oppose(dot, traces, own):
+    """+1 (au-dessus) ou -1 (au-dessous) : le cote de son point oppose a la
+    courbe d'une autre serie la plus proche a cette abscisse ; 0 sans autre
+    courbe a cette abscisse."""
+    c = dot.get_center()
+    best = None
+    for k, tr in enumerate(traces):
+        if k == own:
+            continue
+        P = np.asarray(tr, float)
+        if len(P) < 2 or not (P[:, 0].min() - 1e-6 <= c[0] <= P[:, 0].max() + 1e-6):
+            continue
+        o = np.argsort(P[:, 0])
+        y = float(np.interp(c[0], P[o, 0], P[o, 1]))
+        if best is None or abs(y - c[1]) < abs(best - c[1]):
+            best = y
+    if best is None or abs(best - c[1]) < 1e-9:
+        return 0
+    return -1 if best > c[1] else 1
+
+
 def _chercher_place(lab, dot, placed, zone, traces, own, sources, floor, ticks, base, libre,
-                    repli=False):
+                    repli=False, cote=0):
     """La meilleure place (cout, genre, vdir, hdir, ecart, haut de la boite),
     ou None. `libre` : aucune courbe ne traverse l'etiquette ; `base` : jamais
     sous l'axe, et au-dessus a droite des que cette place tient ; `repli` :
     dernier recours, toute place a ANCRE_MAX au plus, au bout d'un trait de
-    rappel, sans exiger que le point le plus proche soit le sien."""
+    rappel, sans exiger que le point le plus proche soit le sien ; `cote`
+    (+1 / -1) : en repli, l'etiquette entiere au-dessus (au-dessous) de son
+    point, et plus pres de lui que de toute autre courbe."""
     xmin, xmax, ymin, ymax = zone
     corners = ((UP, LEFT), (UP, RIGHT), (DOWN, LEFT), (DOWN, RIGHT))
     half = lab.width / 2 + 0.06
@@ -1166,6 +1200,12 @@ def _chercher_place(lab, dot, placed, zone, traces, own, sources, floor, ticks, 
                 continue
             if libre and any(croise(boite, pts, COURBE_JEU) for pts in dense):
                 continue
+            if cote:
+                if (b if cote > 0 else -t) < (c[1] if cote > 0 else -c[1]) - 1e-9:
+                    continue
+                if any(min(dist_boite(boite, p) for p in pts) <= d_own
+                       for k, pts in enumerate(dense) if k != own):
+                    continue
         if any(_boxes_overlap(lab, o, pad=LABEL_PAD) for o in placed):
             continue
         if any(_boxes_overlap(lab, o, pad=TICK_PAD) for o in ticks):
@@ -1352,6 +1392,23 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
     top = 1.70 if "legende" in cues.anchors else 1.90
     bottom = -2.20 if {"axe_x", "bas"} <= cues.anchors else -2.60
     right = 1.30 if (mb.get("facteur") or mb.get("ecart")) else 0.0
+    # Deux series finissent sur la derniere abscisse a moins d'une etiquette
+    # l'une de l'autre, et le script nomme leurs deux derniers points (regle
+    # du 17/11/2026, EP004 S10 plan b : « 441 » et « 423 », 0,14 d'ecart) :
+    # l'aire laisse FIN_SERREE_DROITE a droite, pour que l'etiquette du bas
+    # se pose du cote oppose a l'autre courbe, au-dessous et a droite.
+    if family == "LineChart" and not log and mb.get("etiquettes", True) is not False:
+        cib = {r.get("target") for r in (mb.get("reveals") or []) if isinstance(r, dict)}
+        fins_n = []
+        for i, s_ in enumerate(series):
+            pts_ = [p_ for p_ in s_ if not (origin and tuple(p_) == origin)]
+            if pts_ and abs(pts_[-1][0] - x1) < 1e-9 and \
+                    f"{prefix}_{i + 1}_point_{len(pts_)}" in cib:
+                fins_n.append(float(pts_[-1][1]))
+        haut_px = (top - bottom) / max(yhi - ylo, 1e-9)
+        if any(abs(a_ - b_) * haut_px < FIN_SERREE for k_, a_ in enumerate(fins_n)
+               for b_ in fins_n[k_ + 1:]):
+            right = max(right, FIN_SERREE_DROITE)
     # Colonne des encarts : l'aire de trace s'arrete avant elle.
     enc = (PLOT_W / 2 - GRAPHE_DROITE) if reserve_encarts(cues) else 0.0
     yvals = np.linspace(ylo, yhi, 5)

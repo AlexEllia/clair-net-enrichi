@@ -1081,9 +1081,14 @@ def collisions(seg, dur, ep_dir=None, strict=True):
     from components import TRACE_FIN_MARGE
     for cle, t_fin in sorted(getattr(cues, "fins_trace", {}).items()):
         if t_fin > dur - TRACE_FIN_MARGE + 1e-6:
-            noter_t(f"trace de {cle} fini a {t_fin:.2f} s, {dur - t_fin:.2f} s avant la fin "
-                    f"du plan ({dur:.2f} s ; minimum {TRACE_FIN_MARGE:.0f} s) : fixe sa fin "
-                    f"plus tot (`{cle}_fin` sur un declencheur)")
+            # Instants comptes depuis le debut du segment, comme dans le script
+            # (plan b : decales de son entree). La fin d'un plan a est le mot du
+            # plan b, fin du fondu enchaine.
+            t0_ = float(seg.get("_plan_debut") or 0.0)
+            noter_t(f"trace de {cle} fini a {t_fin + t0_:.2f} s, {dur - t_fin:.2f} s avant la "
+                    f"fin du plan ({dur + t0_:.2f} s, temps du segment ; minimum "
+                    f"{TRACE_FIN_MARGE:.0f} s) : fixe sa fin plus tot (`{cle}_fin` sur un "
+                    f"declencheur)")
     # LineChart : aucun texte du graphique (valeur d'un point, d'une accolade,
     # d'un facteur, graduation) n'est traverse par une courbe (17/11/2026).
     from components import croise

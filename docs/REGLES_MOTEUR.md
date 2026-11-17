@@ -191,6 +191,26 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
     changent pas.
   Plans d'essai figés : `essai_mise_en_page_distribution_graduations` (refusé
   par le contrôle avec le code d'avant), `essai_mise_en_page_grille_pictos`.
+- **Étiquette du côté opposé à l'autre courbe** (17/11/2026, EP004 S10 plan
+  b : « 423 », 0,14 sous « 441 » sur la dernière abscisse, se posait en haut
+  à gauche, à 0,07 de la série 1 et 0,49 de son point) :
+  - **Place à droite de la dernière abscisse** (`FIN_SERREE` = 0,60,
+    `FIN_SERREE_DROITE` = 0,80) : quand deux séries finissent sur la dernière
+    abscisse à moins de 0,60 l'une de l'autre à l'écran et que le script nomme
+    leurs deux derniers points, l'aire de tracé laisse 0,80 à droite, comme
+    pour une accolade ou un facteur (1,30, qui l'emporte). Avant, la dernière
+    abscisse était le bord de la zone : sous le point, les deux courbes
+    montaient raides depuis la gauche, aucune place libre. « 423 » se pose
+    maintenant au-dessous et à droite de son point, « 441 » au-dessus.
+  - **Repli du côté opposé** (`_cote_oppose`, `cote` dans
+    `_chercher_place`) : dans le dernier repli, l'étiquette est d'abord
+    cherchée entière du côté de son point opposé à la courbe voisine, plus
+    près de son point que de toute autre courbe ; à défaut, le repli d'avant.
+  - Le check donne la fin d'un tracé en temps du segment, comme le script.
+    La fin d'un plan a est le mot du plan b (`coupe`, fin du fondu
+    enchaîné), pas le début du fondu.
+  Catalogue inchangé (rien à écrire dans le script). Non-régression : voir
+  ci-dessous.
 - **Glyphes, courbes sans étiquettes, fin du tracé** (17/11/2026, demande
   d'Alexandre avant le rendu de l'EP004 ; une règle au check par point) :
   - **Chaque caractère dans sa police** (`glyphes_absents`,
