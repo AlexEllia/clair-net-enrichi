@@ -191,6 +191,31 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
     changent pas.
   Plans d'essai figés : `essai_mise_en_page_distribution_graduations` (refusé
   par le contrôle avec le code d'avant), `essai_mise_en_page_grille_pictos`.
+- **Glyphes, courbes sans étiquettes, fin du tracé** (17/11/2026, demande
+  d'Alexandre avant le rendu de l'EP004 ; une règle au check par point) :
+  - **Chaque caractère dans sa police** (`glyphes_absents`,
+    `POLICES_FICHIERS`, build.py ; table des caractères lue par fontTools) :
+    tout caractère non ASCII d'un texte affiché existe dans la police et la
+    graisse de ce texte (Segoe UI normal = segoeui.ttf, semi-gras =
+    seguisb.ttf…). Refus sinon, quel que soit l'âge du script ; une police
+    absente de la table est aussi refusée. *Pourquoi* : le titre de S12,
+    « Étalement », a été lu « Etalement ». Vérifié : le « É » est dans
+    seguisb.ttf et dans la vidéo (EP004_v2.mp4 à 231,5 s, image pleine et
+    image de 640 px) ; il disparaissait seulement sur la planche réduite à
+    l'affichage. Rien à corriger dans le titre ; la règle couvre les vrais cas.
+  - **`"etiquettes": false`** (LineChart) : courbes sans point ni valeur ;
+    un `series_k_point_j` avec lui arrête le build.
+  - **`series_k_fin`** : rendez-vous du dernier point, le tracé s'y termine ;
+    avec lui seul, la courbe part à temps pour finir sur son mot. Ne change
+    rien aux plans qui ne l'écrivent pas (non-régression identique).
+  - **Un tracé finit 2 s au moins avant la fin de son plan**
+    (`TRACE_FIN_MARGE`, `cues.fins_trace`) : refus (script au catalogue
+    actuel et plan d'essai ; remarque sinon), qui propose `series_k_fin`.
+    *Pourquoi* : EP004 S21 plan b, la série 2 finissait à la coupe. Le check
+    trouve aussi EP004 S07 plan a (série 1, 1,47 s avant la fin).
+  Non-régression : tout identique au pixel près. Nouveau plan d'essai, non
+  figé (pas encore vu à l'écran) : `essai_linechart_sans_etiquettes` (EP004
+  S21 plan b).
 - **Graduations, axe coupé, accolade, trait de rappel** (17/11/2026, fautes
   vues sur le rendu de l'EP004 v2 du même jour, demande d'Alexandre : une
   règle au check pour chaque point) :

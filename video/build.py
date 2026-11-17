@@ -727,6 +727,60 @@ def fautes_encarts(seg):
     return out
 
 
+# Fichier de police de chaque (famille, graisse) que le moteur emploie
+# (style.txt : Segoe UI, Consolas). Une police absente de cette table est
+# une faute : le check ne saurait pas dire si ses caracteres existent.
+POLICES_FICHIERS = {
+    ("Segoe UI", "NORMAL"): "segoeui.ttf", ("Segoe UI", "LIGHT"): "segoeuil.ttf",
+    ("Segoe UI", "SEMILIGHT"): "segoeuisl.ttf", ("Segoe UI", "SEMIBOLD"): "seguisb.ttf",
+    ("Segoe UI", "BOLD"): "segoeuib.ttf", ("Segoe UI", "HEAVY"): "seguibl.ttf",
+    ("Segoe UI", "ULTRAHEAVY"): "seguibl.ttf",
+    ("Consolas", "NORMAL"): "consola.ttf", ("Consolas", "BOLD"): "consolab.ttf",
+}
+_CMAPS = {}
+
+
+def _cmap(fichier):
+    if fichier not in _CMAPS:
+        import os
+        from fontTools.ttLib import TTFont
+        racine = os.path.join(os.environ.get("WINDIR", "C:/Windows"), "Fonts")
+        try:
+            f = TTFont(os.path.join(racine, fichier), fontNumber=0, lazy=True)
+            _CMAPS[fichier] = set(f.getBestCmap())
+        except (OSError, Exception):
+            _CMAPS[fichier] = None
+    return _CMAPS[fichier]
+
+
+def glyphes_absents(textes):
+    """Regle du 17/11/2026 : tout caractere non ASCII d'un texte affiche
+    (lettre accentuee, signe, espace fine) existe dans la police de ce texte.
+    Sinon Pango le prend dans une autre police, ou l'omet. Renvoie les fautes."""
+    import re
+    out, vus = [], set()
+    for x in textes:
+        brut = str(getattr(x, "original_text", None) or getattr(x, "text", ""))
+        brut = re.sub(r"<[^>]*>", "", brut)
+        font = getattr(x, "font", "") or "Segoe UI"
+        poids = str(getattr(x, "weight", "NORMAL") or "NORMAL").upper()
+        fichier = POLICES_FICHIERS.get((font, poids))
+        cm = _cmap(fichier) if fichier else None
+        if cm is None:
+            cle = (font, poids, "police")
+            if cle not in vus:
+                vus.add(cle)
+                out.append(f"texte « {brut[:40]} » : police {font} {poids} introuvable, ses "
+                           f"caracteres ne peuvent pas etre verifies")
+            continue
+        for c in sorted({c for c in brut if ord(c) > 0x7E and c not in "\n\r\t"}):
+            if ord(c) not in cm and (font, poids, c) not in vus:
+                vus.add((font, poids, c))
+                out.append(f"caractere « {c} » (U+{ord(c):04X}) absent de la police {font} "
+                           f"{poids.lower()} ({fichier}), dans « {brut[:40]} »")
+    return out
+
+
 def nombre_ecrit(texte):
     """Le premier nombre d'un texte ecrit a la francaise (« 1 000 000 $ »,
     « −45 % », « 2,5 % », « an 10 »), ou None."""
@@ -832,6 +886,16 @@ def collisions(seg, dur, ep_dir=None, strict=True):
             graphe.append(m)
     fautes, remarques = [], []
     bord = (-FW / 2, FW / 2, -FH / 2, FH / 2)
+    # Chaque caractere d'un texte affiche existe dans sa police (17/11/2026),
+    # quel que soit l'age du script.
+    from manim import Text as _T, MarkupText as _MT
+    vus_p, tous_t = set(), []
+    for m, _, _ in objets:
+        for x in m.get_family():
+            if isinstance(x, (_T, _MT)) and id(x) not in vus_p:
+                vus_p.add(id(x))
+                tous_t.append(x)
+    fautes += glyphes_absents(tous_t)
 
     def hors(b):
         return b[0] < bord[0] or b[1] > bord[1] or b[2] < bord[2] or b[3] > bord[3]
@@ -1012,6 +1076,14 @@ def collisions(seg, dur, ep_dir=None, strict=True):
             noter_t(f"trait de rappel de « {getattr(lab, 'text', '?')} » ({nom}) peu visible : "
                     f"contraste {k:.1f} sur le fond (minimum {RAPPEL_CONTRASTE:.1f}), "
                     f"opacite {r_.get_stroke_opacity():.2f}, epaisseur {r_.get_stroke_width():.1f}")
+    # Une courbe finit son trace TRACE_FIN_MARGE au moins avant la fin de son
+    # plan (regle du 17/11/2026) : le spectateur la voit entiere avant la coupe.
+    from components import TRACE_FIN_MARGE
+    for cle, t_fin in sorted(getattr(cues, "fins_trace", {}).items()):
+        if t_fin > dur - TRACE_FIN_MARGE + 1e-6:
+            noter_t(f"trace de {cle} fini a {t_fin:.2f} s, {dur - t_fin:.2f} s avant la fin "
+                    f"du plan ({dur:.2f} s ; minimum {TRACE_FIN_MARGE:.0f} s) : fixe sa fin "
+                    f"plus tot (`{cle}_fin` sur un declencheur)")
     # LineChart : aucun texte du graphique (valeur d'un point, d'une accolade,
     # d'un facteur, graduation) n'est traverse par une courbe (17/11/2026).
     from components import croise

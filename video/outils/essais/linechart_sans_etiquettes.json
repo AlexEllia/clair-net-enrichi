@@ -1,0 +1,248 @@
+{
+ "_role": "Plan d'essai, hors episode : LineChart sans aucune etiquette de valeur (`\"etiquettes\": false`) et fin de chaque trace fixee sur un declencheur (`series_k_fin`), regle du 17/11/2026. Brief du plan b de l'EP004 S21 (script du 17/11/2026), temps ramenes au debut du plan ; serie 1 tracee de 1,65 a 3,84 s, serie 2 de 4,04 a 6,49 s, 2,5 s avant la fin. Pas encore vu a l'ecran.",
+ "duree_s": 9.0,
+ "segment": {
+  "id": "essai_linechart_sans_etiquettes",
+  "role": "essai",
+  "type_visuel": "manim",
+  "vo_fr": "Et le gagnant est connu dès la fin de la première année. Ensuite, les deux portefeuilles montent et baissent ensemble.",
+  "manim_brief": {
+   "composant": "LineChart",
+   "donnees": [
+    [
+     1,
+     110
+    ],
+    [
+     1,
+     106
+    ],
+    [
+     2,
+     99.14
+    ],
+    [
+     2,
+     95.01
+    ],
+    [
+     3,
+     126.15
+    ],
+    [
+     3,
+     120.9
+    ],
+    [
+     4,
+     137.55
+    ],
+    [
+     4,
+     131.82
+    ],
+    [
+     5,
+     132.34
+    ],
+    [
+     5,
+     126.83
+    ],
+    [
+     6,
+     120.04
+    ],
+    [
+     6,
+     115.04
+    ],
+    [
+     7,
+     149.3
+    ],
+    [
+     7,
+     143.08
+    ],
+    [
+     8,
+     169.22
+    ],
+    [
+     8,
+     162.17
+    ],
+    [
+     9,
+     168.11
+    ],
+    [
+     9,
+     161.11
+    ],
+    [
+     10,
+     112.69
+    ],
+    [
+     10,
+     107.99
+    ],
+    [
+     11,
+     146.56
+    ],
+    [
+     11,
+     140.46
+    ],
+    [
+     12,
+     189.66
+    ],
+    [
+     12,
+     181.76
+    ],
+    [
+     13,
+     180.32
+    ],
+    [
+     13,
+     172.81
+    ],
+    [
+     14,
+     204.67
+    ],
+    [
+     14,
+     196.15
+    ],
+    [
+     15,
+     225.22
+    ],
+    [
+     15,
+     215.83
+    ],
+    [
+     16,
+     276.25
+    ],
+    [
+     16,
+     264.74
+    ],
+    [
+     17,
+     271.01
+    ],
+    [
+     17,
+     259.72
+    ],
+    [
+     18,
+     297.05
+    ],
+    [
+     18,
+     284.68
+    ],
+    [
+     19,
+     424.56
+    ],
+    [
+     19,
+     406.88
+    ],
+    [
+     20,
+     441
+    ],
+    [
+     20,
+     423
+    ]
+   ],
+   "axes": {
+    "unite_x": "years",
+    "unite_y": "index"
+   },
+   "interpolation": "lineaire",
+   "origine": [
+    0,
+    100
+   ],
+   "couleurs": [
+    "INTEREST",
+    "CONTRIB"
+   ],
+   "revelations": [
+    {
+     "element": "series_1",
+     "t_rel_s": 2.15,
+     "declencheur": "le gagnant est connu"
+    },
+    {
+     "element": "series_1_fin",
+     "t_rel_s": 3.84,
+     "declencheur": "première année"
+    },
+    {
+     "element": "series_2_fin",
+     "t_rel_s": 6.49,
+     "declencheur": "portefeuilles"
+    }
+   ],
+   "etiquettes": false
+  },
+  "overlay_texte": [
+   {
+    "ancre": "titre_haut",
+    "t_rel_s": 0.51,
+    "texte_fr": "Après un an, les deux courbes vont ensemble"
+   },
+   {
+    "ancre": "axe_x",
+    "t_rel_s": 0.51,
+    "texte_fr": "Années"
+   },
+   {
+    "ancre": "axe_y",
+    "t_rel_s": 0.51,
+    "texte_fr": "Valeur de 100 $ placés"
+   },
+   {
+    "ancre": "bas",
+    "t_rel_s": 0.51,
+    "texte_fr": "Cas réel : départ en septembre 1964 · Calcul Clair net enrichi, données Shiller (Yale), S&P 500 dividendes réinvestis, 1871-2023 · Performances passées : pas un indicateur fiable des résultats futurs"
+   },
+   {
+    "ancre": "legende",
+    "t_rel_s": 2.15,
+    "texte_fr": "Tout d'un coup",
+    "declencheur": "le gagnant est connu",
+    "serie": 1
+   },
+   {
+    "ancre": "legende",
+    "t_rel_s": 3.84,
+    "texte_fr": "Étalé sur 12 mois",
+    "declencheur": "première année",
+    "serie": 2
+   },
+   {
+    "ancre": "centre",
+    "t_rel_s": 5.29,
+    "texte_fr": "Même cas que plus haut : départ sept. 1964",
+    "declencheur": "Ensuite"
+   }
+  ]
+ }
+}

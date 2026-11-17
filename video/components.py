@@ -72,6 +72,10 @@ class Cues:
         # de coupure d'un axe qui ne part pas de 0 (`y_min`).
         self.accolades = []
         self.coupure = None
+        # Fin de chaque trace de courbe {"series_k": instant} : make check
+        # refuse un trace qui finit moins de TRACE_FIN_MARGE avant la fin du
+        # plan (regle du 17/11/2026).
+        self.fins_trace = {}
         # Code couleur de sens, pour make check : ce que le plan presente comme
         # un gain ou une perte, [{"nom", "nature", "objets", "montant"}] -
         # les objets traces et l'etiquette du montant (ou None).
@@ -156,6 +160,7 @@ MIN_RT = 0.3            # plancher d'une apparition calee par le script
 CONTINUOUS_MAX = 6.0    # plafond de ce qui se trace : courbe, aire, bande, barre qui monte
 PUNCTUAL_MAX = 1.5      # plafond de ce qui surgit : repere, accolade, annotation, ligne de reference
 LABEL_RT = 0.3          # une etiquette chiffree : apparition ponctuelle
+TRACE_FIN_MARGE = 2.0   # une courbe finit son trace 2 s au moins avant la fin de son plan
 FRAME_MAX = 4.0         # le cadre se construit en 4 s au plus
 FRAME_MIN = 1.0         # ... et cede jusqu'a 1 s devant le premier trace (regle v2)
 FRAME_RULE = "v2"       # "v1" : le cadre d'abord (23/09/2026), archivee ; voir _frame_end
@@ -1271,9 +1276,12 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
                      vient du script, jamais d'un calcul
       facteur        {"serie": 1, "x": 30, "valeur": 4.3}
                      multiplicateur ecrit a cote d'un point de la serie
+      etiquettes     false    (LineChart) courbes seules : aucun point, aucune
+                     valeur ecrite (regle du 17/11/2026)
     Parties : series_1..series_n (top = rendez-vous du premier point source,
     le trace est planifie a rebours) ; series_k_point_j (point source et sa
-    valeur, apparait quand le trace l'atteint) ; crossing, gap, factor.
+    valeur, apparait quand le trace l'atteint) ; series_k_fin (rendez-vous du
+    dernier point : le trace s'y termine) ; crossing, gap, factor.
     Le cadre (`frame`) est du decor : il se construit jusqu'a la premiere
     donnee, 4 s au plus.
     """
@@ -1427,8 +1435,23 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
     nommes = {t for t in cibles if re.fullmatch(prefix + r"_\d+_point_\d+", str(t))}
     if LABEL_RULE == "v1":
         nommes = set()
+    # Courbes sans etiquettes (`"etiquettes": false`, regle du 17/11/2026) :
+    # quand la voix ne dit aucune valeur, ni point ni nombre sur les courbes.
+    etiquettes = mb.get("etiquettes", True)
+    if not isinstance(etiquettes, bool):
+        raise SystemExit(f"{sid} : etiquettes vaut true ou false (recu {etiquettes!r})")
+    if not etiquettes:
+        if family != "LineChart":
+            raise SystemExit(f"{sid} : etiquettes false ne vaut que pour LineChart")
+        if nommes:
+            raise SystemExit(f"{sid} : etiquettes false, mais le script nomme "
+                             f"{', '.join(sorted(nommes))} : un point nomme porte sa valeur")
+    # Fin d'un trace fixee par le script : `series_k_fin`, sur son declencheur.
+    fins = [f"{prefix}_{i + 1}_fin" for i in range(n) if f"{prefix}_{i + 1}_fin" in cibles]
 
     def marque(i, j):
+        if not etiquettes:
+            return False
         return not nommes or f"{prefix}_{i + 1}_point_{j}" in nommes
 
     sources = []
@@ -1579,7 +1602,7 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
         cues.point("facteur", tag.get_center())
         extras.append("factor")
 
-    rev = Reveal(seg, cues, keys, extras=extras, t0=0.6, rt=0.6, margin=0.6)
+    rev = Reveal(seg, cues, keys, extras=extras + fins, t0=0.6, rt=0.6, margin=0.6)
 
     # --- traces planifies a rebours, par morceaux ----------------------------
     # Le top d'une serie est le rendez-vous de son premier point source : la
@@ -1599,8 +1622,18 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
         # defaut). Un premier point non nomme, alors que d'autres le sont, est
         # atteint en chemin, sans rendez-vous.
         first_named = bool(marks) and marks[0][0] in rev.fixed
-        if marks and not first_named and (key in rev.fixed or not rdv):
+        # Avec `series_k_fin` seul, le trace part a temps pour finir sur son mot.
+        if marks and not first_named and (key in rev.fixed or
+                                          (not rdv and f"{key}_fin" not in rev.fixed)):
             rdv.append(((marks[0][1] - x0) / span, rev.t(key)))
+        if f"{key}_fin" in rev.fixed:
+            # Le dernier point de la serie, atteint sur ce mot : le trace s'y
+            # termine, au lieu de finir a la vitesse acquise.
+            t_fin = rev.t(f"{key}_fin")
+            if rdv and t_fin <= max(t for _, t in rdv) + 1e-6:
+                raise SystemExit(f"{sid} : {key}_fin a {t_fin:.2f} s ne vient pas apres "
+                                 f"les autres rendez-vous de {key}")
+            rdv = [r for r in rdv if r[0] < 1.0 - 1e-9] + [(1.0, t_fin)]
         tracks[key] = sorted(rdv)
 
     # --- cadre : construit jusqu'au premier mouvement de donnee --------------
@@ -1632,6 +1665,8 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
             for kf in rs:
                 cues.at(kf[0][0], *sweep(kf), TracePiece(ln, full, kf),
                         rt=kf[-1][0] - kf[0][0])
+        if rs:
+            cues.fins_trace[key] = float(rs[-1][-1][0])
         for mk, x, m in marks:
             if m is None:
                 continue

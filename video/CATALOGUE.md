@@ -492,6 +492,12 @@ unique quand leur instant dépend de la voix.
   ligne en devient parfois plus large : compte le nombre et son unité comme
   un seul mot dans les 18 caractères d'une ligne d'encart. `make check` refuse
   un nombre coupé.
+- **Chaque caractère d'un texte existe dans sa police** (règle du
+  17/11/2026) : lettre accentuée, capitale accentuée (« É »), signe, espace
+  fine. Le moteur écrit en Segoe UI, dans plusieurs graisses ;
+  `make check` refuse un caractère absent de la police et de la
+  graisse du texte, quel que soit l'âge du script. Les capitales accentuées
+  françaises y sont toutes : écris « État », « Étalement », jamais « Etat ».
 - Les titres d'axes commencent par une majuscule.
 - `option_k`, `noeud_k`, `lien_k` : poser sur le mot qui nomme l'option, le
   nœud ou le flux, avec un `declencheur`. Ces ancres n'existent que sur leur
@@ -645,6 +651,7 @@ l'écran (`34,8 %` ou `34.8%`) dépend de la langue du rendu, pas du script.
 | `origine` | non | `[x, y]` | Point commun ajouté en tête de chaque série (ex. `[0, 0]` : gain nul au départ). Il ne porte pas d'étiquette. |
 | `couleurs` | non | liste parmi `"INTEREST"` (ambre), `"CONTRIB"` (bleu), `"TEAL"`, `"NEG"`, `"WHITE_DIM"` | Une par série. Convention de la chaîne : bleu = ce que vous versez, ambre = ce que le capital verse. |
 | `echelle_y` | non | `"lineaire"` (défaut), `"log"` | Échelle de l'axe vertical. `"log"` : axe **logarithmique** — une même hauteur vaut un même facteur (de 1 à 10 comme de 1 000 à 10 000). Voir « Axe logarithmique » ci-dessous. |
+| `etiquettes` | non | `false` | **Courbes seules** : aucun point, aucune valeur écrite sur les courbes (graduations, légendes, encarts restent). Quand la voix ne dit aucune valeur. Aucun `series_k_point_j` alors (refusé) ; le tracé se cale sur `series_k` et `series_k_fin`. `LineChart` seulement. Voir « Courbes sans étiquettes » ci-dessous. |
 | `y_min` | non | un nombre, au plus la plus petite valeur | L'axe vertical **part de cette valeur** au lieu de 0, avec une **marque de coupure** en bas de l'axe. Pour lire un écart petit devant les valeurs (110 contre 106). `LineChart` seulement. Voir « Axe qui ne part pas de 0 » ci-dessous. |
 | `croisement` | non | `true` | Repère au premier croisement des séries 1 et 2. |
 | `ecart` | non | `{"x": 30, "valeur": 9.5, "format": "facteur"}` | Accolade verticale entre les séries à l'abscisse `x`. `valeur` est facultative ; si elle est écrite, elle vient des sources (R3). `format` : `"nombre"`, `"pct"`, `"euro"`, `"facteur"` (×). L'accolade a la hauteur réelle de l'écart, ses deux bouts exactement à la hauteur des séries en `x` (sur un escalier aussi). **Sous 0,35 unité d'écran (≈ 9 % de la hauteur de l'axe), `make check` la refuse** : elle se lit mal. Fais alors partir l'axe plus haut (`y_min`), ou montre l'écart autrement. |
@@ -656,6 +663,7 @@ l'écran (`34,8 %` ou `34.8%`) dépend de la langue du rendu, pas du script.
 |---|---|---|
 | `series_k_point_j` | tracé (≤ 6 s) + étiquette | Le j-ième point sourcé de la série k (`origine` exclue, dans l'ordre de `donnees`). À écrire pour **chaque valeur énoncée** (R4). La courbe est planifiée pour atteindre ce point à cet instant ; sa valeur apparaît alors. **Dès qu'un point est nommé dans le plan, seuls les points nommés portent un point et une valeur** : les autres lignes de `donnees` ne servent qu'à tracer la courbe. Un plan qui ne nomme aucun point (séries seules) les marque tous : il ne peut alors pas afficher plus de **6 étiquettes** de valeur, sinon `make check` le refuse en donnant leur nombre. |
 | `series_k` | tracé (≤ 6 s) | À n'écrire que si aucun point de la série n'est énoncé ; son `t_rel_s` vaut alors rendez-vous de son premier point. |
+| `series_k_fin` | fin du tracé | Rendez-vous du **dernier point** de la série : le tracé s'y termine, sur son mot (sinon il finit à la vitesse acquise, parfois à la coupe). Après les autres rendez-vous de la série. Voir « Courbes sans étiquettes ». |
 | `crossing` | surgissement (1,5 s) | Exige `croisement: true`. |
 | `gap` | surgissement (1,5 s) | Exige `ecart`. |
 | `factor` | surgissement (1,5 s) | Exige `facteur`. |
@@ -786,6 +794,38 @@ le recalage remplacera.
   ]
 }
 ```
+
+**Courbes sans étiquettes, fin du tracé** (`"etiquettes": false`,
+`series_k_fin`, règle du 17/11/2026). Quand la voix ne dit aucune valeur —
+« ensuite, les deux portefeuilles montent et baissent ensemble » —, les
+nombres sur les courbes n'ont rien à suivre.
+
+- `"etiquettes": false` : les courbes se tracent seules, sans point ni
+  valeur. Graduations, titres d'axes, légendes et encarts restent. Aucun
+  `series_k_point_j` dans les révélations : le build s'arrête sinon.
+- `series_k` (rendez-vous du premier point) et **`series_k_fin`**
+  (rendez-vous du dernier) calent le tracé. Avec `series_k_fin` seul, la
+  courbe part à temps pour finir sur son mot. Deux courbes ne se tracent
+  jamais en même temps : la seconde part après la fin de la première.
+- **Toute courbe finit son tracé 2 s au moins avant la fin de son plan**
+  (`LineChart`, `Areas`, avec ou sans étiquettes) : le spectateur la voit
+  entière avant la coupe. `make check` refuse sinon, en donnant l'instant
+  de fin, et propose `series_k_fin`. Refus pour un script au catalogue
+  actuel et un plan d'essai, remarque pour un script antérieur.
+
+```json
+"etiquettes": false,
+"revelations": [
+  {"element": "series_1",     "t_rel_s": 9.52,  "declencheur": "le gagnant est connu"},
+  {"element": "series_1_fin", "t_rel_s": 11.21, "declencheur": "première année"},
+  {"element": "series_2_fin", "t_rel_s": 13.86, "declencheur": "portefeuilles"}
+]
+```
+
+Série 1 tracée de 9,02 à 11,21 s, série 2 de 11,41 à 13,86 s, 2,5 s avant
+la fin du plan. Plan d'essai (pas encore validé à l'écran) :
+`video/outils/essais/linechart_sans_etiquettes.json` — le plan b de
+l'EP004 S21, temps ramenés au début du plan.
 
 **Axe qui ne part pas de 0** (`"y_min": v`, règle du 17/11/2026). Quand
 l'écart à montrer est petit devant les valeurs — 110 contre 106 pour
@@ -2173,3 +2213,6 @@ convention 9A de `recherche.md`, et tout nombre affiché présent dans
     légendes n'est pas celui des séries.
 13. Une accolade d'écart (`ecart`) fait au moins 0,35 unité à l'écran ;
     sinon, `"y_min"` sur un `LineChart`. Jamais de `y_min` hors `LineChart`.
+14. Chaque courbe finit son tracé 2 s au moins avant la fin de son plan
+    (`series_k_fin` sur un déclencheur) ; `"etiquettes": false` quand la
+    voix ne dit aucune valeur.
