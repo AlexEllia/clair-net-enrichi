@@ -86,10 +86,20 @@ class Cues:
         # et les accents poses, pour make check : [(nom, cle, cadre, nature)].
         self.parties = {}
         self.accents = []
+        # Objets d'une partie qui sont a eux seuls un autre element du
+        # catalogue, avec sa propre revelation (Grille : la valeur exacte,
+        # `valeur_k`, dans `groupe_k`), {cle: [objets]}.
+        self.distincts = {}
 
     def partie(self, cle, *objets):
         """Declare un element du graphique que le brief peut accentuer."""
         self.parties[str(cle)] = [o for o in objets if o is not None]
+
+    def distinct(self, cle, *objets):
+        """Dit que ces objets de la partie `cle` sont un element distinct, que
+        le script revele par son propre mot : un accent sur `cle` peut venir
+        avant eux (il ne les montre pas : ils arrivent sur leur mot)."""
+        self.distincts.setdefault(str(cle), []).extend(o for o in objets if o is not None)
 
     def add(self, *m):
         self.static.extend(m)
@@ -885,10 +895,10 @@ def _place_label(lab, dot, placed, xmin, xmax, zone=None, traces=None, own=None,
     recours. La moins mauvaise l'emporte ; a egalite, l'ordre ci-dessus, qui
     commence par la place validee.
 
-    `base` : le point est pose sur la ligne de base (regle du 16/11/2026). Sa
-    valeur ne descend jamais sous l'axe, parmi les graduations : elle se pose
-    au-dessus et a droite de son point ; si cette place est prise, a une
-    autre place au-dessus de l'axe.
+    Regles du 17/11/2026 (voir _place_label_scored) : aucune courbe ne
+    traverse l'etiquette ; et des que sa place serait sous l'axe, parmi les
+    graduations, elle se pose au-dessus et a droite de son point (`base`
+    l'impose d'emblee).
     """
     if traces is not None:
         return _place_label_scored(lab, dot, placed, zone, traces, own, sources or [], floor,
@@ -938,11 +948,93 @@ LABEL_PAD = 0.10  # ecart minimal entre deux etiquettes de valeur
 TICK_PAD = 0.15   # ... entre une etiquette et une graduation de l'axe x
 
 
-BASE_TOL = 1e-6       # un point est « sur la ligne de base » a cette hauteur pres
+RAPPEL_MIN = 0.20     # sous cet ecart, un trait de rappel ne se voit pas
+COURBE_JEU = 0.04     # vide minimal entre une etiquette et une courbe (demi-trait compris)
+
+
+def croise(boite, pts, jeu=0.0):
+    """Une ligne brisee `pts` traverse-t-elle la boite (x0, x1, y0, y1),
+    elargie de `jeu` ? Juge segment par segment : un escalier, une courbe
+    raide ne passent pas entre deux echantillons."""
+    x0, x1, y0, y1 = boite[0] - jeu, boite[1] + jeu, boite[2] - jeu, boite[3] + jeu
+    P = np.asarray(pts, float)[:, :2]
+    if len(P) < 2:
+        return bool(len(P) and x0 <= P[0, 0] <= x1 and y0 <= P[0, 1] <= y1)
+    A, D = P[:-1], P[1:] - P[:-1]
+    t0, t1 = np.zeros(len(A)), np.ones(len(A))
+    ok = np.ones(len(A), bool)
+    for k, (lo, hi) in enumerate(((x0, x1), (y0, y1))):
+        d, a = D[:, k], A[:, k]
+        plat = np.abs(d) < 1e-12
+        ok &= ~plat | ((a >= lo) & (a <= hi))
+        with np.errstate(divide="ignore", invalid="ignore"):
+            u, v = (lo - a) / d, (hi - a) / d
+        u, v = np.where(plat, 0.0, np.minimum(u, v)), np.where(plat, 1.0, np.maximum(u, v))
+        t0, t1 = np.maximum(t0, u), np.minimum(t1, v)
+    return bool(np.any(ok & (t0 <= t1)))
 
 
 def _place_label_scored(lab, dot, placed, zone, traces, own, sources, floor=None, ticks=(),
                         base=False):
+    """Voir _place_label. Regles du 17/11/2026 :
+    - une etiquette n'est jamais traversee par une courbe du graphique, la
+      sienne comprise : les places que croise une courbe sont ecartees, et le
+      trait de rappel sert des que rien n'est libre contre le point ;
+    - elle ne descend pas sous l'axe, parmi les graduations : des que sa
+      place y serait, elle se pose au-dessus et a droite de son point, sinon
+      a une autre place au-dessus de l'axe.
+    Si aucune place ne tient ces regles, la moins mauvaise d'avant, et make
+    check la refuse."""
+    c = dot.get_center()
+    best, dessous = None, False
+    for libre in (True, False):
+        best = _chercher_place(lab, dot, placed, zone, traces, own, sources, floor, ticks,
+                               base, libre)
+        if best is not None and floor is not None and best[5] < floor:
+            # Sa place serait sous l'axe : au-dessus a droite, ou ailleurs
+            # au-dessus de l'axe.
+            dessous = True
+            best = _chercher_place(lab, dot, placed, zone, traces, own, sources, floor, ticks,
+                                   True, libre)
+        if best is not None:
+            break
+    if best is None and LABEL_RULE != "v1":
+        # Dernier repli (17/11/2026, EP001c S27 « 55 EUR ») : aucune place ne
+        # tient toutes les regles - un point au ras de l'axe, sous la courbe
+        # d'une autre serie. L'etiquette s'ecarte au bout d'un trait de rappel,
+        # comme « 8,3 % » (EP004 S04), la ou aucune courbe ne la traverse et
+        # au-dessus de l'axe, a ANCRE_MAX au plus ; elle peut alors etre plus
+        # pres d'une autre courbe que de son point : le trait dit a qui elle
+        # est, et make check le signale.
+        best = _chercher_place(lab, dot, placed, zone, traces, own, sources, floor, ticks,
+                               True, True, repli=True)
+    if best is None:
+        # Rien ne tient : au-dessus a droite si elle allait sous l'axe (jamais
+        # parmi les graduations), sinon la place d'origine, en haut a gauche.
+        lab.next_to(dot, UP, buff=0.14).shift(
+            (RIGHT if (base or dessous) else LEFT) * (lab.width / 2 + 0.06))
+        return lab
+    _, kind, vdir, hdir, lift, _ = best
+    _pose(lab, dot, kind, vdir, hdir, lift)
+    if kind in ("rappel", "leve", "ecart"):
+        # Trait fin, de la couleur de la serie, du point au bord de l'etiquette.
+        boite = (lab.get_left()[0], lab.get_right()[0], lab.get_bottom()[1], lab.get_top()[1])
+        if kind == "ecart" and dist_boite(boite, c) < RAPPEL_MIN:
+            return lab                  # collee au point : pas de trait a tracer
+        q = np.array([np.clip(c[0], boite[0], boite[1]), np.clip(c[1], boite[2], boite[3]), 0.0])
+        u = (q - c) / max(np.linalg.norm(q - c), 1e-6)
+        lab.rappel = Line(c + u * 0.11, q - u * 0.04, stroke_color=lab.get_color(),
+                          stroke_width=1.8, stroke_opacity=0.9)
+    return lab
+
+
+def _chercher_place(lab, dot, placed, zone, traces, own, sources, floor, ticks, base, libre,
+                    repli=False):
+    """La meilleure place (cout, genre, vdir, hdir, ecart, haut de la boite),
+    ou None. `libre` : aucune courbe ne traverse l'etiquette ; `base` : jamais
+    sous l'axe, et au-dessus a droite des que cette place tient ; `repli` :
+    dernier recours, toute place a ANCRE_MAX au plus, au bout d'un trait de
+    rappel, sans exiger que le point le plus proche soit le sien."""
     xmin, xmax, ymin, ymax = zone
     corners = ((UP, LEFT), (UP, RIGHT), (DOWN, LEFT), (DOWN, RIGHT))
     half = lab.width / 2 + 0.06
@@ -959,6 +1051,20 @@ def _place_label_scored(lab, dot, placed, zone, traces, own, sources, floor=None
         # place apres toute position collee au point.
         huit = (UP, DOWN, RIGHT, LEFT, UP + RIGHT, UP + LEFT, DOWN + RIGHT, DOWN + LEFT)
         cands += [("rappel", None, u, d) for d in ANCRE_RAPPEL for u in huit]
+        if libre:
+            # Aucune courbe ne doit traverser l'etiquette : elle peut aussi se
+            # lever (ou descendre) au bout d'un trait de rappel, decalee comme
+            # un glissement ou un coin.
+            cands += [("leve", v, dx, d) for d in ANCRE_RAPPEL for v in (UP, DOWN)
+                      for dx in np.linspace(-half, half, 9)]
+        if repli:
+            # Toute place autour du point, a ANCRE_MAX au plus : le centre de
+            # l'etiquette parcourt une grille fine, la plus proche l'emporte.
+            pas = 0.02
+            nx = int((half + ANCRE_MAX) / pas) + 1
+            ny = int((lab.height / 2 + ANCRE_MAX) / pas) + 1
+            cands = [("ecart", None, (i * pas, j * pas), 0.0)
+                     for j in range(-ny, ny + 1) for i in range(-nx, nx + 1)]
     dense = [_densify(t) for t in traces]
     c = dot.get_center()
     autres = [p for p in sources if np.hypot(p[0] - c[0], p[1] - c[1]) > 1e-6]
@@ -969,16 +1075,18 @@ def _place_label_scored(lab, dot, placed, zone, traces, own, sources, floor=None
         b, t = lab.get_bottom()[1], lab.get_top()[1]
         if l < xmin or r > xmax or b < ymin or t > ymax:
             continue
+        boite = (l, r, b, t)
         if not v1:
             # Le point le plus proche de l'etiquette est le sien.
-            boite = (l, r, b, t)
             d_own = dist_boite(boite, c)
             if d_own > ANCRE_MAX:
                 continue
-            if any(dist_boite(boite, p) < d_own - ANCRE_TOL for p in autres):
+            if not repli and any(dist_boite(boite, p) < d_own - ANCRE_TOL for p in autres):
                 continue
-            if any(min(dist_boite(boite, p) for p in pts) < d_own - ANCRE_TOL
-                   for k, pts in enumerate(dense) if k != own):
+            if not repli and any(min(dist_boite(boite, p) for p in pts) < d_own - ANCRE_TOL
+                                 for k, pts in enumerate(dense) if k != own):
+                continue
+            if libre and any(croise(boite, pts, COURBE_JEU) for pts in dense):
                 continue
         if any(_boxes_overlap(lab, o, pad=LABEL_PAD) for o in placed):
             continue
@@ -987,7 +1095,6 @@ def _place_label_scored(lab, dot, placed, zone, traces, own, sources, floor=None
         if floor is not None and b - 0.03 < floor < t + 0.03:
             continue
         if base and floor is not None and t < floor:
-            # Point sur la ligne de base : jamais sous l'axe.
             continue
         pad = 0.06
         if any(l - pad <= p[0] <= r + pad and b - pad <= p[1] <= t + pad for p in sources):
@@ -997,29 +1104,39 @@ def _place_label_scored(lab, dot, placed, zone, traces, own, sources, floor=None
             inside = ((pts[:, 0] >= l - pad) & (pts[:, 0] <= r + pad) &
                       (pts[:, 1] >= b - pad) & (pts[:, 1] <= t + pad)).sum()
             cost += inside * (0.5 if k == own else 1.0)
-        cost += lift * 6 + {"coin": 0.0, "glisse": 0.5, "cote": 1.0, "rappel": 20.0}[kind]
+        cost += lift * 6 + {"coin": 0.0, "glisse": 0.5, "cote": 1.0, "rappel": 20.0,
+                            "leve": 21.0, "ecart": 22.0}[kind]
+        if kind == "ecart":
+            # Au plus pres du point ; de preference assez loin pour que le
+            # trait de rappel se voie (RAPPEL_MIN).
+            cost += d_own * 6 + (5.0 if d_own < RAPPEL_MIN else 0.0)
+        if kind == "leve":
+            cost += abs(float(hdir)) * 0.5 + (0.0 if float(hdir) >= 0 else 0.2)
         if floor is not None and t < floor:
             cost += 2.0
         if base and kind == "coin" and vdir is UP and hdir is RIGHT and lift == 0.0:
-            # Sa place : au-dessus et a droite, des qu'elle est libre, meme
-            # si la courbe passe dessous.
-            best = (cost, kind, vdir, hdir, lift)
-            break
+            # Sa place : au-dessus et a droite, des qu'elle est libre.
+            return (cost, kind, vdir, hdir, lift, t)
         if best is None or cost < best[0] - 1e-9:
-            best = (cost, kind, vdir, hdir, lift)
-    if best is None:
-        lab.next_to(dot, UP, buff=0.14).shift((RIGHT if base else LEFT) * (lab.width / 2 + 0.06))
-        return lab
-    _, kind, vdir, hdir, lift = best
-    _pose(lab, dot, kind, vdir, hdir, lift)
-    if kind == "rappel":
-        # Trait fin, de la couleur de la serie, du point au bord de l'etiquette.
-        boite = (lab.get_left()[0], lab.get_right()[0], lab.get_bottom()[1], lab.get_top()[1])
-        q = np.array([np.clip(c[0], boite[0], boite[1]), np.clip(c[1], boite[2], boite[3]), 0.0])
-        u = (q - c) / max(np.linalg.norm(q - c), 1e-6)
-        lab.rappel = Line(c + u * 0.11, q - u * 0.04, stroke_color=lab.get_color(),
-                          stroke_width=1.8, stroke_opacity=0.9)
-    return lab
+            best = (cost, kind, vdir, hdir, lift, t)
+    return best
+
+
+def poser_hors_courbes(tag, places, traces, placed=()):
+    """Pose `tag` a la premiere des `places` (fonctions qui le posent) ou
+    aucune courbe ne le traverse et ou il ne couvre aucune etiquette ; a
+    defaut, a la premiere : make check le refusera."""
+    dense = [_densify(t) for t in traces]
+    for pose in places:
+        pose(tag)
+        boite = (tag.get_left()[0], tag.get_right()[0], tag.get_bottom()[1], tag.get_top()[1])
+        if any(croise(boite, pts, COURBE_JEU) for pts in dense):
+            continue
+        if any(_boxes_overlap(tag, o, pad=LABEL_PAD) for o in placed):
+            continue
+        return tag
+    places[0](tag)
+    return tag
 
 
 def _pose(lab, dot, kind, vdir, hdir, lift):
@@ -1028,6 +1145,10 @@ def _pose(lab, dot, kind, vdir, hdir, lift):
     dans la direction `hdir`, a `lift` du point."""
     if kind == "rappel":
         lab.next_to(dot, hdir, buff=lift)
+    elif kind == "leve":
+        lab.next_to(dot, vdir, buff=lift).shift(RIGHT * float(hdir))
+    elif kind == "ecart":
+        lab.move_to(dot.get_center() + np.array([hdir[0], hdir[1], 0.0]))
     elif kind == "coin":
         lab.next_to(dot, vdir, buff=0.14 + lift).shift(hdir * (lab.width / 2 + 0.06))
     elif kind == "glisse":
@@ -1232,8 +1353,7 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
             lab = txt(nombres.fmt(y, yfmt), SZ_LABEL, cols[i], weight=SEMIBOLD)
             _place_label(lab, dot, placed, zone[0], zone[1], zone=zone,
                          traces=traces, own=i, sources=sources, floor=fr.py(ylo),
-                         ticks=list(xticks),
-                         base=abs(fr.pt(x, y)[1] - fr.py(ylo)) <= BASE_TOL)
+                         ticks=list(xticks))
             # Une valeur identique a celle du point precedent de la meme serie
             # ne se reecrit pas - le point seul apparait -, sauf si la voix
             # l'enonce (partie nommee par le script). Une ligne plate de
@@ -1304,7 +1424,16 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
         if e.get("valeur") is not None:
             tag = txt(nombres.fmt(float(e["valeur"]), e.get("format", "nombre")),
                       SZ_TITLE, INK, weight=SEMIBOLD)
-            tag.next_to(gap, RIGHT, buff=0.18)
+            # La valeur de l'accolade : a sa droite, a mi-hauteur ; si une
+            # courbe l'y traverse, a gauche, puis en haut ou en bas de
+            # l'accolade, d'un cote ou de l'autre.
+            trait = gap.copy()
+            dy = max(haut / 2 - tag.height / 2 - 0.08, 0.0)
+            lieux = [(RIGHT, 0.0), (LEFT, 0.0)] + ([(RIGHT, dy), (RIGHT, -dy), (LEFT, dy),
+                                                    (LEFT, -dy)] if dy > 0.05 else [])
+            poser_hors_courbes(
+                tag, [(lambda m, c=cote, d=d_y: m.next_to(trait, c, buff=0.18).shift(UP * d))
+                      for cote, d_y in lieux], traces, placed)
             gap.add(tag)
         cues.point("ecart", (bx + 0.25, fr.py((lo + hi) / 2)))
         extras.append("gap")
@@ -1315,7 +1444,10 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
         fx = float(fa["x"])
         fy = float(np.interp(fx, xs, curves[k][0]))
         tag = txt(nombres.facteur(float(fa["valeur"])), SZ_TITLE, cols[k], weight=SEMIBOLD)
-        tag.next_to(fr.pt(fx, fy), RIGHT, buff=0.34)
+        pf = fr.pt(fx, fy)
+        poser_hors_courbes(
+            tag, [(lambda m, u=u: m.next_to(pf, u, buff=0.34))
+                  for u in (RIGHT, UP + RIGHT, DOWN + RIGHT, UP, DOWN, LEFT)], traces, placed)
         ring = Circle(radius=0.2, stroke_color=cols[k], stroke_width=2.4).move_to(fr.pt(fx, fy))
         factor = VGroup(ring, tag)
         cues.point("facteur", tag.get_center())
@@ -1354,6 +1486,11 @@ def _line_points(seg, cues, prefix="series", fill=False, family="LineChart"):
     marks_vus = [m for c in curves for _, _, m in c[2] if m is not None]
     later = [(t, False) for k, t in rev.times.items() if k in rev.fixed and k not in own]
     runs, first_motion = _plan_runs(sid, tracks, frame_end, later, CONTINUOUS_MAX, cues.dur)
+    # Legendes : la k-ieme a paraitre nomme la k-ieme serie a se tracer, et en
+    # prend la couleur, quel que soit l'ordre ou le script les ecrit
+    # (scenes.add_overlays ; `"serie": k` sur la legende le dit expressement).
+    debuts = [(runs[k][0][0][0] if runs.get(k) else float("inf")) for k in keys]
+    cues.legend_order = sorted(range(n), key=lambda i: (debuts[i], i))
 
     for key, (_, ln, marks) in zip(keys, curves):
         rs = runs.get(key) or []
@@ -4027,6 +4164,7 @@ def Grille(seg, cues):
         fonds.append(fond)
         vagues[key] = (allumees, lab)
         cues.partie(key, fond, allumees, lab)
+        cues.distinct(key, lab)        # la valeur exacte est l'element valeur_k
         order.append(key)
         cues.point(key, (cx, cy + h / 2 + 0.42))
         cues.anchor_align[key] = ORIGIN
@@ -4473,6 +4611,53 @@ def _feuilles(m):
     return {id(x) for x in m.family_members_with_points()}
 
 
+class Presence(Animation):
+    """Change la presence (opacite du trait et du fond) d'un objet sans
+    toucher a sa forme : un trace en cours reste trace jusqu'ou il en est.
+    Un Transform vers une copie faite a la construction lui rendrait toute
+    sa longueur - l'accent montrerait ce que la voix n'a pas encore dit."""
+
+    def __init__(self, m, cible, **kw):
+        self.cible = cible
+        super().__init__(m, introducer=True, **kw)
+
+    def interpolate_mobject(self, alpha):
+        a = self.rate_func(alpha)
+        for sm, s0, c in zip(self.mobject.family_members_with_points(),
+                             self.starting_mobject.family_members_with_points(),
+                             self.cible.family_members_with_points()):
+            sm.set_stroke(opacity=interpolate(s0.get_stroke_opacity(),
+                                              c.get_stroke_opacity(), a), family=False)
+            sm.set_fill(opacity=interpolate(s0.get_fill_opacity(),
+                                            c.get_fill_opacity(), a), family=False)
+
+
+def _revelations(cues):
+    """{id(piece): fin de sa revelation}. Une piece est revelee a la fin de
+    l'animation qui l'introduit (la premiere qui la touche) ; un trace par
+    morceaux, a la fin de son dernier morceau. Une piece posee en decor et
+    jamais animee l'est des le debut ; une piece absente n'y figure pas."""
+    from build_objets import _deplier
+    fins, trace = {}, set()
+    for t0, anims, rt in sorted(cues.items, key=lambda c: c[0]):
+        for a in [x for y in anims for x in _deplier(y)]:
+            m = getattr(a, "mobject", None)
+            if m is None or isinstance(a, Courant):
+                continue
+            morceau = isinstance(a, (TracePiece, AreaSweep))
+            for f in _feuilles(m):
+                if f not in fins:
+                    fins[f] = t0 + rt
+                    if morceau:
+                        trace.add(f)
+                elif morceau and f in trace:
+                    fins[f] = max(fins[f], t0 + rt)
+    for m in cues.static:
+        for f in _feuilles(m):
+            fins.setdefault(f, 0.0)
+    return fins
+
+
 def _accents(seg, cues):
     mb = (seg or {}).get("manim_brief") or {}
     spec = mb.get("accents")
@@ -4492,6 +4677,8 @@ def _accents(seg, cues):
     from build_objets import objets_avant
     deja = []                      # pieces des elements deja accentues
     origines = {}
+    fins = _revelations(cues)
+    cues.accents_avant = []        # pour make check : (nom, cle, instant, fin de revelation)
     for k, a in enumerate(spec, 1):
         cle = a.get("element") if isinstance(a, dict) else None
         if cle not in cues.parties:
@@ -4506,8 +4693,33 @@ def _accents(seg, cues):
         pieces = set()
         for m in membres:
             pieces |= _feuilles(m)
+        # Un accent ne rend jamais visible ce qui n'est pas encore revele
+        # (regle du 17/11/2026). `presentes` : les pieces deja a l'ecran a
+        # l'instant de l'accent ; `complet` : la revelation de l'objet est
+        # finie (courbe tracee jusqu'au bout, barre a sa hauteur). make check
+        # refuse l'accent pose avant la revelation complete de son element ;
+        # le moteur, lui, ne montre alors que ce qui est deja la.
+        avant = objets_avant(cues, t)
+        presentes = set()
+        for m in avant:
+            presentes |= _feuilles(m)
+
+        def complet(m):
+            return all(fins.get(f, float("inf")) <= t + 1e-6 for f in _feuilles(m))
+
+        # La regle porte sur l'element de l'accent seul : un objet de la
+        # partie qui est un element distinct (la valeur exacte d'une Grille,
+        # `valeur_k`) peut arriver apres l'accent, sur son propre mot.
+        a_part = set()
+        for m in cues.distincts.get(cle, ()):
+            a_part |= _feuilles(m)
+        fin_el = max((fins.get(f, float("inf")) for f in pieces - a_part), default=0.0)
+        if fin_el > t + 1e-6:
+            cues.accents_avant.append((nom, cle, t, fin_el))
+        visibles = [m for m in membres if _feuilles(m) and _feuilles(m) <= presentes]
         nature = next((e["nature"] for e in cues.sens if e["nom"] == cle), "neutre")
-        cadre = SurroundingRectangle(VGroup(*membres), color=ACCENT_COULEURS[nature], buff=0.16,
+        cadre = SurroundingRectangle(VGroup(*(visibles or membres)),
+                                     color=ACCENT_COULEURS[nature], buff=0.16,
                                      stroke_width=2.2, corner_radius=0.08)
         cadre.nom = f"cadre de {nom} ({cle})"
         garde = pieces | {p for d in deja for p in d}
@@ -4521,16 +4733,28 @@ def _accents(seg, cues):
                 for sm in m.submobjects:
                     estomper(sm)
                 return
-            anims.append(_dim_to(m, ACCENT_ESTOMPE))
+            a = _dim_to(m, ACCENT_ESTOMPE)
+            # Un trace en cours s'estompe la ou il en est, sans se completer.
+            anims.append(a if complet(m) else Presence(m, a.target_mobject))
 
-        for m in objets_avant(cues, t):
+        def retablir(m, origine):
+            f = _feuilles(m)
+            if not f & presentes:
+                return                  # pas encore a l'ecran : il n'y entre pas ici
+            if f <= presentes:
+                anims.append(Restyle(m, origine) if complet(m) else Presence(m, origine))
+                return
+            for sm, so in zip(m.submobjects, origine.submobjects):
+                retablir(sm, so)
+
+        for m in avant:
             estomper(m)
         if deja:
             # Un element estompe par l'accent precedent retrouve sa presence.
             for m in membres:
                 if id(m) in origines:
-                    anims.append(Restyle(m, origines[id(m)]))
-        cues.at(t, Create(cadre), *anims, rt=ACCENT_RT)
+                    retablir(m, origines[id(m)])
+        cues.at(t, *([Create(cadre)] if visibles else []), *anims, rt=ACCENT_RT)
         cues.accents.append((nom, cle, cadre, nature))
         deja.append(pieces | _feuilles(cadre))     # son cadre reste present, lui aussi
         if k == 1:

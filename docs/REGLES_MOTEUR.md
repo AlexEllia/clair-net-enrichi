@@ -191,6 +191,77 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
     changent pas.
   Plans d'essai figés : `essai_mise_en_page_distribution_graduations` (refusé
   par le contrôle avec le code d'avant), `essai_mise_en_page_grille_pictos`.
+- **Corrections du 17/11/2026** (fautes vues sur les aperçus de l'EP004,
+  script v8 ; refus pour un script au catalogue actuel et un plan d'essai,
+  remarque pour un script antérieur, sauf mention contraire) :
+  - **Accent, jamais avant la révélation complète de son élément**
+    (`_revelations`, `Presence`, `_accents`, components.py ;
+    `cues.accents_avant`, build.py) : courbe tracée jusqu'au bout, barre à sa
+    hauteur. `make check` refuse l'accent posé plus tôt ; le moteur, lui,
+    n'encadre alors que ce qui est déjà à l'écran, et un tracé en cours
+    s'estompe là où il en est (un `Transform` vers une copie lui rendait
+    toute sa longueur : l'accent montrait ce que la voix n'avait pas dit).
+    **La règle porte sur l'élément de l'accent seul** (`cues.distinct`) :
+    dans une Grille, la valeur exacte est l'élément `valeur_k`, qui peut
+    arriver après un accent sur `groupe_k`. *Pourquoi* : EP004 S19, accent
+    sur `groupe_1` à 15,85 s, `valeur_1` sur « le chiffre est fragile » à
+    19,86 s — vérifié à l'image : le cadre entoure la grille seule, « 61,5 % »
+    n'apparaît que sur son mot, sous le cadre. Le refus était un faux positif.
+    S10 (accents posés pendant le tracé des courbes) reste refusé par la règle.
+  - **Légende : la pastille a la couleur de sa série**
+    (`series_des_legendes`, scenes.py ; `cues.legend_order`) : `"serie": k`
+    sur la légende ; sinon, pour un LineChart, la première légende à paraître
+    nomme la première série à se tracer ; à défaut l'ordre d'écriture, comme
+    avant. `make check` refuse plus de légendes que de séries, deux légendes
+    pour une série, une pastille d'une autre couleur.
+  - **Aucune courbe ne traverse un texte du graphique** (`croise`,
+    `COURBE_JEU` = 0,04, `_chercher_place`, `poser_hors_courbes`) : valeur
+    d'un point (sa propre courbe comprise), d'une accolade, facteur,
+    graduation. Nouvelle place « levée » au bout d'un trait de rappel ; la
+    valeur d'une accolade et le facteur changent de côté. Refus au check
+    (`cues.courbes`).
+  - **Ligne de base géométrique** : la valeur d'un point ne se pose plus sous
+    l'axe ni à cheval sur lui, quelle que soit la valeur du point (le 16/11 :
+    seulement pour un point sur la borne basse, `BASE_TOL`, supprimé). Dès
+    que sa place y serait, au-dessus et à droite de son point. Refus quel que
+    soit l'âge du script.
+  - **Dernier repli d'une étiquette** (`repli` dans `_chercher_place`,
+    `RAPPEL_MIN` = 0,20) : quand aucune place ne tient toutes les règles,
+    l'étiquette prend la place la plus proche de son point où aucune courbe
+    ne la traverse, au-dessus de l'axe, à `ANCRE_MAX` au plus, avec un trait
+    de rappel dès 0,20 d'écart. Avant, elle retombait en haut à droite du
+    point, sur la courbe voisine. *Pourquoi* : EP001c S27, « 55 € », au ras
+    de l'axe sous la droite des versements : elle se lit maintenant contre
+    son point, entre l'axe et la droite (à 0,14, donc sans trait). Le check
+    la dit encore plus proche de la série 1 (0,06) que de son point : il n'y
+    a pas d'autre place ; l'épisode est publié et ne sera pas re-rendu.
+  - **Nombres insécables** (`nombres.insecables`, `coupures` ; `_mots`,
+    `_wrap`, scenes.py) : aucun retour à la ligne ne coupe un nombre, ni
+    entre ses groupes de chiffres ni avant son unité (signe, ou nom qui le
+    suit ; les mots de liaison ne sont pas des unités). Refus d'un nombre
+    coupé.
+  - **Nom de lien de Flux sur trois lignes** (`_poser_libelle`) : dernier
+    recours, seulement quand une et deux lignes recouvrent encore quelque
+    chose (jamais pour gagner une marge : aucun plan validé ne change).
+    *Pourquoi* : EP004 S02, « Un coût 7 fois sur 10 ? » — « 7 fois »
+    insécable, le bloc de deux lignes s'élargit (2,3 de large) et recouvrait
+    `link_5` (lien vertical, nœud voisin à gauche, colonne d'encarts à
+    droite). Sur trois lignes il tient à droite du lien.
+  - **Deux plans : aucun tracé du plan b avant qu'il soit en place** (fondu
+    fini, titre écrit, axes posés ; `collisions`, `seg["_plan"] == "b"`).
+    EP004 S16 et S21 sont refusés à ce titre : à corriger dans le script.
+  - **R6 pour un trait fin** (densite.py : `SEUIL_TRAIT` = 60, `MIN_TRAIT` =
+    4, `SUITE_TRAIT` = 5) : une paire d'images compte aussi comme active
+    quand 4 pixels au moins y changent de plus de 60 niveaux, pendant 5
+    paires de suite. *Pourquoi* : une courbe qui se trace lentement ne
+    change que 6 à 15 pixels par paire, sous `MIN_PX` (EP004 S05 : 8,7 s
+    signalées « figées » pendant un tracé). Sans une telle suite, la mesure
+    est celle d'avant.
+  Non-régression : tous les plans identiques au pixel près, sauf
+  `essai_linechart_log`, qui passe en v3 (« 1 $ » levé au bout d'un trait de
+  rappel, « 3,34 $ » écarté de la courbe ; calendrier inchangé) — **pas
+  encore vue à l'écran**. Ce qui est dit plus bas d'EP001c S27 (« inchangé »)
+  et de « 3,34 $ » (« où la courbe le frôle ») ne vaut plus.
 - **LineChart : valeur d'un point posé sur la ligne de base** (16/11/2026,
   demande d'Alexandre ; `base` dans `_place_label_scored`, components.py) :
   elle ne descend jamais sous l'axe, parmi les graduations. Elle se pose

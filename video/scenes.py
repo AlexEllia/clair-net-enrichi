@@ -144,9 +144,17 @@ def _opacity(m, value):
     return Transform(m, m.copy().set_opacity(value))
 
 
+def _mots(s):
+    """Les mots d'un texte, coupe aux seules espaces ordinaires : un nombre
+    reste entier, avec son unite (nombres.insecables, regle du 17/11/2026),
+    et une espace insecable ecrite par le script n'est pas une coupure."""
+    import nombres
+    return [w for w in re.split(r"[ \t\r\n]+", nombres.insecables(s)) if w]
+
+
 def _wrap(s, width):
     """Retour a la ligne sur mots, pour les encarts etroits."""
-    words, lines, cur = s.split(), [], ""
+    words, lines, cur = _mots(s), [], ""
     for w in words:
         cand = (cur + " " + w).strip()
         if len(cand) > width and cur:
@@ -168,7 +176,7 @@ def _wrap_equilibre(s, width):
     deux caracteres seul en derniere ligne (« Et si on le place / ? »,
     « Encore 7 fois sur / 10 »)."""
     mots = []
-    for w in s.split():
+    for w in _mots(s):
         if mots and (w in PONCTUATION or mots[-1] in ("«", "≈")):
             mots[-1] += "\ue000" + w        # liaison : le signe suit son mot (split()
                                             # couperait sur une espace insecable)
@@ -268,7 +276,8 @@ def _poser_libelle(cues, anchor, texte, taille, couleur, graisse, poses, limites
 
     Essais, dans l'ordre : sa place habituelle sur une ligne, puis les autres
     places autour de ce qu'il nomme (au-dessus, a droite, a gauche du noeud ;
-    de l'autre cote du lien), puis les memes sur deux lignes. Le premier essai
+    de l'autre cote du lien), puis les memes sur deux lignes, puis, si tout
+    recouvre encore quelque chose, sur trois lignes. Le premier essai
     qui ne touche ni un noeud, ni un lien, ni un montant, ni un libelle deja
     pose, ni la colonne des encarts, ni le bord de l'image est retenu ; a
     defaut, celui qui recouvre le moins. La taille des lettres ne change pas.
@@ -287,13 +296,36 @@ def _poser_libelle(cues, anchor, texte, taille, couleur, graisse, poses, limites
     large = cues.anchor_widths.get(anchor, 4.0)
     textes = [texte]
     if " " in texte.strip() and not v1:
-        textes.append(_wrap(texte, max(len(texte) // 2 + 2, 8)))
+        # Deux lignes ; un nombre insecable (« 7 fois ») peut en demander une
+        # troisieme a cette largeur : on l'elargit alors jusqu'a tenir en deux.
+        largeur = max(len(texte) // 2 + 2, 8)
+        deux = _wrap(texte, largeur)
+        while len(deux.splitlines()) > 2 and largeur < len(texte):
+            largeur += 1
+            deux = _wrap(texte, largeur)
+        textes.append(deux)
     obstacles = [b for _, b in cues.obstacles]
     montants = [b for nom, b in cues.obstacles if nom.startswith("montant du lien")]
     m = MARGE_ENCART - 1e-6
     xg, xd, yb, yh, encarts = limites
     best = None
-    for s_ in textes:
+    for s_ in textes + [None]:
+        if s_ is None:
+            # Dernier recours (17/11/2026) : trois lignes, et seulement si une
+            # et deux lignes recouvrent encore quelque chose. Un nombre
+            # insecable (« 7 fois ») elargit le bloc de deux lignes ; plus
+            # etroit sur trois, il tient entre le lien et le noeud voisin
+            # (EP004 S02). Un nom qui ne fait que serrer un autre de trop pres
+            # reste sur deux lignes : aucun plan valide ne change.
+            if v1 or best is None or best[0][0] == 0.0 or len(_mots(texte)) < 3:
+                break
+            largeur = max(len(texte) // 3 + 1, 6)
+            s_ = _wrap(texte, largeur)
+            while len(s_.splitlines()) > 3 and largeur < len(texte):
+                largeur += 1
+                s_ = _wrap(texte, largeur)
+            if len(s_.splitlines()) != 3:
+                break
         lignes = s_.splitlines()
         if len(lignes) > 1:
             t = VGroup(*[txt(l, taille, couleur, weight=graisse) for l in lignes])
@@ -342,6 +374,29 @@ def _boites_encarts(ctr):
         x, y = ENCART_X, ENCART_Y[i % 3]
         out.append((x - w / 2, x + w / 2, y - h / 2, y + h / 2))
     return out
+
+
+def series_des_legendes(legs, ordre, n):
+    """Indice de la serie que nomme chaque legende (regle du 17/11/2026 : la
+    pastille prend la couleur de SA serie, quel que soit l'ordre des
+    legendes). `"serie": k` sur la legende le dit expressement ; sinon,
+    quand le composant donne l'ordre d'arrivee de ses series (`ordre`,
+    LineChart), la premiere legende a paraitre nomme la premiere serie a se
+    tracer, et ainsi de suite ; a defaut, l'ordre d'ecriture, comme avant."""
+    out = [None] * len(legs)
+    for i, o in enumerate(legs):
+        k = o.get("serie")
+        if isinstance(k, int) and not isinstance(k, bool) and 1 <= k <= max(n, 1):
+            out[i] = k - 1
+    libres = [k for k in (ordre if ordre is not None else range(max(n, len(legs))))
+              if k not in out]
+    libres += [k for k in range(len(legs)) if k not in libres and k not in out]
+    reste = [i for i in range(len(legs)) if out[i] is None]
+    if ordre is not None:
+        reste.sort(key=lambda i: (float(legs[i].get("t_rel_s", 0.0)), i))
+    for i, k in zip(reste, libres):
+        out[i] = k
+    return [k if k is not None else i for i, k in enumerate(out)]
 
 
 def add_overlays(seg, cues, visual):
@@ -518,12 +573,14 @@ def add_overlays(seg, cues, visual):
     cols = list(cues.legend_colors) or (
         [CONTRIB, NEG, TEAL] if big else [CONTRIB, INTEREST, NEG])
     rows = []
+    series = series_des_legendes(legs, getattr(cues, "legend_order", None), len(cols))
     for i, o in enumerate(legs):
         chip = RoundedRectangle(width=0.26, height=0.26, corner_radius=0.06,
-                                fill_color=cols[i % len(cols)], fill_opacity=1,
+                                fill_color=cols[series[i] % len(cols)], fill_opacity=1,
                                 stroke_width=0)
         lab = txt(o["texte_fr"], SZ_BODY if big else SZ_LABEL, INK if big else INK_SOFT)
         rows.append(VGroup(chip, lab).arrange(RIGHT, buff=0.24))
+        rows[-1].serie = series[i]
 
     if rows and big:
         for i, row in enumerate(rows):

@@ -931,15 +931,23 @@ def collisions(seg, dur, ep_dir=None, strict=True):
                       f"(`series_k_point_j`), les autres ne feront que tracer")
     etiquettes = getattr(cues, "etiquettes", [])
     base = getattr(cues, "ligne_de_base", None)
+    # LineChart : aucun texte du graphique (valeur d'un point, d'une accolade,
+    # d'un facteur, graduation) n'est traverse par une courbe (17/11/2026).
+    from components import croise
+    for k, pts in sorted(getattr(cues, "courbes", {}).items()):
+        for x in textes:
+            if croise(_boite(x), pts):
+                noter_t(f"{nom_t(x)} traverse par la courbe de la serie {k + 1}")
     for lab, cible, serie, nom in etiquettes:
         b = _boite(lab)
         texte = getattr(lab, "text", "?")
         d = dist_boites(b, cible)
-        # Point pose sur la ligne de base : sa valeur ne descend jamais sous
-        # l'axe, parmi les graduations (regle du 16/11/2026).
-        if base is not None and abs(cible[2] - base) <= 1e-6 and b[3] < base:
-            fautes.append(f"etiquette « {texte} » de {nom} sous l'axe, parmi les graduations, "
-                          f"alors que son point est sur la ligne de base")
+        # La valeur d'un point ne se pose pas sous l'axe, parmi les
+        # graduations, ni a cheval sur lui (regles des 16 et 17/11/2026).
+        if base is not None and b[2] < base:
+            fautes.append(f"etiquette « {texte} » de {nom} sous l'axe, parmi les graduations"
+                          if b[3] < base else
+                          f"etiquette « {texte} » de {nom} a cheval sur l'axe")
         if d > ANCRE_MAX + 1e-6:
             fautes.append(f"etiquette « {texte} » de {nom} a {d:.2f} de son point "
                           f"(maximum {ANCRE_MAX:.2f})")
@@ -953,6 +961,55 @@ def collisions(seg, dur, ep_dir=None, strict=True):
                 if dk < d - ANCRE_TOL:
                     fautes.append(f"etiquette « {texte} » de {nom} plus proche de la courbe "
                                   f"de la serie {k + 1} ({dk:.2f}) que de son point ({d:.2f})")
+    # Nombres insecables : aucun retour a la ligne ne coupe un nombre, ni
+    # entre ses groupes de chiffres ni avant son unite (regle du 17/11/2026).
+    import nombres
+    vus_n = set()
+    for m, _, _ in objets:
+        blocs = [x for x in m.get_family() if isinstance(x, (Text, MarkupText))]
+        ecrits = [getattr(x, "text", "") for x in blocs]
+        if (len(blocs) > 1 and getattr(m, "role", None) == "libelle"
+                and all(isinstance(x, (Text, MarkupText)) for x in m.submobjects)):
+            ecrits = ["\n".join(ecrits)]       # un libelle ecrit ligne par ligne
+        for e in ecrits:
+            for fin, debut in nombres.coupures(e):
+                if (e, fin, debut) not in vus_n:
+                    vus_n.add((e, fin, debut))
+                    lu = " ".join(str(e).split())
+                    noter_t(f"nombre coupe en fin de ligne dans « {lu} » "
+                            f"(« {fin} » / « {debut} »)")
+    # Legende : la pastille a la couleur de sa serie, une legende par serie
+    # (regle du 17/11/2026).
+    legs = [o for o in seg.get("overlay_texte") or [] if o.get("ancre") == "legende"]
+    n_series = len(getattr(cues, "legend_colors", []) or [])
+    if legs and n_series:
+        if len(legs) > n_series:
+            noter_t(f"{len(legs)} legendes pour {n_series} serie(s) : une legende par serie")
+        dites = [o.get("serie") for o in legs if o.get("serie") is not None]
+        for k in dites:
+            if not isinstance(k, int) or isinstance(k, bool) or not 1 <= k <= n_series:
+                noter_t(f"legende : `serie` {k!r} hors des series du plan (1 a {n_series})")
+        if len(set(map(str, dites))) < len(dites):
+            noter_t("legende : deux legendes nomment la meme serie (`serie`)")
+        from manim import ManimColor
+        vues_s = {}
+        for l in libelles:
+            k = getattr(l, "serie", None)
+            if k is None or not l.nom.startswith("legende "):
+                continue
+            if k in vues_s:
+                noter_t(f"libelle {l.nom} et {vues_s[k]} portent la pastille de la meme serie")
+            vues_s[k] = l.nom
+            attendu = ManimColor(cues.legend_colors[k % n_series]).to_hex().lower()
+            if ManimColor(l[0].get_fill_color()).to_hex().lower() != attendu:
+                noter_t(f"libelle {l.nom} : pastille d'une autre couleur que la serie {k + 1}")
+    # Accent : jamais avant la revelation complete de son element (courbe
+    # tracee jusqu'au bout, barre a sa hauteur) - regle du 17/11/2026.
+    for nom, cle, t_acc, fin_el in getattr(cues, "accents_avant", []):
+        quand = (f"complete a {fin_el:.2f} s" if fin_el != float("inf")
+                 else "jamais revele en entier dans ce plan")
+        noter_t(f"{nom} pose a {t_acc:.2f} s, avant la revelation complete de {cle} ({quand}) : "
+                f"un accent vient apres que son element est entierement apparu")
     # Encarts d'un plan manim : deux au plus, aucun ne reprend la voix.
     for x in fautes_encarts(seg):
         noter_t(x)
@@ -966,6 +1023,22 @@ def collisions(seg, dur, ep_dir=None, strict=True):
         elif min(t_titre) > TITRE_AVANT + 1e-6:
             noter_t(f"titre pose a {min(t_titre):.2f} s : un titre de plan manim apparait dans "
                     f"la premiere seconde ({TITRE_AVANT:.0f} s au plus) et reste tout le plan")
+    # Second plan d'un segment : aucun trace ne commence avant que le plan soit
+    # entre - fondu enchaine fini, titre et axes en place (regle du 17/11/2026).
+    if seg.get("_plan") == "b" and cues.meta.get("first_data") is not None:
+        from briefs import FONDU_PLANS
+        fin_titre = max([t + rt for t, anims, rt in cues.items
+                         for x in anims for y in _deplier(x)
+                         if str(getattr(getattr(y, "mobject", None), "nom", "")
+                                ).startswith("titre_haut ")] or [0.0])
+        fin_axes = float(cues.meta.get("frame_end") or 0.0)
+        pret = max(FONDU_PLANS, fin_titre, fin_axes)
+        debut = float(cues.meta["first_data"])
+        if debut < pret - 1e-6:
+            noter_t(f"le premier trace commence {debut:.2f} s apres le debut du fondu, avant "
+                    f"que le plan soit en place ({pret:.2f} s : fondu {FONDU_PLANS:.2f} s, titre "
+                    f"{fin_titre:.2f} s, axes {fin_axes:.2f} s) - laisse ce temps entre le "
+                    f"declencheur du plan et sa premiere valeur")
     # Pendant les animations : rien de ce qui bouge ne passe sous un autre.
     for x in mouvements(seg, dur, ep_dir):
         (fautes if strict else remarques).append(x)

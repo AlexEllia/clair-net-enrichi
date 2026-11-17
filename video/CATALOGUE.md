@@ -60,7 +60,9 @@ ne doit pas rester figé plus de 4 s. Tout dépend de l'élément qui vient :
 R6 se juge sur ce que voit le spectateur : une fois le plan rendu, `make
 check` mesure ses temps morts en pixels. Un fondu ne s'y voit qu'à ~20 %
 d'opacité, soit ~0,5 s après son mot : vise 3,5 s au plus entre la fin d'une
-animation et le mot suivant.
+animation et le mot suivant. Une courbe qui se trace lentement compte comme du
+mouvement à chaque image, même si elle ne change que quelques pixels (mesure
+du trait fin, 17/11/2026) : un long tracé n'est plus signalé « figé ».
 
 **`make check` refuse** (code de sortie non nul) tout plan, quel que soit son
 `type_visuel`, où plus de 4 s s'écoulent sans que rien de nouveau n'arrive à
@@ -247,9 +249,21 @@ souligne au même mot. Chaque famille a les siennes :
   **dure jusqu'à la fin du plan**. Au second accent, le premier élément et son
   cadre restent présents.
 - `accent_k` est une **révélation** (R4, R6) : écris-lui un `declencheur`, sur
-  le mot de la conclusion qui désigne l'élément. Il doit venir **après** que
-  l'élément est apparu. **Deux accents au plus par plan** ; `make check`
-  refuse le troisième, et vérifie la couleur du cadre contre la nature.
+  le mot de la conclusion qui désigne l'élément. **Deux accents au plus par
+  plan** ; `make check` refuse le troisième, et vérifie la couleur du cadre
+  contre la nature.
+- **Un accent vient après la révélation complète de son élément** (règle du
+  17/11/2026) : la courbe tracée jusqu'à son dernier point, la barre ou la
+  jauge à sa hauteur, la vague d'une grille finie. `make check` refuse un
+  accent posé plus tôt, en donnant l'instant où l'élément est complet. Un
+  accent ne montre jamais ce que la voix n'a pas encore dit : posé trop tôt
+  malgré tout, il n'encadre que ce qui est déjà à l'écran, et un tracé en
+  cours s'estompe là où il en est, sans se compléter.
+- **La règle porte sur l'élément de l'accent seul.** Dans une `Grille`, la
+  valeur exacte est un élément distinct (`valeur_k`) : un accent sur
+  `groupe_k` peut venir avant `valeur_k`, quand la voix dit le chiffre exact
+  plus tard. Le cadre entoure alors la grille seule ; la valeur s'écrit sur
+  son propre mot, sous le cadre, en pleine présence.
 - Titres, noms et encarts ne s'estompent pas. L'argent qui circule sur un
   lien de `Flux` non plus.
 - Un accent ne s'invente pas : il souligne ce que la voix souligne. Si la
@@ -290,6 +304,12 @@ parlé : même identifiant, même audio, même `vo_fr`.
 - **Tous les `t_rel_s` restent comptés depuis le début du segment**, dans les
   deux briefs, révélations et overlays : le recalage n'a rien de particulier
   à savoir. Un élément du plan b écrit avant son entrée est refusé.
+- **Aucun tracé du plan b ne commence avant que le plan soit en place**
+  (règle du 17/11/2026) : fondu enchaîné terminé (0,4 s), titre écrit, axes
+  posés — soit ~1 s après le début du fondu. Un tracé part jusqu'à 6 s avant
+  son mot, une vague de `Grille` sur son mot : laisse donc ce temps entre le
+  `declencheur` du plan et sa première valeur. `make check` refuse sinon, en
+  donnant les instants.
 - **Chaque plan est jugé comme un plan entier** : placement, sens, encarts
   (deux au plus par plan), **son titre** (`titre_haut`, dans la première
   seconde *du plan* : pour le plan b, dans la seconde qui suit le début du
@@ -445,7 +465,7 @@ unique quand leur instant dépend de la voix.
 | `titre_haut` | en haut, centré | le titre du graphe |
 | `axe_x` | centré sous l'axe horizontal | titre de l'axe horizontal |
 | `axe_y` | à gauche de l'axe vertical, pivoté de 90° | titre de l'axe vertical |
-| `legende` | bandeau sous le titre | une entrée par série, **dans l'ordre des séries** : la 1re légende prend la couleur de la série 1, etc. |
+| `legende` | bandeau sous le titre | une entrée par série, au plus. La pastille prend **la couleur de la série que la légende nomme** : écris `"serie": k` sur la légende pour le dire. Sans `serie`, pour un `LineChart`, la première légende à paraître nomme la première série à se tracer, et ainsi de suite ; ailleurs, l'ordre d'écriture (1re légende = série 1). |
 | `bas` | pied d'image | source, mention |
 | `centre` | encart dans la colonne de droite, réservée | **deux au plus** dans un plan `manim`, qui ne répètent pas la voix ; 18 caractères par ligne ; voir « Les encarts » ci-dessous |
 | `option_1`, `option_2` | au-dessus de chaque colonne de `Comparaison` | nom de l'option, dans sa couleur |
@@ -459,6 +479,19 @@ unique quand leur instant dépend de la voix.
   reste affiché tout le plan. `make check` refuse un plan `manim` sans titre
   ou dont le titre arrive plus tard.
 - Une légende : poser juste après la première révélation de sa série.
+  `{"ancre": "legende", "serie": 2, …}` dit quelle série elle nomme (règle du
+  17/11/2026) ; `make check` refuse plus de légendes que de séries, deux
+  légendes pour la même série, un `serie` hors des séries du plan, et une
+  pastille d'une autre couleur que sa série.
+- **Un nombre ne se coupe jamais en fin de ligne** (règle du 17/11/2026),
+  dans aucun texte — encart, titre, nom, source : ni entre ses groupes de
+  chiffres (« 1 590 »), ni avant son unité, signe (« 8,33 % », « 16 860 € »)
+  ou nom (« 1 590 essais », « 7 fois », « 20 ans »). Un mot de liaison n'est
+  pas une unité : « 1 118 contre 472 » peut passer à la ligne avant
+  « contre ». Rien à écrire : le moteur lie le nombre à ce qui le suit. Une
+  ligne en devient parfois plus large : compte le nombre et son unité comme
+  un seul mot dans les 18 caractères d'une ligne d'encart. `make check` refuse
+  un nombre coupé.
 - Les titres d'axes commencent par une majuscule.
 - `option_k`, `noeud_k`, `lien_k` : poser sur le mot qui nomme l'option, le
   nœud ou le flux, avec un `declencheur`. Ces ancres n'existent que sur leur
@@ -550,7 +583,10 @@ habituelle, il s'en écarte. Le moteur cherche pour chaque nom de nœud ou de
 lien une place où il ne touche ni un nœud, ni un lien, ni un montant, et où
 il se tient à 0,15 au moins d'un autre libellé et des encarts,
 comme `make check` l'exige. Sa place habituelle d'abord,
-puis les autres côtés, puis les mêmes sur deux lignes. Faute d'une telle
+puis les autres côtés, puis les mêmes sur deux lignes ; et, seulement si
+toutes recouvrent encore quelque chose, sur trois lignes (17/11/2026 : un
+nombre insécable élargit le bloc de deux lignes — « Un coût 7 fois sur
+10 ? » le long d'un lien vertical, EP004 S02). Faute d'une telle
 place, il prend une place qui au moins ne recouvre rien, et `make check`
 nomme alors le libellé trop serré : raccourcis-le, ou écarte les nœuds. Un
 nom qui monte (0,2) en apparaissant sur un nœud ou un lien déjà là est
@@ -625,6 +661,29 @@ point par un trait de rappel fin ; jamais à plus de **0,60 unité** de lui
 ces deux limites, dans toutes les familles (pour `Bars` et `Comparaison`, la
 cible est la barre ou la jauge). Moins de points nommés, c'est plus de place :
 ne nomme que les valeurs que la voix énonce.
+
+Deux règles de plus depuis le 17/11/2026 :
+
+- **Aucune courbe ne traverse un texte du graphique** — la valeur d'un point
+  (par sa propre courbe non plus), celle d'une accolade (`ecart`), un
+  `facteur`, une graduation. Le moteur écarte les places qu'une courbe
+  croise ; faute de place contre le point, l'étiquette se lève au bout d'un
+  trait de rappel. La valeur d'une accolade passe à gauche, puis en haut ou
+  en bas de l'accolade ; un facteur tourne autour de son point. `make check`
+  refuse un texte traversé.
+- **Aucune valeur de point sous l'axe horizontal, ni à cheval sur lui** —
+  quelle que soit la valeur du point (avant : seulement pour un point posé
+  sur la borne basse de l'axe). Dès que sa place serait sous l'axe, parmi les
+  graduations, l'étiquette se pose au-dessus et à droite de son point, sinon
+  à une autre place au-dessus de l'axe. `make check` le refuse, quel que soit
+  l'âge du script.
+
+Quand aucune place ne tient toutes ces règles — un point au ras de l'axe,
+juste sous la courbe d'une autre série —, l'étiquette prend la place la plus
+proche de son point où aucune courbe ne la traverse, au-dessus de l'axe, à
+0,60 au plus, avec un trait de rappel dès qu'elle s'en écarte de 0,20 ; elle
+peut alors être plus près de l'autre courbe que de son point, et `make check`
+le dit : écarte les valeurs, ou ne nomme pas ce point.
 
 **Comment les séries se partagent le temps** :
 
@@ -2071,3 +2130,8 @@ convention 9A de `recherche.md`, et tout nombre affiché présent dans
 9. Aucune révélation pour le cadre, et aucun mot dans la scène : les noms
    des options et des nœuds passent par `option_k`, `noeud_k`, `lien_k`.
 10. Chaque pictogramme est dans la liste du catalogue.
+11. Chaque accent vient après la révélation complète de son élément ; dans
+    un segment à deux plans, la première valeur du plan b laisse au plan le
+    temps de se poser (~1 s après le début du fondu).
+12. Une légende par série au plus, avec `"serie": k` dès que l'ordre des
+    légendes n'est pas celui des séries.

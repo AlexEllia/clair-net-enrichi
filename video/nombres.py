@@ -8,6 +8,51 @@ se lit dans les deux langues, sa typographie non (4,3 / 4.3 ; 14 057 / 14,057 ;
 """
 
 NNBSP = " "      # espace fine insecable
+NBSP = "\u00a0"       # espace insecable, de la largeur d'une espace ordinaire
+
+# Un nombre ne se coupe jamais en fin de ligne (regle du 17/11/2026) : ni
+# entre ses groupes de chiffres (« 1 590 »), ni avant son unite - un signe
+# (« 16 860 EUR », « 8,33 % ») ou le nom qui le suit (« 1 590 essais »,
+# « 20 ans »). Les mots de liaison ne sont pas des unites : « 1 118 contre
+# 472 » peut passer a la ligne avant « contre ».
+_LIAISONS = {"a", "à", "au", "aux", "avant", "apres", "après", "avec", "contre", "dans", "de",
+             "depuis", "des", "du", "en", "et", "ou", "par", "pour", "puis", "sans", "soit",
+             "sur", "vs", "le", "la", "les", "un", "une", "est", "sont", "dont", "que", "qui"}
+_ESPACES = " " + NBSP + NNBSP
+
+
+def insecables(s):
+    """`s`, les espaces qu'une fin de ligne ne doit pas couper remplacees par
+    des espaces insecables (meme largeur a l'ecran : le rendu d'une ligne ne
+    change pas). Une espace fine insecable deja ecrite reste telle quelle."""
+    import re
+    esp = "[" + _ESPACES + "]"
+
+    def lie(m):
+        return m.group(0) if m.group(0) == NNBSP else NBSP
+
+    # Groupes de chiffres : « 1 590 », « 574 534 ».
+    s = re.sub(r"(?<=\d)" + esp + r"(?=\d{3}(?!\d))", lie, s)
+    # Unite en signe : « 8,33 % », « 16 860 EUR », « 1 $ ».
+    s = re.sub(r"(?<=\d)" + esp + r"(?=[%€$‰])", lie, s)
+
+    # Unite en toutes lettres : le nom qui suit le nombre.
+    def mot(m):
+        return (m.group(1) if m.group(2).casefold() in _LIAISONS
+                else lie(re.match(esp, m.group(1)))) + m.group(2)
+
+    return re.sub(r"(?<=\d)(" + esp + r")([^\W\d_]+)", mot, s)
+
+
+def coupures(texte):
+    """Les nombres qu'un retour a la ligne coupe dans `texte` (lignes separees
+    par « \n ») : [(fin de ligne, debut de la suivante)]. Pour make check."""
+    lignes = [l.strip() for l in str(texte).split("\n")]
+    out = []
+    for a, b in zip(lignes, lignes[1:]):
+        if a and b and insecables(a + " " + b)[len(a)] != " ":
+            out.append((a.split(" ")[-1], b.split(" ")[0]))
+    return out
 
 _LOCALES = {
     "fr": {"dec": ",", "mil": NNBSP, "pct": NNBSP + "%", "euro": ("", NNBSP + "€"),

@@ -17,6 +17,17 @@ Calibre sur l'EP001c (diagnostic du 17/10/2026) :
   voulu : on mesure ce qui se voit, pas ce qui est programme.
 A 960 x 540, la derive des bandes du b-roll franchit le seuil : ne pas
 augmenter la resolution sans recalibrer.
+
+Trait fin (17/11/2026). Une courbe qui se trace lentement ne change que 6 a
+15 pixels par paire d'images, sous MIN_PX, alors qu'elle avance a chaque
+image (EP004 S05 : 87 paires sur 87 pendant les 8,7 s signalees « figees » ;
+S10 ; EP001c S09). Une paire compte donc aussi comme ACTIVE quand au moins
+MIN_TRAIT pixels y changent de plus de SEUIL_TRAIT niveaux - un trait clair
+sur le fond, 150 niveaux et plus, la ou la derive du decor n'en fait pas 24 -
+et que cela dure SUITE_TRAIT paires de suite au moins : un trace dure, un
+parasite non. Rien d'autre ne change : sans une telle suite, la mesure est
+celle d'avant (verifie sur EP004 v1 et v2, EP001c : aucune plage nouvelle,
+seules disparaissent celles ou une courbe se trace).
 """
 
 import json
@@ -28,6 +39,8 @@ import numpy as np
 FPS, W, H = 10, 480, 270
 SEUIL, MIN_PX = 24, 20           # evenement visible
 SEUIL_DECOR, MIN_DECOR = 6, 3    # derive du decor seule
+SEUIL_TRAIT, MIN_TRAIT = 60, 4   # trait fin qui avance : peu de pixels, tres contrastes
+SUITE_TRAIT = 5                  # ... pendant 5 paires de suite au moins (0,5 s)
 MAX_STILL = 4.0
 # Plans exclus de R6 : la carte de mention legale est une respiration voulue,
 # deux lignes et une derive de 2 % que la mesure ne voit pas (CATALOGUE.md).
@@ -41,7 +54,7 @@ def mesurer(video):
            "-vf", f"fps={FPS},scale={W}:{H}:flags=area,format=gray",
            "-f", "rawvideo", "-"]
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-    taille, prev, actif, decor = W * H, None, [], []
+    taille, prev, actif, decor, trait = W * H, None, [], [], []
     while True:
         buf = p.stdout.read(taille)
         if len(buf) < taille:
@@ -51,9 +64,24 @@ def mesurer(video):
             d = np.abs(f - prev)
             actif.append(int((d > SEUIL).sum()) >= MIN_PX)
             decor.append(int((d > SEUIL_DECOR).sum()) >= MIN_DECOR)
+            trait.append(int((d > SEUIL_TRAIT).sum()) >= MIN_TRAIT)
         prev = f
     p.wait()
-    return np.array(actif, bool), np.array(decor, bool)
+    actif = np.array(actif, bool)
+    # Trait fin : une suite assez longue de paires ou quelques pixels changent
+    # franchement est un trace en cours.
+    i, n = 0, len(trait)
+    while i < n:
+        if not trait[i]:
+            i += 1
+            continue
+        j = i
+        while j < n and trait[j]:
+            j += 1
+        if j - i >= SUITE_TRAIT:
+            actif[i:j] = True
+        i = j
+    return actif, np.array(decor, bool)
 
 
 def plages(actif, coupes=(), minimum=MAX_STILL):
