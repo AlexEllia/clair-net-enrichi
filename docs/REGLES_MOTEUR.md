@@ -673,6 +673,22 @@ mémoire de session de Claude et à la machine. Le détail fait foi dans
 réintroduire l'anticipation des barres ni une dérogation R6 sans accord ; ne
 jamais sortir une famille de `PILOTES` sans validation à l'écran.
 
+## Carnet (à traiter plus tard)
+
+Défauts vus à l'écran, notés pour une session à venir : ni corrigés ni
+couverts par le check. Une entrée se retire quand elle est traitée.
+
+- **Marque de coupure contre sa graduation** (17/11/2026, EP004 S10 plan a,
+  `"y_min": 95`, EP004_v2 du 17/11) : les deux traits obliques de la marque
+  de coupure (`COUPURE_HAUT` = 0,22, components.py) touchent le « 95 » de la
+  graduation basse. À écarter (plus haut, ou plus à droite sur l'axe), et à
+  faire vérifier par le check comme un texte du graphique.
+- **Encarts d'une colonne non alignés** (17/11/2026, EP004 S24, Comparaison,
+  rendu du 17/11) : les deux encarts `centre` sont centrés dans la colonne,
+  chacun sur sa propre largeur — bords gauches à 2,65 et 3,31. Encore le cas
+  après le passage de S24 en Comparaison. À aligner sur un même bord gauche
+  (ou une même largeur) dans la colonne des encarts.
+
 ## Règles git
 
 - Un commit par changement logique, directement sur `main`.
